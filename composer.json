@@ -1,0 +1,18 @@
+{
+    "name": "tenjuu99/reversi",
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tenjuu99\\Reversi\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Amashige Seiji",
+            "email": "tenjuu99@gmail.com"
+        }
+    ],
+    "require": {}
+}
