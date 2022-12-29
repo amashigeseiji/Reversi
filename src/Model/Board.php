@@ -3,6 +3,7 @@ namespace Tenjuu99\Reversi\Model;
 
 use ArrayAccess;
 use ArrayIterator;
+use Closure;
 use IteratorAggregate;
 use Traversable;
 
@@ -27,12 +28,12 @@ class Board implements ArrayAccess, IteratorAggregate
         return new self($board);
     }
 
-    public function put($index, Player $player)
+    public function put(string $index, Player $player)
     {
         if (!$this->offsetExists($index)) {
             throw new \Exception('Invalid cell ' . $index);
         }
-        $this->offsetSet($index, $player->name);
+        $this->offsetSet($index, $player);
     }
 
     public function offsetExists($offset): bool
@@ -63,7 +64,7 @@ class Board implements ArrayAccess, IteratorAggregate
 
     public function getIterator() : Traversable
     {
-        return new ArrayIterator($this->board);
+        return new ArrayIterator($this->toArray());
     }
 
     public static function getNextCells(string $index) : array
@@ -90,5 +91,27 @@ class Board implements ArrayAccess, IteratorAggregate
         return array_filter(self::getNextCells($index), function ($i) {
             return $this->board[$i];
         });
+    }
+
+    public function toArray() : array
+    {
+        $board = $this->board;
+        foreach ($this->board as $index => $cell) {
+            $board[$index] = $cell instanceof Player
+                ? $cell->name
+                : $cell;
+        }
+        foreach ($this->filter as $filter) {
+            $board = array_filter($board, $filter);
+        }
+        return $board;
+    }
+
+    private array $filter = [];
+
+    public function filter(Closure $callback) : self
+    {
+        $this->filter[] = $callback;
+        return $this;
     }
 }

@@ -42,6 +42,7 @@ class Game
 
     public function moves() : string
     {
+        $this->game->moves();
         return '1-2 2-3';
         // return implode(' ', $this->game->moves());
     }

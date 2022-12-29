@@ -17,10 +17,10 @@ class Game
     public static function initialize(Player $player) : self
     {
         $board = Board::initialize();
-        $board->put('4-4', Player::WHITE->name);
-        $board->put('4-5', Player::BLACK->name);
-        $board->put('5-4', Player::BLACK->name);
-        $board->put('5-5', Player::WHITE->name);
+        $board->put('4-4', Player::WHITE);
+        $board->put('4-5', Player::BLACK);
+        $board->put('5-4', Player::BLACK);
+        $board->put('5-5', Player::WHITE);
 
         return new self($board, $player);
     }
@@ -33,11 +33,12 @@ class Game
     public function moves() : array
     {
         // 現在のセルから敵の石があるセルを抽出
-        $enemyCells = array_filter($this->board, fn($cell) => $cell && $cell !== $this->currentPlayer->name);
+        $enemyCells = $this->board->filter(fn($cell) => $cell && $cell !== $this->currentPlayer->name);
         // ひとつづつ隣りあうセルをとりだす
         foreach (array_keys($enemyCells) as $index) {
             $nextCells[$index] = $this->board->getNextEmptyCells($index);
         }
+        var_dump($nextCells);
         return $nextCells;
     }
 
