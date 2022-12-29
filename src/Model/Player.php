@@ -5,4 +5,12 @@ enum Player
 {
     case BLACK;
     case WHITE;
+
+    public function toCellState() : CellState
+    {
+        return match($this) {
+            self::BLACK => CellState::BLACK,
+            self::WHITE => CellState::WHITE,
+        };
+    }
 }

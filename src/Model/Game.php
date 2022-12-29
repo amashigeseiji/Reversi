@@ -16,16 +16,22 @@ class Game
 
     public static function initialize(Player $player) : self
     {
-        $board = Board::initialize();
-        $board->put('4-4', Player::WHITE);
-        $board->put('4-5', Player::BLACK);
-        $board->put('5-4', Player::BLACK);
-        $board->put('5-5', Player::WHITE);
+        $board = new Board();
+        $game = new self($board, $player);
+        $game->put(new Stone('4-4', Player::WHITE));
+        $game->put(new Stone('4-5', Player::BLACK));
+        $game->put(new Stone('5-4', Player::BLACK));
+        $game->put(new Stone('5-5', Player::WHITE));
 
-        return new self($board, $player);
+        return $game;
     }
 
-    public function put(Move $move)
+    public function put(Stone $move)
+    {
+        $this->board->put($move->index, $move->player);
+    }
+
+    public function move(Move $move)
     {
         $this->board->put($move->index, $move->player);
     }
@@ -33,16 +39,31 @@ class Game
     public function moves() : array
     {
         // 現在のセルから敵の石があるセルを抽出
-        $enemyCells = $this->board->filter(fn($cell) => $cell && $cell !== $this->currentPlayer->name);
+        $enemyCells = $this->board->filterState($this->currentPlayer->toCellState());
+        var_dump(iterator_to_array($enemyCells));
         // ひとつづつ隣りあうセルをとりだす
-        foreach (array_keys($enemyCells) as $index) {
-            $nextCells[$index] = $this->board->getNextEmptyCells($index);
+        $nextCells = [];
+        foreach ($enemyCells as $index => $cell) {
+            $nextCells = array_merge($nextCells, $this->board->getNextEmptyCells($cell));
         }
+        $moves = [];
+        // foreach ($nextCells as $cell) {
+        //     if ($this->canMove($cell, $this->currentPlayer)) {
+        //     }
+        // }
+        // $cells = array_map(fn($cell) => $cell->index, $nextCells);
+        sort($nextCells);
+        // sort($nextCells);
         var_dump($nextCells);
         return $nextCells;
     }
 
-    public function getBoardState() : Board
+    private function canMove(CellWithState $index, Player $player) : bool
+    {
+        return false;
+    }
+
+    public function cells() : Board
     {
         return $this->board;
     }

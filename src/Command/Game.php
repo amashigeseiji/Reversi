@@ -26,7 +26,7 @@ class Game
     public function put(string $index)
     {
         $move = new Move($index, $this->game->getPlayer());
-        $this->game->put($move);
+        $this->game->move($move);
         $this->game->changePlayer();
     }
 
@@ -47,9 +47,9 @@ class Game
         // return implode(' ', $this->game->moves());
     }
 
-    public function board(): Board
+    public function cells(): Board
     {
-        return $this->game->getBoardState();
+        return $this->game->cells();
     }
 
     public function player(): string
