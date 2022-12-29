@@ -3,6 +3,7 @@ namespace Tenjuu99\Reversi\Command;
 
 use ReflectionClass;
 use ReflectionMethod;
+use Tenjuu99\Reversi\Model\Board;
 use Tenjuu99\Reversi\Model\Game as ModelGame;
 use Tenjuu99\Reversi\Model\Move;
 use Tenjuu99\Reversi\Model\Player;
@@ -45,7 +46,7 @@ class Game
         // return implode(' ', $this->game->moves());
     }
 
-    public function board(): array
+    public function board(): Board
     {
         return $this->game->getBoardState();
     }

@@ -2,6 +2,7 @@
 namespace Tenjuu99\Reversi\Model;
 
 use ArrayAccess;
+use ArrayIterator;
 use IteratorAggregate;
 use Traversable;
 
@@ -26,10 +27,17 @@ class Board implements ArrayAccess, IteratorAggregate
         return new self($board);
     }
 
+    public function put($index, Player $player)
+    {
+        if (!$this->offsetExists($index)) {
+            throw new \Exception('Invalid cell ' . $index);
+        }
+        $this->offsetSet($index, $player->name);
+    }
+
     public function offsetExists($offset): bool
     {
-        var_dump($this->board);
-        return isset($this->board[$offset]);
+        return array_key_exists($offset, $this->board);
     }
 
     public function offsetGet($offset): mixed
@@ -56,5 +64,31 @@ class Board implements ArrayAccess, IteratorAggregate
     public function getIterator() : Traversable
     {
         return new ArrayIterator($this->board);
+    }
+
+    public static function getNextCells(string $index) : array
+    {
+        [$x, $y] = explode(Game::SEPARATOR, $index);
+        $indices = [
+            [$x + 1, $y],
+            [$x - 1, $y],
+            [$x, $y + 1],
+            [$x, $y - 1],
+            [$x + 1, $y + 1],
+            [$x - 1, $y - 1],
+            [$x + 1, $y - 1],
+            [$x - 1, $y + 1],
+        ];
+        $indices = array_filter($indices, function ($index) {
+          return $index[0] > 0 && $index[0] <= 8 && $index[1] > 0 && $index[1] <= 8;
+        });
+        return array_map(fn($index) => implode(Game::SEPARATOR, $index), $indices);
+    }
+
+    public function getNextEmptyCells(string $index) : array
+    {
+        return array_filter(self::getNextCells($index), function ($i) {
+            return $this->board[$i];
+        });
     }
 }
