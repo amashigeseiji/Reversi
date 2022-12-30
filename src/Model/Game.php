@@ -26,30 +26,20 @@ class Game
 
     public function move(string $index) : bool
     {
-        $moves = $this->moves();
-        foreach ($moves as $move) {
-            if ($move->index === $index) {
-                $move->execute();
-                return true;
-            }
+        $move = $this->moves()[$index];
+        if ($move) {
+            $move->execute();
+            return true;
         }
         return false;
     }
 
     /**
-     * @return Move[]
+     * @return Moves
      */
-    public function moves() : array
+    public function moves() : Moves
     {
-        $moves = [];
-        $empties = $this->board->filterState(CellState::EMPTY);
-        foreach ($empties as $emptyCell) {
-            $move = new Move($emptyCell, $this->currentPlayer);
-            if (count($move->flipCells) > 0) {
-                $moves[] = $move;
-            }
-        }
-        return $moves;
+        return new Moves($this->board, $this->currentPlayer);
     }
 
     public function cells() : Board
