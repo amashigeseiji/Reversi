@@ -4,7 +4,6 @@ namespace Tenjuu99\Reversi\Renderer;
 use Tenjuu99\Reversi\Command\Game;
 use Tenjuu99\Reversi\Model\Cell;
 use Tenjuu99\Reversi\Model\CellState;
-use Tenjuu99\Reversi\Model\CellWithState;
 use Tenjuu99\Reversi\Model\Player;
 
 class Cli
@@ -46,7 +45,7 @@ class Cli
         }
     }
 
-    private function cellRenderer(CellWithState $cell)
+    private function cellRenderer(Cell $cell)
     {
         return match($cell->state) {
             CellState::EMPTY => " ",

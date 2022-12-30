@@ -31,36 +31,86 @@ class Game
         $this->board->put($move->index, $move->player);
     }
 
-    public function move(Move $move)
+    public function move(string $index) : bool
     {
-        $this->board->put($move->index, $move->player);
+        $moves = $this->moves();
+        foreach ($moves as $move) {
+            if ($move->index !== $index) {
+                continue;
+            }
+            $this->board->put($move->index, $move->player);
+            $orientations = [
+                'right', 'left', 'upper', 'lower',
+                'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
+            ];
+            foreach ($orientations as $orientation) {
+                $chain = $move->cell->chain($orientation);
+                if (count($chain) <= 1) {
+                    continue;
+                }
+                if ($chain[0]->state !== $this->currentPlayer->enemy()->toCellState()) {
+                    continue;
+                }
+                $flips = [];
+                $tmpFlips = [];
+                foreach ($chain as $cell) {
+                    if ($cell->state === CellState::EMPTY) {
+                        $tmpFlips = [];
+                        break;
+                    } elseif ($cell->state === $this->currentPlayer->enemy()->toCellState()) { // 敵陣
+                        $tmpFlips[] = $cell;
+                    } else { // 自陣
+                        $flips = array_merge($flips, $tmpFlips);
+                        $tmpFlips = [];
+                        break;
+                    }
+                }
+                foreach ($flips as $flipCell) {
+                    $flipCell->flip();
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
+    /**
+     * todo move を生成するタイミングで flip セルも計算する
+     * move クラスに flip セルをもたせる
+     * @return Move[]
+     */
     public function moves() : array
     {
-        // 現在のセルから敵の石があるセルを抽出
-        $enemyCells = $this->board->filterState($this->currentPlayer->toCellState());
-        var_dump(iterator_to_array($enemyCells));
-        // ひとつづつ隣りあうセルをとりだす
-        $nextCells = [];
-        foreach ($enemyCells as $index => $cell) {
-            $nextCells = array_merge($nextCells, $this->board->getNextEmptyCells($cell));
-        }
         $moves = [];
-        // foreach ($nextCells as $cell) {
-        //     if ($this->canMove($cell, $this->currentPlayer)) {
-        //     }
-        // }
-        // $cells = array_map(fn($cell) => $cell->index, $nextCells);
-        sort($nextCells);
-        // sort($nextCells);
-        var_dump($nextCells);
-        return $nextCells;
-    }
-
-    private function canMove(CellWithState $index, Player $player) : bool
-    {
-        return false;
+        $empties = $this->board->filterState(CellState::EMPTY);
+        $orientations = [
+            'right', 'left', 'upper', 'lower',
+            'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
+        ];
+        foreach ($empties as $emptyCell) {
+            foreach ($orientations as $orientation) {
+                $chain = $emptyCell->chain($orientation);
+                if (count($chain) <= 1) {
+                    continue;
+                }
+                $next = array_shift($chain);
+                if ($next->state !== $this->currentPlayer->enemy()->toCellState()) {
+                    continue;
+                }
+                foreach ($chain as $cell) {
+                    switch ($cell->state) {
+                    case CellState::EMPTY:
+                        break 2;
+                    case $this->currentPlayer->enemy()->toCellState():
+                        break;
+                    case $this->currentPlayer->toCellState():
+                        $moves[] = new Move($emptyCell, $this->currentPlayer);
+                        break 3;
+                    }
+                }
+            }
+        }
+        return $moves;
     }
 
     public function cells() : Board

@@ -13,4 +13,12 @@ enum Player
             self::WHITE => CellState::WHITE,
         };
     }
+
+    public function enemy() : self
+    {
+        return match($this) {
+            self::BLACK => self::WHITE,
+            self::WHITE => self::BLACK,
+        };
+    }
 }

@@ -25,9 +25,9 @@ class Game
 
     public function put(string $index)
     {
-        $move = new Move($index, $this->game->getPlayer());
-        $this->game->move($move);
-        $this->game->changePlayer();
+        if ($this->game->move($index)) {
+            $this->game->changePlayer();
+        }
     }
 
     public function pass()
@@ -42,9 +42,8 @@ class Game
 
     public function moves() : string
     {
-        $this->game->moves();
-        return '1-2 2-3';
-        // return implode(' ', $this->game->moves());
+        $moves = $this->game->moves();
+        return implode(' ', array_map(fn(Move $move) => $move->index, $moves));
     }
 
     public function cells(): Board

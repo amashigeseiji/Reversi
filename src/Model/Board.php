@@ -2,13 +2,13 @@
 namespace Tenjuu99\Reversi\Model;
 
 use ArrayAccess;
+use ArrayIterator;
 use IteratorAggregate;
 use Traversable;
 
 class Board implements ArrayAccess, IteratorAggregate
 {
     private array $cells;
-    private array $state;
 
     public function __construct()
     {
@@ -16,13 +16,11 @@ class Board implements ArrayAccess, IteratorAggregate
         $state = [];
         for ($x = 1; $x <= 8; $x++) {
           for ($y = 1; $y <= 8; $y++) {
-              $cell = new Cell($x, $y);
+              $cell = new Cell($x, $y, $this);
               $cells[$cell->index] = $cell;
-              $state[$cell->index] = CellState::EMPTY;
           }
         }
         $this->cells = $cells;
-        $this->state = $state;
     }
 
     public function put(string $index, Player $player)
@@ -30,9 +28,7 @@ class Board implements ArrayAccess, IteratorAggregate
         if (!$this->offsetExists($index)) {
             throw new \Exception('Invalid index ' . $index);
         }
-        $this->state[$index] = $player === Player::WHITE
-            ? CellState::WHITE
-            : CellState::BLACK;
+        $this->cells[$index]->put($player->toCellState());
     }
 
     public function offsetExists($offset): bool
@@ -45,7 +41,7 @@ class Board implements ArrayAccess, IteratorAggregate
         if (!$this->offsetExists($offset)) {
             throw new \Exception('Invalid offset ' . $offset . ' is given.');
         }
-        return new CellWithState($this->cells[$offset], $this->state[$offset]);
+        return $this->cells[$offset];
     }
 
     public function offsetSet($offset, $value): void
@@ -60,24 +56,20 @@ class Board implements ArrayAccess, IteratorAggregate
 
     public function getIterator() : Traversable
     {
-        foreach ($this->cells as $index => $cell) {
-            yield $index => new CellWithState($cell, $this->state[$index]);
-        }
+        return new ArrayIterator($this->cells);
     }
 
     public function filterState(CellState $state) : Traversable
     {
-        $cells = array_filter($this->state, fn($cellState) => $cellState === $state);
-        foreach ($cells as $index => $cell) {
-            yield $index => new CellWithState($this->cells[$index], $cell);
-        }
+        $cells = array_filter($this->cells, fn($cell) => $cell->state === $state);
+        return new ArrayIterator($cells);
     }
 
     public function filterByIndices(array $indices) : Traversable
     {
         foreach ($indices as $index) {
             if ($this->offsetExists($index)) {
-                yield $index => new CellWithState($this->cells[$index], $this->state[$index]);
+                yield $index => $this->cells[$index];
             }
         }
     }
@@ -85,7 +77,7 @@ class Board implements ArrayAccess, IteratorAggregate
     public function getNextEmptyCells(Cell $cell)
     {
         return array_filter($cell->getNextCells(), function ($index) {
-            return $this->state[$index] === CellState::EMPTY;
+            return $this->cells[$index]->state === CellState::EMPTY;
         });
     }
 }
