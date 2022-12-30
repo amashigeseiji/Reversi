@@ -23,14 +23,6 @@ class Board implements ArrayAccess, IteratorAggregate
         $this->cells = $cells;
     }
 
-    public function put(string $index, Player $player)
-    {
-        if (!$this->offsetExists($index)) {
-            throw new \Exception('Invalid index ' . $index);
-        }
-        $this->cells[$index]->put($player->toCellState());
-    }
-
     public function offsetExists($offset): bool
     {
         return array_key_exists($offset, $this->cells);
@@ -62,5 +54,22 @@ class Board implements ArrayAccess, IteratorAggregate
     public function filterState(CellState $state) : array
     {
         return array_filter($this->cells, fn($cell) => $cell->state === $state);
+    }
+
+    public function hash() : string
+    {
+        $array = $this->toArray();
+        $string = json_encode($array);
+        return md5($string);
+    }
+
+    public function toArray() : array
+    {
+        $cells = [];
+        foreach ($this->cells as $index => $cell) {
+            $cells[$index] = $cell->state->name;
+        }
+        ksort($cells);
+        return $cells;
     }
 }

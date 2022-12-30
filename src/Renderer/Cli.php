@@ -33,7 +33,7 @@ class Cli
           } else {
               echo $this->game->currentPlayer() . ": thinking..." . PHP_EOL;
               $command = $this->game->compute();
-              echo $command;
+              echo $command . PHP_EOL;
           }
         }
         switch($state) {

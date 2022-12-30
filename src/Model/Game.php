@@ -5,6 +5,8 @@ class Game
 {
     private Board $board;
     private Player $currentPlayer;
+    /** @var Moves[] */
+    private array $moves;
 
     private function __construct(Board $board, Player $currentPlayer)
     {
@@ -15,10 +17,10 @@ class Game
     public static function initialize(Player $player) : self
     {
         $board = new Board();
-        $board->put('4-4', Player::WHITE);
-        $board->put('4-5', Player::BLACK);
-        $board->put('5-4', Player::BLACK);
-        $board->put('5-5', Player::WHITE);
+        $board['4-4']->put(CellState::WHITE);
+        $board['4-5']->put(CellState::BLACK);
+        $board['5-4']->put(CellState::BLACK);
+        $board['5-5']->put(CellState::WHITE);
         $game = new self($board, $player);
 
         return $game;
@@ -39,7 +41,17 @@ class Game
      */
     public function moves() : Moves
     {
-        return new Moves($this->board, $this->currentPlayer);
+        return $this->getMoves($this->board, $this->currentPlayer);
+    }
+
+    private function getMoves(Board $board, Player $player) : Moves
+    {
+        $hash = $board->hash() . $player->name;
+        if (isset($this->moves[$hash])) {
+            return $this->moves[$hash];
+        }
+        $moves = new Moves($board, $player);
+        return $this->moves[$hash] = $moves;
     }
 
     public function cells() : Board
@@ -77,12 +89,11 @@ class Game
 
     private function isGameEnd() : bool
     {
-        // todo cache
-        $moves = new Moves($this->board, $this->currentPlayer);
+        $moves = $this->getMoves($this->board, $this->currentPlayer);
         if ($moves->count() > 0) {
             return false;
         }
-        $enemyMoves = new Moves($this->board, $this->currentPlayer->enemy());
+        $enemyMoves = $this->getMoves($this->board, $this->currentPlayer->enemy());
         if ($enemyMoves->count() > 0) {
             return false;
         }
