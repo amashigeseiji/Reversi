@@ -5,6 +5,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use Tenjuu99\Reversi\Model\Board;
 use Tenjuu99\Reversi\Model\Game as ModelGame;
+use Tenjuu99\Reversi\Model\GameState;
 use Tenjuu99\Reversi\Model\Move;
 use Tenjuu99\Reversi\Model\Player;
 
@@ -78,14 +79,26 @@ class Game
         }
     }
 
-    public function compute()
+    public function compute() : string
     {
-        $moves = $this->game->moves();
+        $moves = iterator_to_array($this->game->moves());
         if ($moves) {
-            $key = array_rand(iterator_to_array($moves));
+            $key = array_rand($moves);
             $this->put($moves[$key]->index);
+            return 'put ' . $key;
         } else {
             $this->pass();
+            return 'pass';
         }
+    }
+
+    public function isGameEnd() : bool
+    {
+        return $this->game->state() !== GameState::ONGOING;
+    }
+
+    public function state() : GameState
+    {
+        return $this->game->state();
     }
 }

@@ -59,9 +59,8 @@ class Board implements ArrayAccess, IteratorAggregate
         return new ArrayIterator($this->cells);
     }
 
-    public function filterState(CellState $state) : Traversable
+    public function filterState(CellState $state) : array
     {
-        $cells = array_filter($this->cells, fn($cell) => $cell->state === $state);
-        return new ArrayIterator($cells);
+        return array_filter($this->cells, fn($cell) => $cell->state === $state);
     }
 }
