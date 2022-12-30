@@ -28,11 +28,10 @@ class Game
     {
         $moves = $this->moves();
         foreach ($moves as $move) {
-            if ($move->index !== $index) {
-                continue;
+            if ($move->index === $index) {
+                $move->execute();
+                return true;
             }
-            $move->execute();
-            return true;
         }
         return false;
     }
