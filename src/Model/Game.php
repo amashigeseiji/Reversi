@@ -31,76 +31,23 @@ class Game
             if ($move->index !== $index) {
                 continue;
             }
-            $this->board->put($move->index, $move->player);
-            $orientations = [
-                'right', 'left', 'upper', 'lower',
-                'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
-            ];
-            foreach ($orientations as $orientation) {
-                $chain = $move->cell->chain($orientation);
-                if (count($chain) <= 1) {
-                    continue;
-                }
-                if ($chain[0]->state !== $this->currentPlayer->enemy()->toCellState()) {
-                    continue;
-                }
-                $flips = [];
-                $tmpFlips = [];
-                foreach ($chain as $cell) {
-                    if ($cell->state === CellState::EMPTY) {
-                        $tmpFlips = [];
-                        break;
-                    } elseif ($cell->state === $this->currentPlayer->enemy()->toCellState()) { // 敵陣
-                        $tmpFlips[] = $cell;
-                    } else { // 自陣
-                        $flips = array_merge($flips, $tmpFlips);
-                        $tmpFlips = [];
-                        break;
-                    }
-                }
-                foreach ($flips as $flipCell) {
-                    $flipCell->flip();
-                }
-            }
+            $move->execute();
             return true;
         }
         return false;
     }
 
     /**
-     * todo move を生成するタイミングで flip セルも計算する
-     * move クラスに flip セルをもたせる
      * @return Move[]
      */
     public function moves() : array
     {
         $moves = [];
         $empties = $this->board->filterState(CellState::EMPTY);
-        $orientations = [
-            'right', 'left', 'upper', 'lower',
-            'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
-        ];
         foreach ($empties as $emptyCell) {
-            foreach ($orientations as $orientation) {
-                $chain = $emptyCell->chain($orientation);
-                if (count($chain) <= 1) {
-                    continue;
-                }
-                $next = array_shift($chain);
-                if ($next->state !== $this->currentPlayer->enemy()->toCellState()) {
-                    continue;
-                }
-                foreach ($chain as $cell) {
-                    switch ($cell->state) {
-                    case CellState::EMPTY:
-                        break 2;
-                    case $this->currentPlayer->enemy()->toCellState():
-                        break;
-                    case $this->currentPlayer->toCellState():
-                        $moves[] = new Move($emptyCell, $this->currentPlayer);
-                        break 3;
-                    }
-                }
+            $move = new Move($emptyCell, $this->currentPlayer);
+            if (count($move->flipCells) > 0) {
+                $moves[] = $move;
             }
         }
         return $moves;
