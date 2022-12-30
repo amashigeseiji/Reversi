@@ -7,11 +7,17 @@ class Game
     private Player $currentPlayer;
     /** @var Moves[] */
     private array $moves;
+    /**
+     * boardをハッシュ化した値
+     * 初期化、一手うったタイミングで計算しなおす
+     */
+    private string $boardHash;
 
     private function __construct(Board $board, Player $currentPlayer)
     {
         $this->board = $board;
         $this->currentPlayer = $currentPlayer;
+        $this->boardHash = $board->hash();
     }
 
     public static function initialize(Player $player) : self
@@ -33,6 +39,8 @@ class Game
             return false;
         }
         $moves[$index]->execute();
+        // ハッシュ値の再計算
+        $this->boardHash = $this->board->hash();
         return true;
     }
 
@@ -46,7 +54,7 @@ class Game
 
     private function getMoves(Board $board, Player $player) : Moves
     {
-        $hash = $board->hash() . $player->name;
+        $hash = $this->boardHash . $player->name;
         if (isset($this->moves[$hash])) {
             return $this->moves[$hash];
         }

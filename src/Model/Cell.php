@@ -19,44 +19,9 @@ class Cell
         $this->board = $board;
     }
 
-    public function getNextCells() : array
-    {
-        $indices = [
-            [$this->x + 1, $this->y],
-            [$this->x - 1, $this->y],
-            [$this->x, $this->y + 1],
-            [$this->x, $this->y - 1],
-            [$this->x + 1, $this->y + 1],
-            [$this->x - 1, $this->y - 1],
-            [$this->x + 1, $this->y - 1],
-            [$this->x - 1, $this->y + 1],
-        ];
-        $indices = array_filter($indices, function ($index) {
-          return $index[0] > 0 && $index[0] <= 8 && $index[1] > 0 && $index[1] <= 8;
-        });
-        return array_map(fn($index) => implode(self::SEPARATOR, $index), $indices);
-    }
-
     public function put(CellState $state)
     {
         $this->state = $state;
-    }
-
-    /**
-     * @return Cell[]
-     */
-    public function nextCells(): array
-    {
-        return [
-            'right' => $this->right(),
-            'left' => $this->left(),
-            'upper' => $this->upper(),
-            'lower' => $this->lower(),
-            'upperRight' => $this->upperRight(),
-            'upperLeft' => $this->upperLeft(),
-            'lowerRight' => $this->lowerRight(),
-            'lowerLeft' => $this->lowerLeft(),
-        ];
     }
 
     public function right() : ?Cell
@@ -132,6 +97,7 @@ class Cell
     }
 
     /**
+     * 石がおかれたセルのチェーン状のつらなり
      * @return Cell[]
      */
     public function chain(string $orientation) : array
@@ -141,6 +107,9 @@ class Cell
         while(true) {
             $current = $current->{$orientation}();
             if (!$current) {
+                break;
+            }
+            if ($current->state === CellState::EMPTY) {
                 break;
             }
             $cells[] = $current;

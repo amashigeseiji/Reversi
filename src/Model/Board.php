@@ -58,18 +58,7 @@ class Board implements ArrayAccess, IteratorAggregate
 
     public function hash(): string
     {
-        $array = $this->toArray();
-        $string = json_encode($array);
+        $string = json_encode($this->cells);
         return md5($string);
-    }
-
-    private function toArray() : array
-    {
-        $cells = [];
-        foreach ($this->cells as $index => $cell) {
-            $cells[$index] = $cell->state->name;
-        }
-        ksort($cells);
-        return $cells;
     }
 }

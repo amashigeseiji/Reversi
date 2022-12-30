@@ -1,11 +1,11 @@
 <?php
 namespace Tenjuu99\Reversi\Model;
 
-enum CellState : int
+enum CellState : string
 {
-    case EMPTY = 0;
-    case WHITE = 1;
-    case BLACK = 2;
+    case EMPTY = '';
+    case WHITE = 'white';
+    case BLACK = 'black';
 
     public function flip()
     {
