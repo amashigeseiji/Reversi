@@ -15,18 +15,13 @@ class Game
     public static function initialize(Player $player) : self
     {
         $board = new Board();
+        $board->put('4-4', Player::WHITE);
+        $board->put('4-5', Player::BLACK);
+        $board->put('5-4', Player::BLACK);
+        $board->put('5-5', Player::WHITE);
         $game = new self($board, $player);
-        $game->put(new Stone('4-4', Player::WHITE));
-        $game->put(new Stone('4-5', Player::BLACK));
-        $game->put(new Stone('5-4', Player::BLACK));
-        $game->put(new Stone('5-5', Player::WHITE));
 
         return $game;
-    }
-
-    public function put(Stone $move)
-    {
-        $this->board->put($move->index, $move->player);
     }
 
     public function move(string $index) : bool
