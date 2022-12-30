@@ -4,7 +4,6 @@ namespace Tenjuu99\Reversi\Renderer;
 use Tenjuu99\Reversi\Command\Game;
 use Tenjuu99\Reversi\Model\Cell;
 use Tenjuu99\Reversi\Model\CellState;
-use Tenjuu99\Reversi\Model\Player;
 
 class Cli
 {

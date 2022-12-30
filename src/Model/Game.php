@@ -6,8 +6,6 @@ class Game
     private Board $board;
     private Player $currentPlayer;
 
-    public const SEPARATOR = '-';
-
     private function __construct(Board $board, Player $currentPlayer)
     {
         $this->board = $board;

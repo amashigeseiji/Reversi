@@ -37,12 +37,6 @@ class Cell
         return array_map(fn($index) => implode(self::SEPARATOR, $index), $indices);
     }
 
-    public static function fromIndex(string $index): self
-    {
-        [$x, $y] = explode(self::SEPARATOR, $index);
-        return new self($x, $y);
-    }
-
     public function put(CellState $state)
     {
         $this->state = $state;
