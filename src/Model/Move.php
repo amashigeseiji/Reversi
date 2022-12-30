@@ -22,10 +22,6 @@ class Move
     public function execute()
     {
         $this->cell->put($this->player->toCellState());
-        $orientations = [
-            'right', 'left', 'upper', 'lower',
-            'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
-        ];
         foreach ($this->flipCells as $flipCell) {
             $flipCell->flip();
         }

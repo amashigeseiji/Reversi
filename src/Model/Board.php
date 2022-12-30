@@ -56,14 +56,14 @@ class Board implements ArrayAccess, IteratorAggregate
         return array_filter($this->cells, fn($cell) => $cell->state === $state);
     }
 
-    public function hash() : string
+    public function hash(): string
     {
         $array = $this->toArray();
         $string = json_encode($array);
         return md5($string);
     }
 
-    public function toArray() : array
+    private function toArray() : array
     {
         $cells = [];
         foreach ($this->cells as $index => $cell) {
