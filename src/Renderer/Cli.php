@@ -28,7 +28,7 @@ class Cli
               }
           } else {
               echo $this->game->currentPlayer() . ": thinking..." . PHP_EOL;
-              $this->game->thinkAndMove();
+              $this->game->compute();
           }
         }
     }

@@ -79,7 +79,7 @@ class Game
         }
     }
 
-    public function thinkAndMove()
+    public function compute()
     {
         $moves = $this->game->moves();
         if ($moves) {
