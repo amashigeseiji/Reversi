@@ -82,6 +82,10 @@ class Game
     public function thinkAndMove()
     {
         $moves = $this->game->moves();
-        $this->put($moves[0]->index);
+        if ($moves) {
+            $this->put($moves[0]->index);
+        } else {
+            $this->pass();
+        }
     }
 }
