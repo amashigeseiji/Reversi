@@ -64,20 +64,4 @@ class Board implements ArrayAccess, IteratorAggregate
         $cells = array_filter($this->cells, fn($cell) => $cell->state === $state);
         return new ArrayIterator($cells);
     }
-
-    public function filterByIndices(array $indices) : Traversable
-    {
-        foreach ($indices as $index) {
-            if ($this->offsetExists($index)) {
-                yield $index => $this->cells[$index];
-            }
-        }
-    }
-
-    public function getNextEmptyCells(Cell $cell)
-    {
-        return array_filter($cell->getNextCells(), function ($index) {
-            return $this->cells[$index]->state === CellState::EMPTY;
-        });
-    }
 }

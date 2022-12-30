@@ -11,12 +11,14 @@ use Tenjuu99\Reversi\Model\Player;
 class Game
 {
     private ModelGame $game;
+    private Player $player;
     /** @var ReflectionMethod[] */
     private $commands = [];
 
-    public function __construct()
+    public function __construct(Player $player)
     {
-        $this->game = ModelGame::initialize(Player::WHITE);
+        $this->player = $player;
+        $this->game = ModelGame::initialize($player);
         $reflection = new ReflectionClass($this);
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
         $commands = explode(' ', $this->help());
@@ -37,7 +39,7 @@ class Game
 
     public function reset()
     {
-        $this->game = ModelGame::initialize(Player::WHITE);
+        $this->game = ModelGame::initialize($this->player);
     }
 
     public function moves() : string
@@ -51,7 +53,12 @@ class Game
         return $this->game->cells();
     }
 
-    public function player(): string
+    public function isMyTurn() : bool
+    {
+        return $this->player === $this->game->getPlayer();
+    }
+
+    public function currentPlayer(): string
     {
         return $this->game->getPlayer()->name;
     }
@@ -70,5 +77,11 @@ class Game
                 return $method->invokeArgs($this, $commandInput);
             }
         }
+    }
+
+    public function thinkAndMove()
+    {
+        $moves = $this->game->moves();
+        $this->put($moves[0]->index);
     }
 }
