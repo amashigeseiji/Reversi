@@ -97,24 +97,56 @@ class Cell
     }
 
     /**
-     * 石がおかれたセルのチェーン状のつらなり
+     * 指定された方向に、ひっくりかえすことができる
+     * セルのチェーン状のつらなりを生成する。
+     * (空)白白(黒)、(空)黒黒黒(白)、(空)黒(白)などの連なりのパターン
+     * にあてはまる場合に配列を生成する。
+     * どちらの色であるかは問わない。
+     *
      * @return Cell[]
      */
-    public function chain(string $orientation) : array
+    private function chain(string $orientation) : array
     {
         $cells = [];
         $current = $this;
+        $prev;
         while(true) {
             $current = $current->{$orientation}();
+            // 隣のセルがない場合は終了
             if (!$current) {
                 break;
             }
+            // 隣が空白セルの場合は終了
             if ($current->state === CellState::EMPTY) {
                 break;
             }
+            // チェーンの色がかわったらチェーン終了
+            if (isset($prev) && $prev !== $current->state) {
+                return $cells;
+            }
             $cells[] = $current;
+            $prev = $current->state;
         }
-        return $cells;
+        return [];
+    }
+
+    /**
+     * @return array<string, Cell[]>
+     */
+    public function flippableChains(): array
+    {
+        $orientations = [
+            'right', 'left', 'upper', 'lower',
+            'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
+        ];
+        $chains = [];
+        foreach ($orientations as $orientation) {
+            $chain = $this->chain($orientation);
+            if ($chain) {
+                $chains[$orientation] = $chain;
+            }
+        }
+        return $chains;
     }
 
     public function flip()

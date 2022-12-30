@@ -29,33 +29,15 @@ class Move
 
     private function collectFlipCells(): array
     {
-        $orientations = [
-            'right', 'left', 'upper', 'lower',
-            'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
-        ];
         $flips = [];
-        foreach ($orientations as $orientation) {
-            $chain = $this->cell->chain($orientation);
-            // チェーンの長さが1の場合は壁のためスキップ
-            if (count($chain) <= 1) {
-                continue;
-            }
+        $flippable = $this->cell->flippableChains();
+        foreach ($flippable as $orientation => $chain) {
             // 隣が敵陣ではない場合はスキップ
             if ($chain[0]->state !== $this->player->enemy()->toCellState()) {
                 continue;
             }
-            $tmpFlips = [];
             foreach ($chain as $cell) {
-                if ($cell->state === CellState::EMPTY) {
-                    $tmpFlips = [];
-                    break;
-                } elseif ($cell->state === $this->player->enemy()->toCellState()) { // 敵陣
-                    $tmpFlips[] = $cell;
-                } else { // 自陣
-                    $flips = array_merge($flips, $tmpFlips);
-                    $tmpFlips = [];
-                    break;
-                }
+                $flips[] = $cell;
             }
         }
         return $flips;
