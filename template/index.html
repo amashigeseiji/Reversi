@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <title>REVERSI</title>
+</head>
+<body>
+  <header>
+    <h1>REVERSI</h1>
+  </header>
+  <main>
+    <div id="app">
+      <table>
+        <tr v-for="(line, index) in board" :key="index">
+          <td v-for="cell in line" :key="cell.index">
+            <span class="cellState" :class="cellStateClass(cell.state)"></span>
+          </td>
+        </tr>
+      </table>
+  </main>
+</body>
+</html>
+
+<script>
+  const { createApp } = Vue
+
+  createApp({
+    data() {
+      return {
+        board: {}
+      }
+    },
+    mounted() {
+      this.updateBoard()
+    },
+    methods: {
+      async updateBoard() {
+        const board = await axios.get('/board')
+        const matrix = {}
+        for (index in board.data) {
+          const group = 'y' + board.data[index].y
+          if (!matrix[group]) {
+            matrix[group] = []
+          }
+          matrix[group].push(board.data[index])
+        }
+        this.board = matrix
+      },
+      cellStateClass(state) {
+        switch(state) {
+          case 'white':
+            return 'cell-white'
+          case 'black':
+            return 'cell-black'
+          default:
+            return 'empty'
+        }
+      }
+    }
+  }).mount('#app')
+</script>
+
+<style>
+  table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
+    border: 1px solid #999;
+    margin: 0 auto;
+  }
+  table td {
+    border: .2px solid #666;
+    width: 25px;
+    height: 25px;
+    background-color: #00d202;
+  }
+  .cellState {
+    margin: auto;
+    display: block;
+  }
+  .cellState.cell-white {
+    background-color: #fafafa;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border: 0.3px solid #333;
+    box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
+  }
+  .cellState.cell-black {
+    background-color: #232323;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border: 0.3px solid #fff;
+    box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
+  }
+</style>
