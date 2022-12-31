@@ -26,7 +26,7 @@ class Cell
 
     public function right() : ?Cell
     {
-        if ($this->x === 8) {
+        if ($this->x === $this->board->xMax) {
             return null;
         }
         $index = $this->x +1 . self::SEPARATOR . $this->y;
@@ -53,7 +53,7 @@ class Cell
 
     public function lower() : ?Cell
     {
-        if ($this->y === 8) {
+        if ($this->y === $this->board->yMax) {
             return null;
         }
         $index = $this->x . self::SEPARATOR . $this->y +1;
@@ -62,7 +62,7 @@ class Cell
 
     public function upperRight() : ?Cell
     {
-        if ($this->y === 1 || $this->x === 8) {
+        if ($this->y === 1 || $this->x === $this->board->xMax) {
             return null;
         }
         $index = $this->x +1 . self::SEPARATOR . $this->y -1;
@@ -71,7 +71,7 @@ class Cell
 
     public function lowerRight() : ?Cell
     {
-        if ($this->y === 8 || $this->x === 8) {
+        if ($this->y === $this->board->yMax || $this->x === $this->board->xMax) {
             return null;
         }
         $index = $this->x +1 . self::SEPARATOR . $this->y +1;
@@ -89,7 +89,7 @@ class Cell
 
     public function lowerLeft() : ?Cell
     {
-        if ($this->y === 8 || $this->x === 1) {
+        if ($this->y === $this->board->yMax || $this->x === 1) {
             return null;
         }
         $index = $this->x -1 . self::SEPARATOR . $this->y +1;

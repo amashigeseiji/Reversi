@@ -10,12 +10,17 @@ class Board implements ArrayAccess, IteratorAggregate
 {
     private array $cells;
 
-    public function __construct()
+    public int $xMax = 8;
+    public int $yMax = 8;
+
+    public function __construct(int $xMax = 18, int $yMax = 8)
     {
+        $this->xMax = $xMax;
+        $this->yMax = $yMax;
         $cells = [];
         $state = [];
-        for ($x = 1; $x <= 8; $x++) {
-          for ($y = 1; $y <= 8; $y++) {
+        for ($x = 1; $x <= $xMax; $x++) {
+          for ($y = 1; $y <= $yMax; $y++) {
               $cell = new Cell($x, $y, $this);
               $cells[$cell->index] = $cell;
           }
