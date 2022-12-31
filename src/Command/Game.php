@@ -16,10 +16,10 @@ class Game
     /** @var ReflectionMethod[] */
     private $commands = [];
 
-    public function __construct(Player $player)
+    public function __construct(Player $player, int $boardSizeX = 8, int $boardSizeY = 8)
     {
         $this->userPlayer = $player;
-        $this->game = ModelGame::initialize($player);
+        $this->game = ModelGame::initialize($player, $boardSizeX, $boardSizeY);
         $reflection = new ReflectionClass($this);
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
         $commands = explode(' ', $this->help());

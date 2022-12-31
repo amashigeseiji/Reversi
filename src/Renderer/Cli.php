@@ -10,10 +10,14 @@ use Tenjuu99\Reversi\Model\Player;
 class Cli
 {
     private Game $game;
+    private int $boardSizeX;
+    private int $boardSizeY;
 
-    public function __construct()
+    public function __construct(int $boardSizeX = 8, int $boardSizeY = 8)
     {
-        $this->game = new Game(Player::WHITE);
+        $this->game = new Game(Player::WHITE, $boardSizeX, $boardSizeY);
+        $this->boardSizeX = $boardSizeX;
+        $this->boardSizeY = $boardSizeY;
     }
 
     public function play()
@@ -85,22 +89,40 @@ class Cli
         foreach ($cells as $index => $cell) {
             $lines[$cell->y -1][$cell->x -1] = $cell;
         }
-        echo 'y\x 1 2 3 4 5 6 7 8 ' . PHP_EOL;
+        echo '   ';
+        for ($i = 1; $i <= $this->boardSizeX; $i++) {
+            echo sprintf('%02d ', $i) . ' ';
+        }
+        echo PHP_EOL;
+
         foreach ($lines as $line) {
-            echo '  ' . $line[0]->y;
+            echo '  ' . $this->beforeLineRender();
+            echo  sprintf('%02d', $line[0]->y);
             foreach ($line as $cell) {
                 echo '|' . $this->cellRenderer($cell->state);
             }
             echo '|' . PHP_EOL;
         }
+        echo '  ' . $this->beforeLineRender();
+    }
+
+    private function beforeLineRender()
+    {
+        $unit = '+---';
+        $beforeLine = '';
+        for ($i = 1; $i <= $this->boardSizeX; $i++) {
+            $beforeLine .= $unit;
+        }
+        $beforeLine .= '+' . PHP_EOL;
+        return $beforeLine;
     }
 
     private function cellRenderer(CellState $state)
     {
         return match($state) {
-            CellState::EMPTY => " ",
-            CellState::WHITE => 'w',
-            CellState::BLACK => 'b'
+            CellState::EMPTY => "   ",
+            CellState::WHITE => ' w ',
+            CellState::BLACK => ' b '
         };
     }
 }
