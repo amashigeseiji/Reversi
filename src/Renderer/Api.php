@@ -8,7 +8,6 @@ use Tenjuu99\Reversi\Model\Player;
 
 class Api
 {
-    private Game $game;
     /**
      * @var array<string, ReflectionMethod[]>
      */
@@ -16,8 +15,16 @@ class Api
 
     public function __construct()
     {
-        $this->game = Game::initialize(Player::WHITE);
+        session_start();
         $this->setHandler();
+    }
+
+    private function game() : Game
+    {
+        if (isset($_SESSION['game'])) {
+            return $_SESSION['game'];
+        }
+        return $_SESSION['game'] = Game::initialize(Player::WHITE);
     }
 
     private function setHandler()
@@ -61,15 +68,22 @@ class Api
         if (isset($this->handler[$method][$uriFirst])) {
             $invoker = $this->handler[$method][$uriFirst];
             $args = $method === 'get' ? $_GET : $_POST;
-            if ($invoker->getNumberOfParameters() > 0) {
-                $invoker->invokeArgs($this, $args);
-            } else {
-                $invoker->invoke($this);
-            }
+            $this->render($invoker, $args);
         } else {
             header("HTTP/1.0 404 Not Found");
             echo 'Not found';
         }
+    }
+
+    private function render(ReflectionMethod $invoker, array $args = [])
+    {
+        ob_start();
+        if ($invoker->getNumberOfParameters() > 0) {
+            $invoker->invokeArgs($this, $args);
+        } else {
+            $invoker->invoke($this);
+        }
+        ob_end_flush();
     }
 
     /**
@@ -78,6 +92,11 @@ class Api
     public function index()
     {
         $template = __DIR__ . '/../../template/index.html';
+        $moves = array_filter(explode(' ', $this->game()->moves()->__toString()));
+        $boardJson = json_encode([
+            'board' => iterator_to_array($this->game()->cells()),
+            'moves' => $moves ?: ['pass'],
+        ]);
         require($template);
     }
 
@@ -86,6 +105,7 @@ class Api
      */
     public function move(string $index)
     {
+        $this->game()->move($index);
     }
 
     /**
@@ -93,7 +113,9 @@ class Api
      */
     public function reset()
     {
-        $this->game = Game::initialize(Player::WHITE);
+        if (isset($_SESSION['game'])) {
+            $_SESSION['game'] = Game::initialize(Player::WHITE);
+        }
     }
 
     /**
@@ -102,7 +124,7 @@ class Api
     public function moves()
     {
         header('Content-Type: application/json');
-        echo $this->game->moves();
+        echo $this->game()->moves();
     }
 
     /**
@@ -110,6 +132,7 @@ class Api
      */
     public function pass()
     {
+        $this->game()->next();
     }
 
     /**
@@ -118,6 +141,11 @@ class Api
     public function board()
     {
         header('Content-Type: application/json');
-        echo $this->game->cells()->json();
+        $moves = array_filter(explode(' ', $this->game()->moves()->__toString()));
+        echo json_encode([
+            'board' => iterator_to_array($this->game()->cells()),
+            'moves' => $moves ?: ['pass'],
+            'state' => $this->game()->state()->value,
+        ]);
     }
 }

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>REVERSI</title>
 </head>
 <body>
@@ -19,17 +20,38 @@
           </td>
         </tr>
       </table>
+      <div class="moves">
+        <div v-for="(move, index) in moves" :key="index">
+          <button @click="onClickPass" v-if="move === 'pass'">{{ move }}</button>
+          <button @click="onClickMoveButton(move)" v-else>{{ move }}</button>
+        </div>
+      </div>
   </main>
 </body>
 </html>
 
 <script>
+  <?php echo "const boardFromPhp = JSON.parse('${boardJson}')" . PHP_EOL ?>
+
+  const boardMatrix = (board) => {
+    const matrix = {}
+    for (index in board) {
+      const group = 'y' + board[index].y
+      if (!matrix[group]) {
+        matrix[group] = []
+      }
+      matrix[group].push(board[index])
+    }
+    return matrix
+  }
+
   const { createApp } = Vue
 
   createApp({
     data() {
       return {
-        board: {}
+        board: boardMatrix(boardFromPhp.board),
+        moves: boardFromPhp.moves
       }
     },
     mounted() {
@@ -38,15 +60,8 @@
     methods: {
       async updateBoard() {
         const board = await axios.get('/board')
-        const matrix = {}
-        for (index in board.data) {
-          const group = 'y' + board.data[index].y
-          if (!matrix[group]) {
-            matrix[group] = []
-          }
-          matrix[group].push(board.data[index])
-        }
-        this.board = matrix
+        this.board = boardMatrix(board.data.board)
+        this.moves = board.data.moves
       },
       cellStateClass(state) {
         switch(state) {
@@ -57,6 +72,19 @@
           default:
             return 'empty'
         }
+      },
+      onClickMoveButton(move) {
+        const params = new URLSearchParams()
+        params.append('index', move)
+        axios.post('/move', params, {
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        })
+        .then(() => {
+          this.updateBoard()
+        })
+      },
+      onClickPass() {
+        axios.post('/pass').then(() => this.updateBoard())
       }
     }
   }).mount('#app')
@@ -68,7 +96,7 @@
     border-collapse: collapse;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
     border: 1px solid #999;
-    margin: 0 auto;
+    margin: 10px auto;
   }
   table td {
     border: .2px solid #666;
@@ -95,5 +123,19 @@
     border-radius: 10px;
     border: 0.3px solid #fff;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
+  }
+
+  .moves {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+  }
+  .moves button {
+    margin: 0 3px;
+    background: #eee;
+    color: #666;
+    border: 0.3px solid #999;
+    border-radius: 3px;
+    padding: 3px 10px;
   }
 </style>
