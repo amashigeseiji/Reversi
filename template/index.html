@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -13,25 +13,52 @@
   </header>
   <main>
     <div id="app">
-      <table>
+      <div class="moves">
+        <table>
+          <tr>
+            <td>player {{ userColor }}</td>
+            <td>current {{ currentPlayer }}</td>
+          </tr>
+          <tr>
+            <td>x: <input type="number" v-model="boardSize.x"></td>
+            <td>y: <input type="number" v-model="boardSize.y"></td>
+          </tr>
+        </table>
+        <div>
+          <button @click="onClickUpdateBoardSize">UpdateBoardSize</button>
+          <button @click="onClickReset" class="reset">reset</button>
+        </div>
+        <div>
+          AUTO: <input type="checkbox" v-model="auto">
+        </div>
+      </div>
+      <table class="board">
         <tr v-for="(line, index) in board" :key="index">
-          <td v-for="cell in line" :key="cell.index">
+          <td v-for="cell in line" :key="cell.index" :ref="'cell_' + cell.index" :class="'cell_' + cell.index">
             <span class="cellState" :class="cellStateClass(cell.state)"></span>
           </td>
         </tr>
       </table>
       <div class="moves">
-        <div v-for="(move, index) in moves" :key="index">
-          <button @click="onClickPass" v-if="move === 'pass'">{{ move }}</button>
-          <button @click="onClickMoveButton(move)" v-else>{{ move }}</button>
+        <div v-if="gameState == 'on going' || !auto">
+          <template v-for="(move, index) in moves" :key="move.index">
+            <button @click="onClickPass" v-if="move === 'pass'">パス</button>
+            <button
+              v-else
+              @click="onClickMoveButton(move.index)"
+              @mouseover="onMouseoverMoveButton(move.index)"
+              @mouseleave="onMouseleaveMoveButton(move.index)"
+            >{{ move.index }}</button>
+          </template>
         </div>
+        <div v-else>WINNER: {{ gameState }}</div>
       </div>
   </main>
 </body>
 </html>
 
 <script>
-  <?php echo "const boardFromPhp = JSON.parse('${boardJson}')" . PHP_EOL ?>
+  <?php echo "const boardFromPhp = JSON.parse('${gameJson}')" . PHP_EOL ?>
 
   const boardMatrix = (board) => {
     const matrix = {}
@@ -45,13 +72,25 @@
     return matrix
   }
 
+axios.interceptors.request.use((config) => {
+  if (config.method === 'post') {
+    config.headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    return config
+  }
+  return config
+})
   const { createApp } = Vue
 
   createApp({
     data() {
       return {
         board: boardMatrix(boardFromPhp.board),
-        moves: boardFromPhp.moves
+        boardSize: boardFromPhp.boardSize,
+        moves: boardFromPhp.moves,
+        auto: false,
+        gameState: 'on going',
+        currentPlayer: boardFromPhp.currentPlayer,
+        userColor: 'white'
       }
     },
     mounted() {
@@ -62,6 +101,16 @@
         const board = await axios.get('/board')
         this.board = boardMatrix(board.data.board)
         this.moves = board.data.moves
+        this.gameState = board.data.state
+        this.currentPlayer = board.data.currentPlayer
+        if (!this.isMyTurn() || this.auto) {
+          if (this.gameState === 'on going') {
+            this.compute()
+          }
+        }
+      },
+      isMyTurn() {
+        return this.currentPlayer.toLowerCase() === this.userColor
       },
       cellStateClass(state) {
         switch(state) {
@@ -73,37 +122,73 @@
             return 'empty'
         }
       },
+      compute() {
+        axios.post('/compute').then(this.updateBoard)
+      },
       onClickMoveButton(move) {
-        const params = new URLSearchParams()
-        params.append('index', move)
-        axios.post('/move', params, {
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-        })
-        .then(() => {
-          this.updateBoard()
-        })
+        this.onMouseleaveMoveButton(move)
+        axios.post('/move', { index: move })
+        .then(this.updateBoard)
       },
       onClickPass() {
-        axios.post('/pass').then(() => this.updateBoard())
+        axios.post('/pass').then(this.updateBoard)
+      },
+      onClickReset() {
+        axios.post('/reset').then(this.updateBoard)
+      },
+      onMouseoverMoveButton(move) {
+        if (!this.isMyTurn() || this.auto) {
+          return
+        }
+        const cells = this.moves[move].flipCells.map(c => c).concat([move])
+        for (const cell of cells) {
+          const dom = this.$refs['cell_' + cell]
+          dom[0].classList.add('onMouseoverMove')
+          if (cell === move) {
+            const addClass = this.currentPlayer === 'BLACK' ? 'cell-white' : 'cell-black'
+            dom[0].children[0].classList.add(addClass)
+          }
+        }
+      },
+      onMouseleaveMoveButton(move) {
+        const cells = this.moves[move].flipCells.map(c => c).concat([move])
+        for (const cell of cells) {
+          const dom = this.$refs['cell_' + cell]
+          dom[0].classList.remove('onMouseoverMove')
+          if (cell === move) {
+            const addClass = this.currentPlayer === 'BLACK' ? 'cell-white' : 'cell-black'
+            dom[0].children[0].classList.remove(addClass)
+          }
+        }
+      },
+      onClickUpdateBoardSize() {
+        axios.post('/reset', {
+          boardSizeX: this.boardSize.x,
+          boardSizeY: this.boardSize.y
+        }).then(this.updateBoard)
       }
     }
   }).mount('#app')
 </script>
 
 <style>
-  table {
+  .board {
     border-spacing: 0;
     border-collapse: collapse;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
     border: 1px solid #999;
     margin: 10px auto;
   }
-  table td {
+  .board td {
     border: .2px solid #666;
     width: 25px;
     height: 25px;
     background-color: #00d202;
   }
+  .board td.onMouseoverMove {
+    background-color: #92ff9d;
+  }
+
   .cellState {
     margin: auto;
     display: block;
@@ -124,18 +209,38 @@
     border: 0.3px solid #fff;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
   }
+  .board td.onMouseoverMove .cellState.cell-white {
+    background-color: rgba(35,35,35,0.5);
+  }
+  .board td.onMouseoverMove .cellState.cell-black {
+    background-color: rgba(250,250,250,.5);
+  }
 
   .moves {
     margin: 0 auto;
     display: flex;
     justify-content: center;
+    flex-direction: column;
+    align-items: center;
   }
   .moves button {
-    margin: 0 3px;
+    margin: 5px 3px;
     background: #eee;
     color: #666;
     border: 0.3px solid #999;
     border-radius: 3px;
     padding: 3px 10px;
+    transition: background 0.2s;
+  }
+  .moves button:hover {
+    background: #fff;
+    cursor: pointer;
+  }
+  .moves button.reset {
+    background: #ff1717;
+    color: #fff;
+  }
+  .moves button.reset:hover {
+    background: #f3cc88;
   }
 </style>

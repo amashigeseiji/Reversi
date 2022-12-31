@@ -92,11 +92,7 @@ class Api
     public function index()
     {
         $template = __DIR__ . '/../../template/index.html';
-        $moves = array_filter(explode(' ', $this->game()->moves()->__toString()));
-        $boardJson = json_encode([
-            'board' => iterator_to_array($this->game()->cells()),
-            'moves' => $moves ?: ['pass'],
-        ]);
+        $gameJson = $this->gameJson();
         require($template);
     }
 
@@ -111,10 +107,10 @@ class Api
     /**
      * @Post
      */
-    public function reset()
+    public function reset(int $boardSizeX = 8, int $boardSizeY = 8)
     {
         if (isset($_SESSION['game'])) {
-            $_SESSION['game'] = Game::initialize(Player::WHITE);
+            $_SESSION['game'] = Game::initialize(Player::WHITE, $boardSizeX, $boardSizeY);
         }
     }
 
@@ -141,11 +137,34 @@ class Api
     public function board()
     {
         header('Content-Type: application/json');
-        $moves = array_filter(explode(' ', $this->game()->moves()->__toString()));
-        echo json_encode([
+        echo $this->gameJson();
+    }
+
+    /**
+     * @Post
+     */
+    public function compute()
+    {
+        $this->game()->compute();
+    }
+
+    private function gameJson()
+    {
+        $moves = [];
+        foreach ($this->game()->moves() as $move) {
+            $moves[$move->index] = [
+                'index' => $move->index,
+                'flipCells' => array_map(fn($c) => $c->index, $move->flipCells),
+                'player' => $move->player->name
+            ];
+        }
+        return json_encode([
             'board' => iterator_to_array($this->game()->cells()),
+            'boardSize' => ['x' => $this->game()->cells()->xMax, 'y' => $this->game()->cells()->yMax],
             'moves' => $moves ?: ['pass'],
             'state' => $this->game()->state()->value,
+            'currentPlayer' => $this->game()->getPlayer()->name,
+            'userColor' => $this->game()
         ]);
     }
 }

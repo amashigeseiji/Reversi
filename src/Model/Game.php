@@ -20,13 +20,15 @@ class Game
         $this->boardHash = $board->hash();
     }
 
-    public static function initialize(Player $player) : self
+    public static function initialize(Player $player, int $boardSizeX = 8, int $boardSizeY = 8) : self
     {
-        $board = new Board();
-        $board['4-4']->put(CellState::WHITE);
-        $board['4-5']->put(CellState::BLACK);
-        $board['5-4']->put(CellState::BLACK);
-        $board['5-5']->put(CellState::WHITE);
+        $board = new Board($boardSizeX, $boardSizeY);
+        $halfX = round($boardSizeX / 2);
+        $halfY = round($boardSizeY / 2);
+        $board[$halfX . '-' . $halfY]->put(CellState::WHITE);
+        $board[$halfX . '-' . $halfY + 1]->put(CellState::BLACK);
+        $board[$halfX + 1 . '-' . $halfY]->put(CellState::BLACK);
+        $board[$halfX + 1 . '-' . $halfY + 1]->put(CellState::WHITE);
         $game = new self($board, $player);
 
         return $game;
@@ -107,5 +109,18 @@ class Game
             return false;
         }
         return true;
+    }
+
+    public function compute() : string
+    {
+        $moves = iterator_to_array($this->moves());
+        if ($moves) {
+            $key = array_rand($moves);
+            $this->move($moves[$key]->index);
+            return $key;
+        } else {
+            $this->next();
+            return 'pass';
+        }
     }
 }

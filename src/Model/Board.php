@@ -13,7 +13,7 @@ class Board implements ArrayAccess, IteratorAggregate
     public int $xMax = 8;
     public int $yMax = 8;
 
-    public function __construct(int $xMax = 18, int $yMax = 8)
+    public function __construct(int $xMax = 8, int $yMax = 8)
     {
         $this->xMax = $xMax;
         $this->yMax = $yMax;

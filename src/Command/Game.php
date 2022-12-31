@@ -79,15 +79,7 @@ class Game
 
     public function compute() : string
     {
-        $moves = iterator_to_array($this->game->moves());
-        if ($moves) {
-            $key = array_rand($moves);
-            $this->move($moves[$key]->index);
-            return 'put ' . $key;
-        } else {
-            $this->pass();
-            return 'pass';
-        }
+        return $this->game->compute();
     }
 
     public function isGameEnd() : bool
