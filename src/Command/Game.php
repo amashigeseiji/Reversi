@@ -26,16 +26,14 @@ class Game
         $this->commands = array_filter($methods, fn($method) => in_array($method->name, $commands));
     }
 
-    public function put(string $index)
+    public function move(string $index)
     {
-        if ($this->game->move($index)) {
-            $this->game->changePlayer();
-        }
+        $this->game->move($index);
     }
 
     public function pass()
     {
-        $this->game->changePlayer();
+        $this->game->next();
     }
 
     public function reset()
@@ -65,7 +63,7 @@ class Game
 
     public function help(): string
     {
-        return 'put pass reset moves help';
+        return 'move pass reset moves help';
     }
 
     public function invoke(string $input)
@@ -84,7 +82,7 @@ class Game
         $moves = iterator_to_array($this->game->moves());
         if ($moves) {
             $key = array_rand($moves);
-            $this->put($moves[$key]->index);
+            $this->move($moves[$key]->index);
             return 'put ' . $key;
         } else {
             $this->pass();

@@ -39,6 +39,7 @@ class Game
             return false;
         }
         $moves[$index]->execute();
+        $this->next();
         // ハッシュ値の再計算
         $this->boardHash = $this->board->hash();
         return true;
@@ -72,7 +73,7 @@ class Game
         return $this->currentPlayer;
     }
 
-    public function changePlayer()
+    public function next()
     {
         $this->currentPlayer = $this->currentPlayer === Player::WHITE
             ? Player::BLACK

@@ -61,4 +61,9 @@ class Board implements ArrayAccess, IteratorAggregate
         $string = json_encode($this->cells);
         return md5($string);
     }
+
+    public function json() : string
+    {
+        return json_encode($this->cells);
+    }
 }
