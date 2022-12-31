@@ -87,6 +87,7 @@
 
   createApp({
     data() {
+      const cellScale = localStorage.getItem('cellScale') ? localStorage.getItem('cellScale') : 20
       return {
         board: boardMatrix(boardFromPhp.board),
         boardSize: boardFromPhp.boardSize,
@@ -95,7 +96,7 @@
         gameState: 'on going',
         currentPlayer: boardFromPhp.currentPlayer,
         userColor: 'white',
-        cellScale: 20
+        cellScale
       }
     },
     mounted() {
@@ -106,6 +107,9 @@
         if (this.auto) {
           this.compute()
         }
+      },
+      cellScale() {
+        localStorage.setItem('cellScale', this.cellScale)
       }
     },
     computed: {
@@ -119,6 +123,7 @@
       async updateBoard() {
         const board = await axios.get('/board')
         this.board = boardMatrix(board.data.board)
+        this.boardSize = board.data.boardSize
         this.moves = board.data.moves
         this.gameState = board.data.state
         this.currentPlayer = board.data.currentPlayer
@@ -153,6 +158,7 @@
         axios.post('/pass').then(this.updateBoard)
       },
       onClickReset() {
+        this.auto = false
         axios.post('/reset').then(this.updateBoard)
       },
       onMouseoverMoveButton(move) {
