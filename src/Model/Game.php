@@ -41,6 +41,8 @@ class Game
             return false;
         }
         $moves[$index]->execute();
+        // 盤面サイズがでかい場合にメモリが足りなくなるのでクリアする
+        unset($this->moves[$this->boardHash . $this->getPlayer()->name]);
         $this->next();
         // ハッシュ値の再計算
         $this->boardHash = $this->board->hash();

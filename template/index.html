@@ -23,16 +23,20 @@
             <td>x: <input type="number" v-model="boardSize.x"></td>
             <td>y: <input type="number" v-model="boardSize.y"></td>
           </tr>
+          <tr>
+            <td>セルのサイズ</td>
+            <td><input type="number" v-model="cellScale"></td>
+          </tr>
         </table>
         <div>
-          <button @click="onClickUpdateBoardSize">UpdateBoardSize</button>
+          <button @click="onClickUpdateBoardSize">Restart</button>
           <button @click="onClickReset" class="reset">reset</button>
         </div>
         <div>
           AUTO: <input type="checkbox" v-model="auto">
         </div>
       </div>
-      <table class="board">
+      <table class="board" :style="cellSize">
         <tr v-for="(line, index) in board" :key="index">
           <td v-for="cell in line" :key="cell.index" :ref="'cell_' + cell.index" :class="'cell_' + cell.index">
             <span class="cellState" :class="cellStateClass(cell.state)"></span>
@@ -40,7 +44,8 @@
         </tr>
       </table>
       <div class="moves">
-        <div v-if="gameState == 'on going' || !auto">
+        <div>{{ gameState === 'on going' ? 'status' : 'winner'}}: {{ gameState }}</div>
+        <div v-if="gameState == 'on going' && !auto">
           <template v-for="(move, index) in moves" :key="move.index">
             <button @click="onClickPass" v-if="move === 'pass'">パス</button>
             <button
@@ -51,7 +56,6 @@
             >{{ move.index }}</button>
           </template>
         </div>
-        <div v-else>WINNER: {{ gameState }}</div>
       </div>
   </main>
 </body>
@@ -90,11 +94,26 @@
         auto: false,
         gameState: 'on going',
         currentPlayer: boardFromPhp.currentPlayer,
-        userColor: 'white'
+        userColor: 'white',
+        cellScale: 20
       }
     },
     mounted() {
       this.updateBoard()
+    },
+    watch: {
+      auto() {
+        if (this.auto) {
+          this.compute()
+        }
+      }
+    },
+    computed: {
+      cellSize() {
+        return {
+          '--cell-size': this.cellScale + 'px'
+        }
+      }
     },
     methods: {
       async updateBoard() {
@@ -166,6 +185,12 @@
           boardSizeX: this.boardSize.x,
           boardSizeY: this.boardSize.y
         }).then(this.updateBoard)
+      },
+      onClickCellSizeUp() {
+        this.cellScale++
+      },
+      onClickCellSizeDown() {
+        this.cellScale--
       }
     }
   }).mount('#app')
@@ -181,8 +206,8 @@
   }
   .board td {
     border: .2px solid #666;
-    width: 25px;
-    height: 25px;
+    width: calc(var(--cell-size) + var(--cell-size) / 4);
+    height: calc(var(--cell-size) + var(--cell-size) / 4);
     background-color: #00d202;
   }
   .board td.onMouseoverMove {
@@ -195,23 +220,23 @@
   }
   .cellState.cell-white {
     background-color: #fafafa;
-    width: 20px;
-    height: 20px;
-    border-radius: 10px;
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border-radius: calc(var(--cell-size) / 2);
     border: 0.3px solid #333;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
   }
   .cellState.cell-black {
     background-color: #232323;
-    width: 20px;
-    height: 20px;
-    border-radius: 10px;
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border-radius: calc(var(--cell-size) / 2);
     border: 0.3px solid #fff;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
   }
   .cellState.empty {
-    width: 20px;
-    height: 20px;
+    width: var(--cell-size);
+    height: var(--cell-size);
   }
   .board td.onMouseoverMove .cellState.cell-white {
     background-color: rgba(35,35,35,0.5);
