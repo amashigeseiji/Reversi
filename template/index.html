@@ -72,13 +72,13 @@
     return matrix
   }
 
-axios.interceptors.request.use((config) => {
-  if (config.method === 'post') {
-    config.headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+  axios.interceptors.request.use((config) => {
+    if (config.method === 'post') {
+      config.headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+      return config
+    }
     return config
-  }
-  return config
-})
+  })
   const { createApp } = Vue
 
   createApp({
@@ -208,6 +208,10 @@ axios.interceptors.request.use((config) => {
     border-radius: 10px;
     border: 0.3px solid #fff;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
+  }
+  .cellState.empty {
+    width: 20px;
+    height: 20px;
   }
   .board td.onMouseoverMove .cellState.cell-white {
     background-color: rgba(35,35,35,0.5);
