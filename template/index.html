@@ -20,16 +20,16 @@
             <td>current {{ currentPlayer }}</td>
           </tr>
           <tr>
-            <td>x: <input type="number" v-model="boardSize.x"></td>
-            <td>y: <input type="number" v-model="boardSize.y"></td>
+            <td>x: <input type="number" v-model="game.boardSize.x"></td>
+            <td>y: <input type="number" v-model="game.boardSize.y"></td>
           </tr>
           <tr>
             <td>セルのサイズ</td>
             <td><input type="number" v-model="cellScale"></td>
           </tr>
           <tr>
-            <td>white: {{ white }}</td>
-            <td>black: {{ black }}</td>
+            <td>white: {{ game.white }}</td>
+            <td>black: {{ game.black }}</td>
           </tr>
         </table>
         <div>
@@ -46,7 +46,7 @@
             v-for="cell in line"
             :key="cell.index"
             :ref="'cell_' + cell.index"
-            :class="['cell_' + cell.index, moves[cell.index] ? 'movable' : null]"
+            :class="['cell_' + cell.index, game.moves[cell.index] ? 'movable' : null]"
             @mouseover="onMouseoverMoveButton(cell.index)"
             @mouseleave="onMouseleaveMoveButton(cell.index)"
             @click="onClickMoveButton(cell.index)"
@@ -56,9 +56,9 @@
         </tr>
       </table>
       <div class="moves">
-        <div>{{ gameState === 'on going' ? 'status' : 'winner'}}: {{ gameState }}</div>
-        <div v-if="gameState == 'on going' && !auto">
-          <template v-for="(move, index) in moves" :key="move.index">
+        <div>{{ game.state === 'on going' ? 'status' : 'winner'}}: {{ game.state }}</div>
+        <div v-if="game.state == 'on going' && !auto">
+          <template v-for="(move, index) in game.moves" :key="move.index">
             <button @click="onClickPass" v-if="move === 'pass'">パス</button>
             <button
               v-else
@@ -102,12 +102,8 @@
       const cellScale = localStorage.getItem('cellScale') ? localStorage.getItem('cellScale') : 20
       return {
         board: boardMatrix(boardFromPhp.board),
-        boardSize: boardFromPhp.boardSize,
-        white: boardFromPhp.white,
-        black: boardFromPhp.black,
-        moves: boardFromPhp.moves,
+        game: boardFromPhp,
         auto: false,
-        gameState: 'on going',
         currentPlayer: boardFromPhp.currentPlayer,
         userColor: 'white',
         cellScale,
@@ -138,14 +134,10 @@
       async updateBoard() {
         const board = await axios.get('/board')
         this.board = boardMatrix(board.data.board)
-        this.boardSize = board.data.boardSize
-        this.white = board.data.white
-        this.black = board.data.black
-        this.moves = board.data.moves
-        this.gameState = board.data.state
+        this.game = board.data
         this.currentPlayer = board.data.currentPlayer
         if (!this.isMyTurn() || this.auto) {
-          if (this.gameState === 'on going') {
+          if (this.game.state === 'on going') {
             this.compute()
           }
         }
@@ -167,7 +159,7 @@
         axios.post('/compute').then(this.updateBoard)
       },
       onClickMoveButton(move) {
-        if (!this.moves[move]) {
+        if (!this.game.moves[move]) {
           return
         }
         this.onMouseleaveMoveButton(move)
@@ -184,10 +176,10 @@
         axios.post('/reset').then(this.updateBoard)
       },
       onMouseoverMoveButton(move) {
-        if (!this.isMyTurn() || this.auto || !this.moves[move]) {
+        if (!this.isMyTurn() || this.auto || !this.game.moves[move]) {
           return
         }
-        const cells = this.moves[move].flipCells.map(c => c).concat([move])
+        const cells = this.game.moves[move].flipCells.map(c => c).concat([move])
         for (const cell of cells) {
           const dom = this.$refs['cell_' + cell]
           dom[0].classList.add('onMouseoverMove')
@@ -198,10 +190,10 @@
         }
       },
       onMouseleaveMoveButton(move) {
-        if (!this.moves[move]) {
+        if (!this.game.moves[move]) {
           return
         }
-        const cells = this.moves[move].flipCells.map(c => c).concat([move])
+        const cells = this.game.moves[move].flipCells.map(c => c).concat([move])
         for (const cell of cells) {
           const dom = this.$refs['cell_' + cell]
           dom[0].classList.remove('onMouseoverMove')
@@ -213,8 +205,8 @@
       },
       onClickUpdateBoardSize() {
         axios.post('/reset', {
-          boardSizeX: this.boardSize.x,
-          boardSizeY: this.boardSize.y,
+          boardSizeX: this.game.boardSize.x,
+          boardSizeY: this.game.boardSize.y,
           strategy: this.strategy,
         }).then(this.updateBoard)
       }
