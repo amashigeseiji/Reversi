@@ -1,6 +1,8 @@
 <?php
 namespace Tenjuu99\Reversi\Model;
 
+use Tenjuu99\Reversi\AI\Ai;
+
 class Game
 {
     private Board $board;
@@ -12,15 +14,17 @@ class Game
      * 初期化、一手うったタイミングで計算しなおす
      */
     private string $boardHash;
+    private Ai $ai;
 
-    private function __construct(Board $board, Player $currentPlayer)
+    private function __construct(Board $board, Player $currentPlayer, string $strategy = 'random')
     {
         $this->board = $board;
         $this->currentPlayer = $currentPlayer;
         $this->boardHash = $board->hash();
+        $this->ai = new Ai($strategy);
     }
 
-    public static function initialize(Player $player, int $boardSizeX = 8, int $boardSizeY = 8) : self
+    public static function initialize(Player $player, int $boardSizeX = 8, int $boardSizeY = 8, string $strategy = 'random') : self
     {
         $board = new Board($boardSizeX, $boardSizeY);
         $halfX = round($boardSizeX / 2);
@@ -29,7 +33,7 @@ class Game
         $board[$halfX . '-' . $halfY + 1]->put(CellState::BLACK);
         $board[$halfX + 1 . '-' . $halfY]->put(CellState::BLACK);
         $board[$halfX + 1 . '-' . $halfY + 1]->put(CellState::WHITE);
-        $game = new self($board, $player);
+        $game = new self($board, $player, $strategy);
 
         return $game;
     }
@@ -115,11 +119,10 @@ class Game
 
     public function compute() : string
     {
-        $moves = iterator_to_array($this->moves());
-        if ($moves) {
-            $key = array_rand($moves);
-            $this->move($moves[$key]->index);
-            return $key;
+        $move = $this->ai->choice($this);
+        if ($move) {
+            $this->move($move->index);
+            return $move->index;
         } else {
             $this->next();
             return 'pass';

@@ -13,6 +13,8 @@ class Api
      */
     private array $handler;
 
+    private string $strategy = 'random';
+
     public function __construct()
     {
         session_start();
@@ -107,20 +109,12 @@ class Api
     /**
      * @Post
      */
-    public function reset(int $boardSizeX = 8, int $boardSizeY = 8)
+    public function reset(int $boardSizeX = 8, int $boardSizeY = 8, string $strategy = 'random')
     {
         if (isset($_SESSION['game'])) {
-            $_SESSION['game'] = Game::initialize(Player::WHITE, $boardSizeX, $boardSizeY);
+            $_SESSION['game'] = Game::initialize(Player::WHITE, $boardSizeX, $boardSizeY, $strategy);
+            $this->strategy = $strategy;
         }
-    }
-
-    /**
-     * @Get
-     */
-    public function moves()
-    {
-        header('Content-Type: application/json');
-        echo $this->game()->moves();
     }
 
     /**
@@ -164,7 +158,8 @@ class Api
             'moves' => $moves ?: ['pass'],
             'state' => $this->game()->state()->value,
             'currentPlayer' => $this->game()->getPlayer()->name,
-            'userColor' => $this->game()
+            'userColor' => $this->game(),
+            'strategy' => $this->strategy,
         ]);
     }
 }

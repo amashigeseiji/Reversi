@@ -18,17 +18,19 @@ class Game
 
     private int $boardSizeX;
     private int $boardSizeY;
+    private string $strategy;
 
-    public function __construct(Player $player, int $boardSizeX = 8, int $boardSizeY = 8)
+    public function __construct(Player $player, int $boardSizeX = 8, int $boardSizeY = 8, string $strategy = 'random')
     {
         $this->userPlayer = $player;
-        $this->game = ModelGame::initialize($player, $boardSizeX, $boardSizeY);
+        $this->game = ModelGame::initialize($player, $boardSizeX, $boardSizeY, $strategy);
         $reflection = new ReflectionClass($this);
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
         $commands = explode(' ', $this->help());
         $this->commands = array_filter($methods, fn($method) => in_array($method->name, $commands));
         $this->boardSizeX = $boardSizeX;
         $this->boardSizeY = $boardSizeY;
+        $this->strategy = $strategy;
     }
 
     public function move(string $index)
@@ -43,7 +45,7 @@ class Game
 
     public function reset()
     {
-        $this->game = ModelGame::initialize($this->userPlayer, $this->boardSizeX, $this->boardSizeY);
+        $this->game = ModelGame::initialize($this->userPlayer, $this->boardSizeX, $this->boardSizeY, $this->strategy);
     }
 
     public function moves() : string
