@@ -27,6 +27,10 @@
             <td>セルのサイズ</td>
             <td><input type="number" v-model="cellScale"></td>
           </tr>
+          <tr>
+            <td>Strategy</td>
+            <td><input type="text" v-model="strategy"></td>
+          </tr>
         </table>
         <div>
           <button @click="onClickUpdateBoardSize">Restart</button>
@@ -38,7 +42,15 @@
       </div>
       <table class="board" :style="cellSize">
         <tr v-for="(line, index) in board" :key="index">
-          <td v-for="cell in line" :key="cell.index" :ref="'cell_' + cell.index" :class="'cell_' + cell.index">
+          <td
+            v-for="cell in line"
+            :key="cell.index"
+            :ref="'cell_' + cell.index"
+            :class="['cell_' + cell.index, moves[cell.index] ? 'movable' : null]"
+            @mouseover="onMouseoverMoveButton(cell.index)"
+            @mouseleave="onMouseleaveMoveButton(cell.index)"
+            @click="onClickMoveButton(cell.index)"
+          >
             <span class="cellState" :class="cellStateClass(cell.state)"></span>
           </td>
         </tr>
@@ -96,7 +108,8 @@
         gameState: 'on going',
         currentPlayer: boardFromPhp.currentPlayer,
         userColor: 'white',
-        cellScale
+        cellScale,
+        strategy: 'random',
       }
     },
     mounted() {
@@ -150,7 +163,11 @@
         axios.post('/compute').then(this.updateBoard)
       },
       onClickMoveButton(move) {
+        if (!this.moves[move]) {
+          return
+        }
         this.onMouseleaveMoveButton(move)
+        this.currentPlayer = null
         axios.post('/move', { index: move })
         .then(this.updateBoard)
       },
@@ -159,10 +176,11 @@
       },
       onClickReset() {
         this.auto = false
+        this.strategy = 'random'
         axios.post('/reset').then(this.updateBoard)
       },
       onMouseoverMoveButton(move) {
-        if (!this.isMyTurn() || this.auto) {
+        if (!this.isMyTurn() || this.auto || !this.moves[move]) {
           return
         }
         const cells = this.moves[move].flipCells.map(c => c).concat([move])
@@ -176,6 +194,9 @@
         }
       },
       onMouseleaveMoveButton(move) {
+        if (!this.moves[move]) {
+          return
+        }
         const cells = this.moves[move].flipCells.map(c => c).concat([move])
         for (const cell of cells) {
           const dom = this.$refs['cell_' + cell]
@@ -189,7 +210,8 @@
       onClickUpdateBoardSize() {
         axios.post('/reset', {
           boardSizeX: this.boardSize.x,
-          boardSizeY: this.boardSize.y
+          boardSizeY: this.boardSize.y,
+          strategy: this.strategy,
         }).then(this.updateBoard)
       }
     }
@@ -212,6 +234,9 @@
   }
   .board td.onMouseoverMove {
     background-color: #92ff9d;
+  }
+  .board td.movable {
+    cursor: pointer;
   }
 
   .cellState {
