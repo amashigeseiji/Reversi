@@ -17,7 +17,7 @@
         <table>
           <tr>
             <td>player {{ userColor }}</td>
-            <td>current {{ currentPlayer }}</td>
+            <td>current: {{ currentPlayer }}</td>
           </tr>
           <tr>
             <td>x: <input type="number" v-model="game.boardSize.x"></td>
@@ -110,9 +110,6 @@
         strategy: 'random',
       }
     },
-    mounted() {
-      this.updateBoard()
-    },
     watch: {
       auto() {
         if (this.auto) {
@@ -133,9 +130,12 @@
     methods: {
       async updateBoard() {
         const board = await axios.get('/board')
-        this.board = boardMatrix(board.data.board)
-        this.game = board.data
-        this.currentPlayer = board.data.currentPlayer
+        this.update(board)
+      },
+      update(response) {
+        this.board = boardMatrix(response.data.board)
+        this.game = response.data
+        this.currentPlayer = response.data.currentPlayer
         if (!this.isMyTurn() || this.auto) {
           if (this.game.state === 'on going') {
             this.compute()
@@ -156,7 +156,7 @@
         }
       },
       compute() {
-        axios.post('/compute').then(this.updateBoard)
+        axios.post('/compute').then(this.update)
       },
       onClickMoveButton(move) {
         if (!this.game.moves[move]) {
@@ -165,7 +165,7 @@
         this.onMouseleaveMoveButton(move)
         this.currentPlayer = null
         axios.post('/move', { index: move })
-        .then(this.updateBoard)
+          .then(this.update)
       },
       onClickPass() {
         axios.post('/pass').then(this.updateBoard)

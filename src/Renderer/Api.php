@@ -105,6 +105,8 @@ class Api
     public function move(string $index)
     {
         $this->game()->move($index);
+        header('Content-Type: application/json');
+        echo $this->gameJson();
     }
 
     /**
@@ -141,6 +143,8 @@ class Api
     public function compute()
     {
         $this->game()->compute();
+        header('Content-Type: application/json');
+        echo $this->gameJson();
     }
 
     private function gameJson()
