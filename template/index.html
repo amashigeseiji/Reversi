@@ -205,7 +205,7 @@
     margin: 10px auto;
   }
   .board td {
-    border: .2px solid #666;
+    border: calc(var(--cell-size) / 100) solid #666;
     width: calc(var(--cell-size) + var(--cell-size) / 4);
     height: calc(var(--cell-size) + var(--cell-size) / 4);
     background-color: #00d202;
@@ -223,7 +223,7 @@
     width: var(--cell-size);
     height: var(--cell-size);
     border-radius: calc(var(--cell-size) / 2);
-    border: 0.3px solid #333;
+    border: calc(var(--cell-size) / 20) solid #333;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
   }
   .cellState.cell-black {
@@ -231,7 +231,7 @@
     width: var(--cell-size);
     height: var(--cell-size);
     border-radius: calc(var(--cell-size) / 2);
-    border: 0.3px solid #fff;
+    border: calc(var(--cell-size) / 20) solid #333;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
   }
   .cellState.empty {
