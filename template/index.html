@@ -31,6 +31,10 @@
             <td>Strategy</td>
             <td><input type="text" v-model="strategy"></td>
           </tr>
+          <tr>
+            <td>white: {{ white }}</td>
+            <td>black: {{ black }}</td>
+          </tr>
         </table>
         <div>
           <button @click="onClickUpdateBoardSize">Restart</button>
@@ -103,6 +107,8 @@
       return {
         board: boardMatrix(boardFromPhp.board),
         boardSize: boardFromPhp.boardSize,
+        white: boardFromPhp.white,
+        black: boardFromPhp.black,
         moves: boardFromPhp.moves,
         auto: false,
         gameState: 'on going',
@@ -137,6 +143,8 @@
         const board = await axios.get('/board')
         this.board = boardMatrix(board.data.board)
         this.boardSize = board.data.boardSize
+        this.white = board.data.white
+        this.black = board.data.black
         this.moves = board.data.moves
         this.gameState = board.data.state
         this.currentPlayer = board.data.currentPlayer
