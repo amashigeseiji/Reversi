@@ -41,6 +41,11 @@
               <span>AUTO: <input type="checkbox" v-model="auto"></span>
             </div>
           </div>
+          <?php if (DEBUG): ?>
+          <div class="row">
+            <div class="column col2">PHP Memory Usage: {{ game.memoryUsage }}</div>
+          </div>
+          <?php endif ?>
         </div>
         <div class="moves" v-show="!auto">
           <div v-if="game.state == 'on going' && !auto">
@@ -83,12 +88,20 @@
 
   const boardMatrix = (board) => {
     const matrix = {}
-    for (index in board) {
-      const group = 'y' + board[index].y
-      if (!matrix[group]) {
-        matrix[group] = []
+    for (let y = 1; y <= board.yMax; y++) {
+      const group = 'y' + y
+      matrix[group] = []
+      for (let x = 1; x <= board.xMax; x++) {
+        const index = x + '-' + y
+        const cell = { x, y, index, state: '' }
+        if (board.white.includes(index)) {
+          cell.state = 'white'
+        }
+        if (board.black.includes(index)) {
+          cell.state = 'black'
+        }
+        matrix[group].push(cell)
       }
-      matrix[group].push(board[index])
     }
     return matrix
   }

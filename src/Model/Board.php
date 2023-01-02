@@ -85,4 +85,14 @@ class Board implements ArrayAccess, IteratorAggregate
     {
         return json_encode($this->cells);
     }
+
+    public function toArray(): array
+    {
+        return [
+            'xMax' => $this->xMax,
+            'yMax' => $this->yMax,
+            'white' => array_keys($this->whites()),
+            'black' => array_keys($this->blacks()),
+        ];
+    }
 }

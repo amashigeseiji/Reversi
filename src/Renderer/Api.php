@@ -156,16 +156,21 @@ class Api
                 'player' => $move->player->name
             ];
         }
-        return json_encode([
-            'board' => iterator_to_array($this->game()->cells()),
-            'white' => count($this->game()->cells()->whites()),
-            'black' => count($this->game()->cells()->blacks()),
+        $board = $this->game()->cells()->toArray();
+        $data = [
+            'board' => $board,
+            'white' => count($board['white']),
+            'black' => count($board['black']),
             'boardSize' => ['x' => $this->game()->cells()->xMax, 'y' => $this->game()->cells()->yMax],
             'moves' => $moves ?: ['pass' => 'pass'],
             'state' => $this->game()->state()->value,
             'currentPlayer' => $this->game()->getPlayer()->name,
             'userColor' => $this->game(),
             'strategy' => $this->strategy,
-        ]);
+        ];
+        if (DEBUG) {
+            $data['memoryUsage'] = number_format((memory_get_usage() / 1000)) . 'KB';
+        }
+        return json_encode($data);
     }
 }
