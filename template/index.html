@@ -275,7 +275,7 @@
     height: var(--cell-size);
     border-radius: calc(var(--cell-size) / 2);
     border: calc(var(--cell-size) / 20) solid #333;
-    box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
+    box-shadow: calc(var(--cell-size) / 10) calc(var(--cell-size) / 5) calc(var(--cell-size) / 20) calc(var(--cell-size) / 50) rgb(0 0 0 / 20%);
   }
   .cellState.cell-black {
     background-color: #232323;
@@ -283,7 +283,7 @@
     height: var(--cell-size);
     border-radius: calc(var(--cell-size) / 2);
     border: calc(var(--cell-size) / 20) solid #333;
-    box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
+    box-shadow: calc(var(--cell-size) / 10) calc(var(--cell-size) / 5) calc(var(--cell-size) / 20) calc(var(--cell-size) / 50) rgb(0 0 0 / 20%);
   }
   .cellState.empty {
     width: var(--cell-size);
@@ -341,7 +341,7 @@
     display: flex;
     flex-direction: row-reverse;
   }
-  .sidemenu.open > div.headerInner {
+  .sidemenu > div.headerInner {
     width: 98%;
   }
   .sidemenu.close {
@@ -368,25 +368,25 @@
       left: 0;
       width: 100%;
       height: fit-content;
-      transition: bottom .2s;
+      transition: bottom .3s;
       border-top: .1px solid #999;
       flex-direction: row;
       flex-wrap: wrap;
       align-content: flex-end;
       justify-content: center;
-      padding: 0 5px 5px 5px;
+      padding: 0;
     }
     aside.sidemenu.close {
       bottom: -1000px;
       left: 0;
-      transition: bottom .2s;
+      transition: bottom .3s;
     }
     .menu-open {
       position: fixed;
       top: unset;
       left: unset;
       bottom: 0;
-      transition: bottom .2s;
+      transition: bottom .3s;
       border-right: .1px solid #999;
       border-top:.1px solid #999;
       height: 20px;
