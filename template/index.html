@@ -268,26 +268,20 @@
   .cellState {
     margin: auto;
     display: block;
+    width: var(--cell-size);
+    height: var(--cell-size);
+  }
+  .cellState.cell-white, .cellState.cell-black {
+    border-radius: calc(var(--cell-size) / 1);
+    box-shadow: calc(var(--cell-size) / 25) calc(var(--cell-size) / 10) calc(var(--cell-size) / 20) calc(var(--cell-size) / 150) rgb(0 0 0 / 20%);
   }
   .cellState.cell-white {
     background-color: #fafafa;
-    width: var(--cell-size);
-    height: var(--cell-size);
-    border-radius: calc(var(--cell-size) / 2);
-    border: calc(var(--cell-size) / 20) solid #333;
-    box-shadow: calc(var(--cell-size) / 10) calc(var(--cell-size) / 5) calc(var(--cell-size) / 20) calc(var(--cell-size) / 50) rgb(0 0 0 / 20%);
+    border: calc(var(--cell-size) / 50) solid #999;
   }
   .cellState.cell-black {
     background-color: #232323;
-    width: var(--cell-size);
-    height: var(--cell-size);
-    border-radius: calc(var(--cell-size) / 2);
-    border: calc(var(--cell-size) / 20) solid #333;
-    box-shadow: calc(var(--cell-size) / 10) calc(var(--cell-size) / 5) calc(var(--cell-size) / 20) calc(var(--cell-size) / 50) rgb(0 0 0 / 20%);
-  }
-  .cellState.empty {
-    width: var(--cell-size);
-    height: var(--cell-size);
+    border: calc(var(--cell-size) / 50) solid #333;
   }
   .board td.onMouseoverMove .cellState.cell-white {
     background-color: rgba(35,35,35,0.5);
@@ -383,7 +377,7 @@
     flex-direction: column;
   }
   .menu input {
-    width: 30px;
+    width: 50px;
   }
   .menu .row {
     display: flex;
