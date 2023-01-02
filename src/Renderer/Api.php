@@ -45,11 +45,11 @@ class Api
                 foreach($lines as $line) {
                     $line = trim(strtolower($line));
                     if (strpos($line, '@post') === 0) {
-                        $handler['post'][$method->name] = $method;
+                        $handler['post'][strtolower($method->name)] = $method;
                         continue;
                     }
                     if (strpos($line, '@get') === 0) {
-                        $handler['get'][$method->name] = $method;
+                        $handler['get'][strtolower($method->name)] = $method;
                         continue;
                     }
                 }
@@ -167,10 +167,21 @@ class Api
             'currentPlayer' => $this->game()->getPlayer()->name,
             'userColor' => $this->game(),
             'strategy' => $this->strategy,
+            'history' => $this->game()->history(),
         ];
         if (DEBUG) {
             $data['memoryUsage'] = number_format((memory_get_usage() / 1000)) . 'KB';
         }
         return json_encode($data);
+    }
+
+    /**
+     * @Post
+     */
+    public function historyBack(string $hash)
+    {
+        $this->game()->historyBack($hash);
+        header('Content-Type: application/json');
+        echo $this->gameJson();
     }
 }

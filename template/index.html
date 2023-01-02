@@ -60,6 +60,11 @@
             </template>
           </div>
         </div>
+        <div class="history">
+          <template v-for="history in game.history" :key="history">
+            <button @click="historyBack(history)">{{history}}</button>
+          </template>
+        </div>
       </div>
     </aside>
     <main :class="menu === 'open' ? 'main-menu-open' : 'main-menu-close'">
@@ -93,7 +98,7 @@
       matrix[group] = []
       for (let x = 1; x <= board.xMax; x++) {
         const index = x + '-' + y
-        const cell = { x, y, index, state: '' }
+        const cell = { index, state: '' }
         if (board.white.includes(index)) {
           cell.state = 'white'
         }

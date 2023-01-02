@@ -95,4 +95,16 @@ class Board implements ArrayAccess, IteratorAggregate
             'black' => array_keys($this->blacks()),
         ];
     }
+
+    public static function fromArray(array $array) : self
+    {
+        $board = new self($array['xMax'], $array['yMax']);
+        foreach ($array['white'] as $index) {
+            $board[$index]->put(CellState::WHITE);
+        }
+        foreach ($array['black'] as $index) {
+            $board[$index]->put(CellState::BLACK);
+        }
+        return $board;
+    }
 }

@@ -9,6 +9,7 @@ class Game
     private Player $currentPlayer;
     /** @var Moves[] */
     private array $moves;
+    private array $history = [];
     /**
      * boardをハッシュ化した値
      * 初期化、一手うったタイミングで計算しなおす
@@ -43,6 +44,13 @@ class Game
         $moves = $this->moves();
         if (!isset($moves[$index])) {
             return false;
+        }
+        $this->history[$this->boardHash] = [
+            'board' => $this->board->toArray(),
+            'player' => $this->currentPlayer->name,
+        ];
+        if (count($this->history) > 10) {
+            array_shift($this->history);
         }
         $moves[$index]->execute();
         // 盤面サイズがでかい場合にメモリが足りなくなるのでクリアする
@@ -127,5 +135,20 @@ class Game
             $this->next();
             return 'pass';
         }
+    }
+
+    public function historyBack(string $hash)
+    {
+        if (isset($this->history[$hash])) {
+            $this->board = Board::fromArray($this->history[$hash]['board']);
+            $this->boardHash = $hash;
+            $this->currentPlayer = $this->history[$hash]['player'] === Player::WHITE ? Player::WHITE : Player::BLACK;
+            // $this->history = [];
+        }
+    }
+
+    public function history() : array
+    {
+        return array_keys($this->history);
     }
 }
