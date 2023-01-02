@@ -11,7 +11,7 @@
   <h1 class="title">REVERSI</h1>
   <div id="app">
     <div @click="onClickMenu" v-show="menu === 'close'" class="menu-open">&nbsp;</div>
-    <header :class="menu">
+    <aside class="sidemenu" :class="menu">
       <div @click="onClickMenu" class="menu-close">&nbsp;</div>
       <div class="headerInner">
         <div class="menu">
@@ -56,7 +56,7 @@
           </div>
         </div>
       </div>
-    </header>
+    </aside>
     <main>
       <table class="board" :style="cellSize">
         <tr v-for="(line, index) in board" :key="index">
@@ -235,9 +235,6 @@
     margin: 0;
     max-width: 100%;
   }
-  header {
-    padding: 0;
-  }
   #app {
     max-width: 100%;
     margin: 30px 0 15px 0;
@@ -330,7 +327,7 @@
     cursor: pointer;
   }
 
-  header {
+  .sidemenu {
     position: fixed;
     background: rgba(143,205,176,.8);
     box-shadow: 1px 2px 2px 2px rgb(0 0 0 / 10%);
@@ -345,11 +342,11 @@
     display: flex;
     flex-direction: row-reverse;
   }
-  header.open > div.headerInner {
+  .sidemenu.open > div.headerInner {
     width: 98%;
   }
   @media screen and (max-width: 600px) {
-    header {
+    .sidemenu {
       bottom: 0;
       top: unset;
       left: 0;
@@ -364,17 +361,14 @@
       justify-content: center;
       padding: 5px 0;
     }
-    header.close {
+    .sidemenu.close {
       bottom: -1000px;
       left: 0;
       transition: bottom .2s;
     }
   }
-  header.close {
+  .sidemenu.close {
     left: -500px;
-  }
-  header > h1 {
-    width: 100%;
   }
   .menu-open {
     position: fixed;
@@ -397,6 +391,7 @@
       top: unset;
       left: unset;
       bottom: 0;
+      transition: bottom .2s;
       border-right: .1px solid #999;
       border-top:.1px solid #999;
       box-shadow: 1px -2px 2px 2px rgb(0 0 0 / 10%);
