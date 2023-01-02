@@ -8,12 +8,12 @@
   <title>REVERSI</title>
 </head>
 <body>
+  <h1 class="title">REVERSI</h1>
   <div id="app">
     <div @click="onClickMenu" v-show="menu === 'close'" class="menu-open">&nbsp;</div>
     <header :class="menu">
       <div @click="onClickMenu" class="menu-close">&nbsp;</div>
       <div class="headerInner">
-        <h1 @click="onClickMenu">REVERSI</h1>
         <div class="menu">
           <div class="row">
             <div class="column">player {{ userColor }}</div>
@@ -240,14 +240,12 @@
   }
   #app {
     max-width: 100%;
-    display: flex;
-    height: 100vh;
-    justify-content: center;
-    align-items:center;
+    margin: 30px 0 15px 0;
+    overflow: scroll;
   }
   main {
     overflow: scroll;
-    padding: 5px;
+    padding: 15px;
   }
   .board {
     border-spacing: 0;
@@ -340,8 +338,8 @@
     height: 100%;
     transition: left .2s;
     left: 0;
-    top: 0;
-    padding: 5px 15px;
+    top: 25px;
+    padding: 25px 0 0 15px;
     width: 350px;
     color: #666;
     display: flex;
@@ -380,7 +378,7 @@
   }
   .menu-open {
     position: fixed;
-    top: 0;
+    top: 25px;
     left: 0;
     background: rgba(143,205,176,.8);
     box-shadow: 1px 2px 2px 2px rgb(0 0 0 / 10%);
@@ -388,6 +386,7 @@
     height: 100%;
     padding: 5px 5px;
     color: #666;
+    cursor: pointer;
   }
   @media screen and (max-width: 600px) {
     #app {
@@ -420,10 +419,11 @@
   .menu-close {
     position: relative;
     left: 0;
-    text-align: end;
     color: #666;
     padding: 3px 5px;
     width: 15px;
+    text-align: center;
+    background: rgba(255,255,255,.2);
   }
   .menu-close:hover {
     cursor: pointer;
@@ -467,5 +467,24 @@
   .menu button.reset:hover {
     background: #f3cc88;
   }
+
+  .title {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0 0 0 15px;
+    margin: 0;
+    background: #669;
+    color: #fff;
+    font-size: 17px;
+    height: 25px;
+  }
+  @media screen and (max-width: 600px) {
+    .title {
+      margin: 0;
+    }
+  }
+
 
 </style>
