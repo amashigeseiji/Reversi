@@ -172,6 +172,8 @@
       },
       onClickReset() {
         this.auto = false
+        this.cellScale = 20
+        localStorage.setItem('cellScale', 20)
         this.strategy = 'random'
         axios.post('/reset').then(this.updateBoard)
       },
