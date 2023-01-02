@@ -9,53 +9,55 @@
 </head>
 <body>
   <div id="app">
-    <div @click="onClickMenu" v-show="menu === 'close'" class="menu-open">&gt;</div>
+    <div @click="onClickMenu" v-show="menu === 'close'" class="menu-open">&nbsp;</div>
     <header :class="menu">
-      <div @click="onClickMenu" class="menu-close">&lt;</div>
-      <h1 @click="onClickMenu">REVERSI</h1>
-      <div class="menu">
-        <table>
-          <tr>
-            <td>player {{ userColor }}</td>
-            <td>current: {{ currentPlayer }}</td>
-          </tr>
-          <tr>
-            <td>x: <input type="number" v-model="game.boardSize.x"></td>
-            <td>y: <input type="number" v-model="game.boardSize.y"></td>
-          </tr>
-          <tr>
-            <td>セルのサイズ</td>
-            <td><input type="number" v-model="cellScale"></td>
-          </tr>
-          <tr>
-            <td>white: {{ game.white }}</td>
-            <td>black: {{ game.black }}</td>
-          </tr>
-          <tr>
-            <td colspan=2><div>{{ game.state === 'on going' ? 'status' : 'winner'}}: {{ game.state }}</div></td>
-          </tr>
-          <tr>
-            <td colspan=2>
-              <div>
-                <button @click="onClickUpdateBoardSize">Restart</button>
-                <button @click="onClickReset" class="reset">reset</button>
-                <span>AUTO: <input type="checkbox" v-model="auto"></span>
-              </div>
-            </td>
-          </tr>
-        </table>
-      </div>
-      <div class="moves">
-        <div v-if="game.state == 'on going' && !auto">
-          <template v-for="(move, index) in game.moves" :key="move.index">
-            <button @click="onClickPass" v-if="move === 'pass'">パス</button>
-            <button
-              v-else
-              @click="onClickMoveButton(move.index)"
-              @mouseover="onMouseoverMoveButton(move.index)"
-              @mouseleave="onMouseleaveMoveButton(move.index)"
-            >{{ move.index }}</button>
-          </template>
+      <div @click="onClickMenu" class="menu-close">&nbsp;</div>
+      <div>
+        <h1 @click="onClickMenu">REVERSI</h1>
+        <div class="menu">
+          <table>
+            <tr>
+              <td>player {{ userColor }}</td>
+              <td>current: {{ currentPlayer }}</td>
+            </tr>
+            <tr>
+              <td>x: <input type="number" v-model="game.boardSize.x"></td>
+              <td>y: <input type="number" v-model="game.boardSize.y"></td>
+            </tr>
+            <tr>
+              <td>セルのサイズ</td>
+              <td><input type="number" v-model="cellScale"></td>
+            </tr>
+            <tr>
+              <td>white: {{ game.white }}</td>
+              <td>black: {{ game.black }}</td>
+            </tr>
+            <tr>
+              <td colspan=2><div>{{ game.state === 'on going' ? 'status' : 'winner'}}: {{ game.state }}</div></td>
+            </tr>
+            <tr>
+              <td colspan=2>
+                <div>
+                  <button @click="onClickUpdateBoardSize">Restart</button>
+                  <button @click="onClickReset" class="reset">reset</button>
+                  <span>AUTO: <input type="checkbox" v-model="auto"></span>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="moves">
+          <div v-if="game.state == 'on going' && !auto">
+            <template v-for="(move, index) in game.moves" :key="move.index">
+              <button @click="onClickPass" v-if="move === 'pass'">パス</button>
+              <button
+                v-else
+                @click="onClickMoveButton(move.index)"
+                @mouseover="onMouseoverMoveButton(move.index)"
+                @mouseleave="onMouseleaveMoveButton(move.index)"
+              >{{ move.index }}</button>
+            </template>
+          </div>
         </div>
       </div>
     </header>
@@ -234,6 +236,13 @@
 <style>
   body {
     margin: 0;
+    max-width: 100%;
+  }
+  #app {
+    max-width: 100%;
+  }
+  main {
+    overflow: scroll;
   }
   .board {
     border-spacing: 0;
@@ -241,6 +250,7 @@
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
     border: 1px solid #999;
     margin: 10px auto;
+    overflow: scroll;
   }
   .board td {
     border: calc(var(--cell-size) / 100) solid #666;
@@ -302,7 +312,7 @@
     justify-content: center;
     gap: 5px;
     overflow: scroll;
-    height: 300px;
+    max-height: 300px;
   }
   .moves button, .menu button {
     background: #eee;
@@ -319,7 +329,7 @@
 
   header {
     position: fixed;
-    background: rgba(66,200,150,.5);
+    background: rgba(66,200,150,.8);
     box-shadow: 1px 2px 2px 2px rgb(0 0 0 / 10%);
     border-right: .1px solid #999;
     height: 100%;
@@ -329,6 +339,29 @@
     padding: 5px 15px;
     width: 350px;
     color: #666;
+    display: flex;
+    flex-direction: row-reverse;
+  }
+  @media screen and (max-width: 600px) {
+    header {
+      bottom: 0;
+      top: unset;
+      left: 0;
+      width: fit-content;
+      height: fit-content;
+      transition: bottom .2s;
+      box-shadow: 1px -2px 2px 2px rgb(0 0 0 / 10%);
+      border-top: .1px solid #999;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-content: flex-end;
+      justify-content: center;
+    }
+    header.close {
+      bottom: -1000px;
+      left: 0;
+      transition: bottom .2s;
+    }
   }
   header.close {
     left: -500px;
@@ -340,20 +373,53 @@
     position: fixed;
     top: 0;
     left: 0;
-    background: rgba(66,200,150,.5);
+    background: rgba(66,200,150,.8);
     box-shadow: 1px 2px 2px 2px rgb(0 0 0 / 10%);
     border-right: .1px solid #999;
     height: 100%;
     padding: 5px 5px;
     color: #666;
   }
+  @media screen and (max-width: 600px) {
+    .menu-open {
+      position: fixed;
+      top: unset;
+      left: unset;
+      bottom: 0;
+      border-right: .1px solid #999;
+      border-top:.1px solid #999;
+      box-shadow: 1px -2px 2px 2px rgb(0 0 0 / 10%);
+      height: 20px;
+      width: 100vw;
+      text-align: center;
+    }
+    div.menu-open:before {
+      content: '︿';
+      top: unset;
+    }
+    div.menu-close {
+      text-align: center;
+    }
+    div.menu-close:before {
+      content: '﹀';
+    }
+  }
   .menu-close {
     position: relative;
     left: 0;
     text-align: end;
-    width: 100%;
     color: #666;
     padding: 3px 5px;
+  }
+  .menu-open:before {
+    content: '>';
+    position: absolute;
+    top: 50%;
+  }
+  .menu-close:before {
+    content: '<';
+    position: absolute;
+    top: 50%;
   }
   .menu table {
     border-spacing: 0;
