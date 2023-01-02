@@ -93,8 +93,8 @@ class Game
         if (!$this->isGameEnd()) {
             return GameState::ONGOING;
         }
-        $white = count($this->board->filterState(CellState::WHITE));
-        $black = count($this->board->filterState(CellState::BLACK));
+        $white = count($this->board->whites());
+        $black = count($this->board->blacks());
         if ($white > $black) {
             return GameState::WIN_WHITE;
         } elseif ($white < $black) {

@@ -18,7 +18,6 @@ class Board implements ArrayAccess, IteratorAggregate
         $this->xMax = $xMax;
         $this->yMax = $yMax;
         $cells = [];
-        $state = [];
         for ($x = 1; $x <= $xMax; $x++) {
           for ($y = 1; $y <= $yMax; $y++) {
               $cell = new Cell($x, $y, $this);
@@ -56,7 +55,22 @@ class Board implements ArrayAccess, IteratorAggregate
         return new ArrayIterator($this->cells);
     }
 
-    public function filterState(CellState $state) : array
+    public function empties(): array
+    {
+        return $this->filterState(CellState::EMPTY);
+    }
+
+    public function whites(): array
+    {
+        return $this->filterState(CellState::WHITE);
+    }
+
+    public function blacks(): array
+    {
+        return $this->filterState(CellState::BLACK);
+    }
+
+    private function filterState(CellState $state) : array
     {
         return array_filter($this->cells, fn($cell) => $cell->state === $state);
     }

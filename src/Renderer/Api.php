@@ -3,7 +3,6 @@ namespace Tenjuu99\Reversi\Renderer;
 
 use ReflectionClass;
 use ReflectionMethod;
-use Tenjuu99\Reversi\Model\CellState;
 use Tenjuu99\Reversi\Model\Game;
 use Tenjuu99\Reversi\Model\Player;
 
@@ -159,8 +158,8 @@ class Api
         }
         return json_encode([
             'board' => iterator_to_array($this->game()->cells()),
-            'white' => count($this->game()->cells()->filterState(CellState::WHITE)),
-            'black' => count($this->game()->cells()->filterState(CellState::BLACK)),
+            'white' => count($this->game()->cells()->whites()),
+            'black' => count($this->game()->cells()->blacks()),
             'boardSize' => ['x' => $this->game()->cells()->xMax, 'y' => $this->game()->cells()->yMax],
             'moves' => $moves ?: ['pass'],
             'state' => $this->game()->state()->value,

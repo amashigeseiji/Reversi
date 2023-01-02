@@ -14,7 +14,7 @@ class Moves implements ArrayAccess, IteratorAggregate, Countable
 
     public function __construct(Board $board, Player $player)
     {
-        $empties = $board->filterState(CellState::EMPTY);
+        $empties = $board->empties();
         foreach ($empties as $emptyCell) {
             $move = new Move($emptyCell, $player);
             if (count($move->flipCells) > 0) {
