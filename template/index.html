@@ -42,7 +42,7 @@
             </div>
           </div>
         </div>
-        <div class="moves">
+        <div class="moves" v-show="!auto">
           <div v-if="game.state == 'on going' && !auto">
             <template v-for="(move, index) in game.moves" :key="move.index">
               <button @click="onClickPass" v-if="move === 'pass'">パス</button>
@@ -245,7 +245,7 @@
   }
   main {
     overflow: scroll;
-    padding: 15px;
+    padding: 15px 15px 15px 20px;
   }
   .board {
     border-spacing: 0;
