@@ -330,7 +330,6 @@
   .sidemenu {
     position: fixed;
     background: rgba(143,205,176,.8);
-    box-shadow: 1px 2px 2px 2px rgb(0 0 0 / 10%);
     border-right: .1px solid #999;
     height: 100%;
     transition: left .2s;
@@ -345,28 +344,6 @@
   .sidemenu.open > div.headerInner {
     width: 98%;
   }
-  @media screen and (max-width: 600px) {
-    .sidemenu {
-      bottom: 0;
-      top: unset;
-      left: 0;
-      width: 100%;
-      height: fit-content;
-      transition: bottom .2s;
-      box-shadow: 1px -2px 2px 2px rgb(0 0 0 / 10%);
-      border-top: .1px solid #999;
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-content: flex-end;
-      justify-content: center;
-      padding: 5px 0;
-    }
-    .sidemenu.close {
-      bottom: -1000px;
-      left: 0;
-      transition: bottom .2s;
-    }
-  }
   .sidemenu.close {
     left: -500px;
   }
@@ -375,7 +352,6 @@
     top: 25px;
     left: 0;
     background: rgba(143,205,176,.8);
-    box-shadow: 1px 2px 2px 2px rgb(0 0 0 / 10%);
     border-right: .1px solid #999;
     height: 100%;
     padding: 5px 5px;
@@ -386,6 +362,25 @@
     #app {
       align-items: flex-start;
     }
+    .sidemenu {
+      bottom: 0;
+      top: unset;
+      left: 0;
+      width: 100%;
+      height: fit-content;
+      transition: bottom .2s;
+      border-top: .1px solid #999;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-content: flex-end;
+      justify-content: center;
+      padding: 0 5px 5px 5px;
+    }
+    aside.sidemenu.close {
+      bottom: -1000px;
+      left: 0;
+      transition: bottom .2s;
+    }
     .menu-open {
       position: fixed;
       top: unset;
@@ -394,7 +389,6 @@
       transition: bottom .2s;
       border-right: .1px solid #999;
       border-top:.1px solid #999;
-      box-shadow: 1px -2px 2px 2px rgb(0 0 0 / 10%);
       height: 20px;
       width: 100vw;
       text-align: center;
