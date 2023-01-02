@@ -44,10 +44,10 @@
         </div>
         <div class="moves" v-show="!auto">
           <div v-if="game.state == 'on going' && !auto">
+            <button @click="onClickPass" v-if="game.moves.pass">パス</button>
             <template v-for="(move, index) in game.moves" :key="move.index">
-              <button @click="onClickPass" v-if="move === 'pass'">パス</button>
               <button
-                v-else
+                v-if="move !== 'pass'"
                 @click="onClickMoveButton(move.index)"
                 @mouseover="onMouseoverMoveButton(move.index)"
                 @mouseleave="onMouseleaveMoveButton(move.index)"
@@ -57,7 +57,7 @@
         </div>
       </div>
     </aside>
-    <main>
+    <main :class="menu === 'open' ? 'main-menu-open' : 'main-menu-close'">
       <table class="board" :style="cellSize">
         <tr v-for="(line, index) in board" :key="index">
           <td
@@ -170,7 +170,7 @@
           return
         }
         this.onMouseleaveMoveButton(move)
-        this.currentPlayer = null
+        this.currentPlayer = this.currentPlayer === 'white' ? 'black' : 'white'
         axios.post('/move', { index: move })
           .then(this.update)
       },
@@ -309,7 +309,7 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 5px;
     overflow: scroll;
     max-height: 300px;
@@ -335,17 +335,16 @@
     transition: left .2s;
     left: 0;
     top: 25px;
-    padding: 25px 0 0 15px;
     width: 350px;
     color: #666;
     display: flex;
     flex-direction: row-reverse;
   }
   .sidemenu > div.headerInner {
-    width: 98%;
+    width: 100%;
   }
   .sidemenu.close {
-    left: -500px;
+    left: -350px;
   }
   .menu-open {
     position: fixed;
@@ -358,7 +357,84 @@
     color: #666;
     cursor: pointer;
   }
+  .menu-close {
+    color: #666;
+    width: 15px;
+    text-align: center;
+    background: rgba(255,255,255,.2);
+  }
+  .menu-close:hover {
+    cursor: pointer;
+  }
+  .menu-open:before {
+    content: '>';
+    position: absolute;
+    top: 50%;
+  }
+  .menu-close:before {
+    content: '<';
+    position: absolute;
+    top: 50%;
+    margin: 0 auto;
+  }
+  .menu {
+    background: rgba(255,255,255,.6);
+    display: flex;
+    flex-direction: column;
+  }
+  .menu input {
+    width: 30px;
+  }
+  .menu .row {
+    display: flex;
+    border-top: 0.1px solid #aaa;
+    padding: 3px 15px;
+  }
+  .menu .column {
+    flex-basis: 50%;
+  }
+  .menu .column.col2 {
+    flex-basis: 100%;
+  }
+  .menu button {
+    margin: 3px 5px;
+  }
+  .menu button.reset {
+    background: #ff1717;
+    color: #fff;
+  }
+  .menu button.reset:hover {
+    background: #f3cc88;
+  }
+
+
+  .main-menu-open, .main-menu-close {
+    position: absolute;
+    left: 0;
+    z-index: -1;
+    transition: left .3s;
+    width: 100%;
+  }
+  .main-menu-open {
+    left: 335px;
+  }
+
+  .title {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0 0 0 15px;
+    margin: 0;
+    background: #669;
+    color: #fff;
+    font-size: 17px;
+    height: 25px;
+  }
   @media screen and (max-width: 600px) {
+    .title {
+      margin: 0;
+    }
     #app {
       align-items: flex-start;
     }
@@ -398,80 +474,18 @@
       top: unset;
     }
     div.menu-close {
+      position: relative;
+      left: 0;
       text-align: center;
       width: 100%;
     }
     div.menu-close:before {
       content: '﹀';
     }
-  }
-  .menu-close {
-    position: relative;
-    left: 0;
-    color: #666;
-    padding: 3px 5px;
-    width: 15px;
-    text-align: center;
-    background: rgba(255,255,255,.2);
-  }
-  .menu-close:hover {
-    cursor: pointer;
-  }
-  .menu-open:before {
-    content: '>';
-    position: absolute;
-    top: 50%;
-  }
-  .menu-close:before {
-    content: '<';
-    position: absolute;
-    top: 50%;
-  }
-  .menu {
-    background: rgba(255,255,255,.3);
-    display: flex;
-    flex-direction: column;
-  }
-  .menu input {
-    width: 30px;
-  }
-  .menu .row {
-    display: flex;
-  }
-  .menu .column {
-    flex-basis: 50%;
-    border: 0.1px solid #aaa;
-    padding: 3px;
-  }
-  .menu .column.col2 {
-    flex-basis: 100%;
-  }
-  .menu button {
-    margin: 3px 5px;
-  }
-  .menu button.reset {
-    background: #ff1717;
-    color: #fff;
-  }
-  .menu button.reset:hover {
-    background: #f3cc88;
-  }
-
-  .title {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 0 0 0 15px;
-    margin: 0;
-    background: #669;
-    color: #fff;
-    font-size: 17px;
-    height: 25px;
-  }
-  @media screen and (max-width: 600px) {
-    .title {
-      margin: 0;
+    .main-menu-open, .main-menu-close {
+      position: inherit;
+      left: unset;
+      z-index: unset;
     }
   }
 

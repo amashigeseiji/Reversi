@@ -161,7 +161,7 @@ class Api
             'white' => count($this->game()->cells()->whites()),
             'black' => count($this->game()->cells()->blacks()),
             'boardSize' => ['x' => $this->game()->cells()->xMax, 'y' => $this->game()->cells()->yMax],
-            'moves' => $moves ?: ['pass'],
+            'moves' => $moves ?: ['pass' => 'pass'],
             'state' => $this->game()->state()->value,
             'currentPlayer' => $this->game()->getPlayer()->name,
             'userColor' => $this->game(),
