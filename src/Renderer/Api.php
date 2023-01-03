@@ -152,8 +152,7 @@ class Api
         foreach ($this->game()->moves() as $move) {
             $moves[$move->index] = [
                 'index' => $move->index,
-                'flipCells' => array_map(fn($c) => $c->index, $move->flipCells),
-                'player' => $move->player->name
+                'flipCells' => $move->flipCells,
             ];
         }
         $board = $this->game()->cells()->toArray();

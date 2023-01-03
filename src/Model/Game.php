@@ -27,13 +27,18 @@ class Game
 
     public static function initialize(Player $player, int $boardSizeX = 8, int $boardSizeY = 8, string $strategy = 'random') : self
     {
-        $board = new Board($boardSizeX, $boardSizeY);
         $halfX = round($boardSizeX / 2);
         $halfY = round($boardSizeY / 2);
-        $board[$halfX . '-' . $halfY]->put(CellState::WHITE);
-        $board[$halfX . '-' . $halfY + 1]->put(CellState::BLACK);
-        $board[$halfX + 1 . '-' . $halfY]->put(CellState::BLACK);
-        $board[$halfX + 1 . '-' . $halfY + 1]->put(CellState::WHITE);
+        $board = new Board($boardSizeX, $boardSizeY);
+        // $board[$halfX . '-' . $halfY]->put(CellState::WHITE);
+        // $board[$halfX . '-' . $halfY + 1]->put(CellState::BLACK);
+        // $board[$halfX + 1 . '-' . $halfY]->put(CellState::BLACK);
+        // $board[$halfX + 1 . '-' . $halfY + 1]->put(CellState::WHITE);
+        //
+        $board->put($halfX . '-' . $halfY, CellState::WHITE);
+        $board->put($halfX . '-' . $halfY + 1, CellState::BLACK);
+        $board->put($halfX + 1 . '-' . $halfY, CellState::BLACK);
+        $board->put($halfX + 1 . '-' . $halfY + 1, CellState::WHITE);
         $game = new self($board, $player, $strategy);
 
         return $game;
@@ -52,9 +57,11 @@ class Game
         if (count($this->history) > 10) {
             array_shift($this->history);
         }
-        $moves[$index]->execute();
+        //$moves[$index]->execute();
+        $board = $moves[$index]->newState($this->currentPlayer);
+        $this->board = $board;
         // 盤面サイズがでかい場合にメモリが足りなくなるのでクリアする
-        unset($this->moves[$this->boardHash . $this->getPlayer()->name]);
+        $this->moves = [];
         $this->next();
         // ハッシュ値の再計算
         $this->boardHash = $this->board->hash();
@@ -143,7 +150,7 @@ class Game
             $this->board = Board::fromArray($this->history[$hash]['board']);
             $this->boardHash = $hash;
             $this->currentPlayer = $this->history[$hash]['player'] === Player::WHITE ? Player::WHITE : Player::BLACK;
-            // $this->history = [];
+            $this->moves = [];
         }
     }
 

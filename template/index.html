@@ -13,7 +13,7 @@
     <div @click="onClickMenu" v-show="menu === 'close'" class="menu-open">&nbsp;</div>
     <aside class="sidemenu" :class="menu">
       <div @click="onClickMenu" class="menu-close">&nbsp;</div>
-      <div class="headerInner">
+      <div class="sidemenuInner">
         <div class="menu">
           <div class="row">
             <div class="column">player {{ userColor }}</div>
@@ -47,6 +47,12 @@
           </div>
           <?php endif ?>
         </div>
+        <div class="history">
+          <h2>history </h2>
+          <ul class="history--list">
+            <li v-for="(history, index) in game.history" :key="history"><a href="#" @click="historyBack(history)">{{10 - index}}手前({{history}})</a></li>
+          </ul>
+        </div>
         <div class="moves" v-show="!auto">
           <div v-if="game.state == 'on going' && !auto">
             <button @click="onClickPass" v-if="game.moves.pass">パス</button>
@@ -59,11 +65,6 @@
               >{{ move.index }}</button>
             </template>
           </div>
-        </div>
-        <div class="history">
-          <template v-for="history in game.history" :key="history">
-            <button @click="historyBack(history)">{{history}}</button>
-          </template>
         </div>
       </div>
     </aside>
@@ -126,6 +127,8 @@
       const cellScale = localStorage.getItem('cellScale') ? localStorage.getItem('cellScale') : defaultCellScale
       return {
         board: boardMatrix(boardFromPhp.board),
+        white: boardFromPhp.whtie,
+        black: boardFromPhp.black,
         game: boardFromPhp,
         auto: false,
         currentPlayer: boardFromPhp.currentPlayer,
@@ -158,6 +161,16 @@
         this.update(board)
       },
       update(response) {
+        // this.white = response.data.board.white
+        // this.black = response.data.board.black
+        // this.white.forEach((index) => {
+        //   const [x, y] = index.split('-')
+        //   this.board['y'+y][x -1].state = 'white'
+        // })
+        // this.black.forEach(index => {
+        //   const [x, y] = index.split('-')
+        //   this.board['y'+y][x -1].state = 'black'
+        // })
         this.board = boardMatrix(response.data.board)
         this.game = response.data
         this.currentPlayer = response.data.currentPlayer
@@ -243,6 +256,11 @@
         } else {
           this.menu = 'open'
         }
+      },
+      historyBack(history) {
+        axios.post('/historyBack', {
+          hash: history
+        }).then(this.updateBoard)
       }
     }
   }).mount('#app')
@@ -352,7 +370,7 @@
     display: flex;
     flex-direction: row-reverse;
   }
-  .sidemenu > div.headerInner {
+  .sidemenu > div.sidemenuInner {
     width: 100%;
   }
   .sidemenu.close {
@@ -431,6 +449,20 @@
     left: 335px;
   }
 
+  .history {
+    height: 200px;
+    overflow: scroll;
+  }
+  .history h2 {
+    margin: 0;
+  }
+  .history--list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 10px;
+  }
+
   .title {
     position: fixed;
     top: 0;
@@ -500,6 +532,4 @@
       z-index: unset;
     }
   }
-
-
 </style>

@@ -12,17 +12,27 @@ class Board implements ArrayAccess, IteratorAggregate
 
     public int $xMax = 8;
     public int $yMax = 8;
+    private array $white = [];
+    private array $black = [];
 
-    public function __construct(int $xMax = 8, int $yMax = 8)
+    public function __construct(int $xMax = 8, int $yMax = 8, array $white = [], array $black = [])
     {
         $this->xMax = $xMax;
         $this->yMax = $yMax;
+        $this->white = $white;
+        $this->black = $black;
         $cells = [];
         for ($x = 1; $x <= $xMax; $x++) {
           for ($y = 1; $y <= $yMax; $y++) {
               $cell = new Cell($x, $y, $this);
               $cells[$cell->index] = $cell;
           }
+        }
+        foreach ($white as $index) {
+            $cells[$index]->state = CellState::WHITE;
+        }
+        foreach ($black as $index) {
+            $cells[$index]->state = CellState::BLACK;
         }
         $this->cells = $cells;
     }
@@ -57,33 +67,28 @@ class Board implements ArrayAccess, IteratorAggregate
 
     public function empties(): array
     {
-        return $this->filterState(CellState::EMPTY);
+        return array_filter($this->cells, fn($cell) => $cell->state === CellState::EMPTY);
     }
 
     public function whites(): array
     {
-        return $this->filterState(CellState::WHITE);
+        return $this->white;
     }
 
     public function blacks(): array
     {
-        return $this->filterState(CellState::BLACK);
-    }
-
-    private function filterState(CellState $state) : array
-    {
-        return array_filter($this->cells, fn($cell) => $cell->state === $state);
+        return $this->black;
     }
 
     public function hash(): string
     {
-        $string = json_encode($this->cells);
+        $string = json_encode($this->toArray());
         return md5($string);
     }
 
     public function json() : string
     {
-        return json_encode($this->cells);
+        return json_encode($this->toArray());
     }
 
     public function toArray(): array
@@ -91,20 +96,27 @@ class Board implements ArrayAccess, IteratorAggregate
         return [
             'xMax' => $this->xMax,
             'yMax' => $this->yMax,
-            'white' => array_keys($this->whites()),
-            'black' => array_keys($this->blacks()),
+            CellState::WHITE->value => array_values($this->white),
+            CellState::BLACK->value => array_values($this->black),
         ];
     }
 
     public static function fromArray(array $array) : self
     {
-        $board = new self($array['xMax'], $array['yMax']);
-        foreach ($array['white'] as $index) {
-            $board[$index]->put(CellState::WHITE);
-        }
-        foreach ($array['black'] as $index) {
-            $board[$index]->put(CellState::BLACK);
-        }
+        $board = new self($array['xMax'], $array['yMax'], $array['white'], $array['black']);
         return $board;
+    }
+
+    public function put(string $index, CellState $cellState)
+    {
+        if (!isset($this->cells[$index])) {
+            throw new \Exception();
+        }
+        $this->cells[$index]->state = $cellState;
+        if ($cellState === CellState::WHITE) {
+            $this->white[] = $index;
+        } elseif ($cellState === CellState::BLACK) {
+            $this->black[] = $index;
+        }
     }
 }

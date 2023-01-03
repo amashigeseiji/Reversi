@@ -19,11 +19,6 @@ class Cell
         $this->board = $board;
     }
 
-    public function put(CellState $state)
-    {
-        $this->state = $state;
-    }
-
     public function right() : ?Cell
     {
         if ($this->x === $this->board->xMax) {
@@ -105,7 +100,7 @@ class Cell
      *
      * @return Cell[]
      */
-    private function chain(string $orientation) : array
+    public function chain(string $orientation) : array
     {
         $cells = [];
         $current = $this;
@@ -133,27 +128,27 @@ class Cell
     /**
      * @return array<string, Cell[]>
      */
-    public function flippableChains(): array
-    {
-        $orientations = [
-            'right', 'left', 'upper', 'lower',
-            'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
-        ];
-        $chains = [];
-        foreach ($orientations as $orientation) {
-            $chain = $this->chain($orientation);
-            if ($chain) {
-                $chains[$orientation] = $chain;
-            }
-        }
-        return $chains;
-    }
+    // public function flippableChains(): array
+    // {
+    //     $orientations = [
+    //         'right', 'left', 'upper', 'lower',
+    //         'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
+    //     ];
+    //     $chains = [];
+    //     foreach ($orientations as $orientation) {
+    //         $chain = $this->chain($orientation);
+    //         if ($chain) {
+    //             $chains[$orientation] = $chain;
+    //         }
+    //     }
+    //     return $chains;
+    // }
 
-    public function flip()
-    {
-        if ($this->state === CellState::EMPTY) {
-            throw new \Exception('Invlid call of method');
-        }
-        $this->state = $this->state->flip();
-    }
+    // public function flip()
+    // {
+    //     if ($this->state === CellState::EMPTY) {
+    //         throw new \Exception('Invlid call of method');
+    //     }
+    //     $this->state = $this->state->flip();
+    // }
 }

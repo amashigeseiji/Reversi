@@ -14,13 +14,32 @@ class Moves implements ArrayAccess, IteratorAggregate, Countable
 
     public function __construct(Board $board, Player $player)
     {
+        // $empties = $this->emptyCells($board, $player);
         $empties = $board->empties();
+        $boardArr = $board->toArray();
         foreach ($empties as $emptyCell) {
-            $move = new Move($emptyCell, $player);
+            $move = new Move($emptyCell, $player, $boardArr);
             if (count($move->flipCells) > 0) {
                 $this->moves[$move->index] = $move;
             }
         }
+    }
+
+    public function emptyCells(Board $board, Player $player)
+    {
+        $boardArr = $board->toArray();
+        $enemy = $player->enemy()->toCellState()->value;
+        $enemyCells = $boardArr[$enemy];
+        $empties = [];
+        foreach ($enemyCells as $index) {
+            $cells = $board[$index]->getNextCells();
+            foreach ($cells as $cellIndex) {
+                if ($board[$cellIndex]->state === CellState::EMPTY) {
+                    $empties[] = $board[$cellIndex];
+                }
+            }
+        }
+        return $empties;
     }
 
     public function offsetExists($offset): bool
