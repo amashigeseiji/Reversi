@@ -151,14 +151,13 @@ class Api
     private function gameJson()
     {
         $moves = $this->game()->moves();
-        $board = $this->game()->cells()->toArray();
+        $board = $this->game()->board()->toArray();
         $data = [
             'board' => $board,
             'moves' => $moves ?: ['pass' => 'pass'],
             'state' => $this->game()->state()->value,
-            'currentPlayer' => $this->game()->getPlayer()->name,
+            'currentPlayer' => $this->game()->getCurrentPlayer()->name,
             'userColor' => $this->game(),
-            'strategy' => $this->strategy,
             'history' => $this->game()->history(),
             'moveCount' => $this->game()->moveCount(),
         ];

@@ -7,6 +7,7 @@ class Game
 {
     private Board $board;
     private Player $currentPlayer;
+    private Player $user = Player::WHITE;
     private array $moves;
     private array $history = [];
     /** 何手目か */
@@ -18,10 +19,11 @@ class Game
     private string $boardHash;
     private Ai $ai;
 
-    private function __construct(Board $board, Player $currentPlayer, string $strategy = 'random')
+    private function __construct(Board $board, Player $player, string $strategy = 'random')
     {
         $this->board = $board;
-        $this->currentPlayer = $currentPlayer;
+        $this->currentPlayer = $player;
+        $this->user = $player;
         $this->boardHash = $board->hash();
         $this->ai = new Ai($strategy);
     }
@@ -32,10 +34,10 @@ class Game
         $halfY = round($boardSizeY / 2);
         $board = new Board($boardSizeX, $boardSizeY);
         $board->put($halfX . '-' . $halfY, CellState::WHITE);
-        $board->put($halfX . '-' . $halfY + 1, CellState::BLACK);
-        $board->put($halfX + 1 . '-' . $halfY, CellState::BLACK);
-        $board->put($halfX + 1 . '-' . $halfY + 1, CellState::WHITE);
-        $game = new self($board, $player, $strategy);
+        $board->put($halfX . '-' . ($halfY + 1), CellState::BLACK);
+        $board->put(($halfX + 1) . '-' . $halfY, CellState::BLACK);
+        $board->put(($halfX + 1) . '-' . ($halfY + 1), CellState::WHITE);
+        $game = new self($board, $player);
 
         return $game;
     }
@@ -88,12 +90,12 @@ class Game
         return [];
     }
 
-    public function cells() : Board
+    public function board() : Board
     {
         return $this->board;
     }
 
-    public function getPlayer() : Player
+    public function getCurrentPlayer() : Player
     {
         return $this->currentPlayer;
     }

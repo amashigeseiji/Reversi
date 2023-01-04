@@ -53,19 +53,19 @@ class Game
         return implode(' ', array_keys($this->game->moves()));
     }
 
-    public function cells(): Board
+    public function board(): Board
     {
-        return $this->game->cells();
+        return $this->game->board();
     }
 
     public function isMyTurn() : bool
     {
-        return $this->userPlayer === $this->game->getPlayer();
+        return $this->userPlayer === $this->game->getCurrentPlayer();
     }
 
     public function currentPlayer(): string
     {
-        return $this->game->getPlayer()->name;
+        return $this->game->getCurrentPlayer()->name;
     }
 
     public function help(): string

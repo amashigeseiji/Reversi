@@ -84,9 +84,9 @@ class Cli
 
     public function render()
     {
-        $cells = $this->game->cells();
+        $board = $this->game->board();
         $lines = [];
-        foreach ($cells as $index => $cell) {
+        foreach ($board as $index => $cell) {
             $lines[$cell->y -1][$cell->x -1] = $cell;
         }
         echo '   ';
