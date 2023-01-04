@@ -119,4 +119,9 @@ class Board implements ArrayAccess, IteratorAggregate
             $this->black[] = $index;
         }
     }
+
+    public function getPlayersCells(Player $player) : array
+    {
+        return $player === Player::WHITE  ? $this->white : $this->black;
+    }
 }

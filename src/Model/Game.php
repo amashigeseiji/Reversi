@@ -7,7 +7,6 @@ class Game
 {
     private Board $board;
     private Player $currentPlayer;
-    /** @var Moves[] */
     private array $moves;
     private array $history = [];
     /**
@@ -30,11 +29,6 @@ class Game
         $halfX = round($boardSizeX / 2);
         $halfY = round($boardSizeY / 2);
         $board = new Board($boardSizeX, $boardSizeY);
-        // $board[$halfX . '-' . $halfY]->put(CellState::WHITE);
-        // $board[$halfX . '-' . $halfY + 1]->put(CellState::BLACK);
-        // $board[$halfX + 1 . '-' . $halfY]->put(CellState::BLACK);
-        // $board[$halfX + 1 . '-' . $halfY + 1]->put(CellState::WHITE);
-        //
         $board->put($halfX . '-' . $halfY, CellState::WHITE);
         $board->put($halfX . '-' . $halfY + 1, CellState::BLACK);
         $board->put($halfX + 1 . '-' . $halfY, CellState::BLACK);
@@ -57,9 +51,7 @@ class Game
         if (count($this->history) > 10) {
             array_shift($this->history);
         }
-        //$moves[$index]->execute();
-        $board = $moves[$index]->newState($this->currentPlayer);
-        $this->board = $board;
+        $this->board = $moves[$index]->newState($this->board, $this->currentPlayer);
         // 盤面サイズがでかい場合にメモリが足りなくなるのでクリアする
         $this->moves = [];
         $this->next();
@@ -69,21 +61,27 @@ class Game
     }
 
     /**
-     * @return Moves
+     * @return Move[]
      */
-    public function moves() : Moves
+    public function moves() : array
     {
         return $this->getMoves($this->board, $this->currentPlayer);
     }
 
-    private function getMoves(Board $board, Player $player) : Moves
+    /**
+     * @return Move[]
+     */
+    private function getMoves(Board $board, Player $player) : array
     {
         $hash = $this->boardHash . $player->name;
         if (isset($this->moves[$hash])) {
             return $this->moves[$hash];
         }
-        $moves = new Moves($board, $player);
-        return $this->moves[$hash] = $moves;
+        $moves = Moves::generate($board, $player);
+        if ($moves) {
+            return $this->moves[$hash] = $moves;
+        }
+        return [];
     }
 
     public function cells() : Board
@@ -122,11 +120,11 @@ class Game
     private function isGameEnd() : bool
     {
         $moves = $this->getMoves($this->board, $this->currentPlayer);
-        if ($moves->count() > 0) {
+        if (count($moves) > 0) {
             return false;
         }
         $enemyMoves = $this->getMoves($this->board, $this->currentPlayer->enemy());
-        if ($enemyMoves->count() > 0) {
+        if (count($enemyMoves) > 0) {
             return false;
         }
         return true;

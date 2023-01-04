@@ -124,31 +124,4 @@ class Cell
         }
         return [];
     }
-
-    /**
-     * @return array<string, Cell[]>
-     */
-    // public function flippableChains(): array
-    // {
-    //     $orientations = [
-    //         'right', 'left', 'upper', 'lower',
-    //         'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
-    //     ];
-    //     $chains = [];
-    //     foreach ($orientations as $orientation) {
-    //         $chain = $this->chain($orientation);
-    //         if ($chain) {
-    //             $chains[$orientation] = $chain;
-    //         }
-    //     }
-    //     return $chains;
-    // }
-
-    // public function flip()
-    // {
-    //     if ($this->state === CellState::EMPTY) {
-    //         throw new \Exception('Invlid call of method');
-    //     }
-    //     $this->state = $this->state->flip();
-    // }
 }

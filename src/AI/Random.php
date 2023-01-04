@@ -8,7 +8,7 @@ class Random implements ThinkInterface
 {
     public function choice(Game $game) : ?Move
     {
-        $moves = iterator_to_array($game->moves());
+        $moves = $game->moves();
         if ($moves) {
             $key = array_rand($moves);
             return $moves[$key];

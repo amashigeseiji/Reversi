@@ -148,13 +148,7 @@ class Api
 
     private function gameJson()
     {
-        $moves = [];
-        foreach ($this->game()->moves() as $move) {
-            $moves[$move->index] = [
-                'index' => $move->index,
-                'flipCells' => $move->flipCells,
-            ];
-        }
+        $moves = $this->game()->moves();
         $board = $this->game()->cells()->toArray();
         $data = [
             'board' => $board,

@@ -50,7 +50,7 @@ class Game
 
     public function moves() : string
     {
-        return $this->game->moves();
+        return implode(' ', array_keys($this->game->moves()));
     }
 
     public function cells(): Board
