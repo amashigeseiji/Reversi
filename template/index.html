@@ -136,7 +136,7 @@
         cellScale,
         strategy: 'random',
         menu: 'open',
-        opponentComputer: true,
+        opponentComputer: localStorage.getItem('opponentComputer'),
         waiting: false,
       }
     },
@@ -148,6 +148,9 @@
       },
       cellScale() {
         localStorage.setItem('cellScale', this.cellScale)
+      },
+      opponentComputer() {
+        localStorage.setItem('opponentComputer', this.opponentComputer)
       }
     },
     async mounted() {
