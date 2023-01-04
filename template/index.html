@@ -55,7 +55,7 @@
         <div class="history">
           <h2>history </h2>
           <ul class="history--list">
-            <li v-for="(history, index) in game.history" :key="history"><a href="#" @click="historyBack(history)">{{10 - index}}手前({{history}})</a></li>
+            <li v-for="(history, index) in game.history" :key="history"><a href="#" @click="historyBack(history)">{{game.history.length - index}}手前({{history}})</a></li>
           </ul>
         </div>
         <div class="moves" v-show="!auto">

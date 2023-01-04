@@ -147,7 +147,7 @@ class Game
         if (isset($this->history[$hash])) {
             $this->board = Board::fromArray($this->history[$hash]['board']);
             $this->boardHash = $hash;
-            $this->currentPlayer = $this->history[$hash]['player'] === Player::WHITE ? Player::WHITE : Player::BLACK;
+            $this->currentPlayer = $this->history[$hash]['player'] === Player::WHITE->name ? Player::WHITE : Player::BLACK;
             $this->moves = [];
         }
     }

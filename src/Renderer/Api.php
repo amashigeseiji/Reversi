@@ -125,6 +125,8 @@ class Api
     public function pass()
     {
         $this->game()->next();
+        header('Content-Type: application/json');
+        echo $this->gameJson();
     }
 
     /**
