@@ -152,9 +152,6 @@ class Api
         $board = $this->game()->cells()->toArray();
         $data = [
             'board' => $board,
-            'white' => count($board['white']),
-            'black' => count($board['black']),
-            'boardSize' => ['x' => $this->game()->cells()->xMax, 'y' => $this->game()->cells()->yMax],
             'moves' => $moves ?: ['pass' => 'pass'],
             'state' => $this->game()->state()->value,
             'currentPlayer' => $this->game()->getPlayer()->name,
