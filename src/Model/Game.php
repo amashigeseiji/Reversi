@@ -61,7 +61,7 @@ class Game
     }
 
     /**
-     * @return Move[]
+     * @return array<string, Move>
      */
     public function moves() : array
     {
@@ -69,7 +69,7 @@ class Game
     }
 
     /**
-     * @return Move[]
+     * @return array<string, Move>
      */
     private function getMoves(Board $board, Player $player) : array
     {

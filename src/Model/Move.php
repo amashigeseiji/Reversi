@@ -6,13 +6,18 @@ class Move
     public readonly string $index;
     public readonly array $flipCells;
 
-    public function __construct(Cell $cell, array $flipCells)
+    public function __construct(string $cell, array $flipCells)
     {
-        if ($cell->state !== CellState::EMPTY) {
-            throw new \Exception('Cell ' . $cell->index . ' is not empty.');
-        }
-        $this->index = $cell->index;
+        $this->index = $cell;
         $this->flipCells = $flipCells;
+    }
+
+    public function merge(Move $move): Move
+    {
+        if ($this->index !== $move->index) {
+            throw new \Exception('Invalid move index.');
+        }
+        return new Move($this->index, [...$this->flipCells, ...$move->flipCells]);
     }
 
     public function newState(Board $board, Player $player) : Board

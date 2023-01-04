@@ -4,7 +4,7 @@ namespace Tenjuu99\Reversi\Model;
 class Moves
 {
     /**
-     * @return Move[]
+     * @return array<string, Move>
      */
     public static function generate(Board $board, Player $player) : array
     {
@@ -14,7 +14,15 @@ class Moves
         if (count($owns) < count($empties)) {
             foreach ($owns as $index) {
                 $cell = $board[$index];
-                $moves = array_merge($moves, self::movesFromOwnCells($cell, $player));
+                $movesFromOwnCells = self::movesFromOwnCells($cell, $player);
+                // index が重複している場合2ライン以上にわたってflip可能セルがあるのでマージする
+                foreach ($movesFromOwnCells as $move) {
+                    if (isset($moves[$move->index])) {
+                        $moves[$move->index] = $move->merge($moves[$move->index]);
+                    } else {
+                        $moves[$move->index] = $move;
+                    }
+                }
             }
         } else {
             $moves = [];
@@ -43,21 +51,12 @@ class Moves
         $moves = [];
         foreach ($orientations as $orientation) {
             [$move, $flip] = self::chainFromOwnCell($cell, $player, $orientation);
-            if ($move) {
-                if (!isset($moves[$move->index])) {
-                    $moves[$move->index] = [
-                        'cell' => $move,
-                        'flip' => [],
-                    ];
-                }
-                $moves[$move->index]['flip'] = array_merge($moves[$move->index]['flip'], $flip);
+            if (!$move) {
+                continue;
             }
+            $moves[] = new Move($move->index, $flip);
         }
-        $newMoves = [];
-        foreach ($moves as $index => $move) {
-            $newMoves[$index] = new Move($move['cell'], $move['flip']);
-        }
-        return $newMoves;
+        return $moves;
     }
 
     private static function chainFromOwnCell(Cell $cell, Player $player, string $orientation)
@@ -95,7 +94,7 @@ class Moves
     {
         $flippable = self::flippableFromEmptyCell($cell, $player);
         if ($flippable) {
-            return new Move($cell, $flippable);
+            return new Move($cell->index, $flippable);
         }
         return null;
     }
