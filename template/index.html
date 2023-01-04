@@ -16,10 +16,6 @@
       <div class="sidemenuInner">
         <div class="menu">
           <div class="row">
-            <div class="column">player {{ userColor }}</div>
-            <div class="column">current: {{ currentPlayer }}</div>
-          </div>
-          <div class="row">
             <div class="column">x: <input type="number" v-model="game.board.xMax"></div>
             <div class="column">y: <input type="number" v-model="game.board.yMax"></div>
           </div>
@@ -35,10 +31,19 @@
             <div class="column col2">{{ game.state === 'on going' ? 'status' : 'winner'}}: {{ game.state }}</div>
           </div>
           <div class="row">
+            <div class="column">player {{ userColor }}</div>
+            <div class="column">current: {{ currentPlayer }}</div>
+          </div>
+          <div class="row">
+            <div class="column col2">
+              <span>AUTO: <input type="checkbox" v-model="auto"></span>
+              コンピュータ: <input type="checkbox" v-model="opponentComputer" :disabled="auto">
+            </div>
+          </div>
+          <div class="row">
             <div class="column col2">
               <button @click="onClickUpdateBoardSize">Restart</button>
               <button @click="onClickReset" class="reset">reset</button>
-              <span>AUTO: <input type="checkbox" v-model="auto"></span>
             </div>
           </div>
           <?php if (DEBUG): ?>
@@ -90,7 +95,6 @@
 </html>
 
 <script>
-  <?php echo "const boardFromPhp = JSON.parse('${gameJson}')" . PHP_EOL ?>
 
   const boardMatrix = (board) => {
     const matrix = {}
@@ -119,14 +123,16 @@
     data() {
       const cellScale = localStorage.getItem('cellScale') ? localStorage.getItem('cellScale') : defaultCellScale
       return {
-        board: boardMatrix(boardFromPhp.board),
-        game: boardFromPhp,
+        board: {},
+        game: { board: { xMax: 8, yMax: 8, white: [], black: [] }},
         auto: false,
-        currentPlayer: boardFromPhp.currentPlayer,
+        currentPlayer: 'white',
         userColor: 'white',
         cellScale,
         strategy: 'random',
         menu: 'open',
+        opponentComputer: true,
+        waiting: false,
       }
     },
     watch: {
@@ -139,12 +145,15 @@
         localStorage.setItem('cellScale', this.cellScale)
       }
     },
+    async mounted() {
+      await this.updateBoard()
+    },
     computed: {
       cellSize() {
         return {
           '--cell-size': this.cellScale + 'px'
         }
-      }
+      },
     },
     methods: {
       async updateBoard() {
@@ -152,17 +161,18 @@
         this.board = boardMatrix(board.data.board)
         this.update(board)
       },
-      update(response) {
+      async update(response) {
         this.game = response.data
-        this.currentPlayer = response.data.currentPlayer
-        if (!this.isMyTurn() || this.auto) {
+        this.currentPlayer = response.data.currentPlayer.toLowerCase()
+        if (this.moveByComputer()) {
           if (this.game.state === 'on going') {
-            this.compute()
+            await this.compute()
           }
         }
+        this.waiting = false
       },
       isMyTurn() {
-        return this.currentPlayer.toLowerCase() === this.userColor
+        return this.currentPlayer === this.userColor
       },
       cellStateClass(index) {
         if (this.game.board.white.includes(index)) {
@@ -173,15 +183,37 @@
         }
         return 'empty'
       },
-      compute() {
-        axios.post('/compute').then(this.update)
+      moveByComputer() {
+        if (this.auto) {
+          return true
+        }
+        return !this.isMyTurn() && this.opponentComputer
+      },
+      async compute() {
+        this.waiting = true
+        await axios.post('/compute').then(this.update)
       },
       onClickMoveButton(move) {
         if (!this.game.moves[move]) {
           return
         }
+        this.waiting = true
         this.onMouseleaveMoveButton(move)
-        this.currentPlayer = this.currentPlayer === 'white' ? 'black' : 'white'
+
+        const cells = [move, ...this.game.moves[move].flipCells.map(c => c)]
+        for (const cell of cells) {
+          const dom = this.$refs['cell_' + cell]
+          if (cell === move) {
+            const addClass = this.currentPlayer === 'black' ? 'cell-white' : 'cell-black'
+            dom[0].children[0].classList.add(addClass)
+          }
+        }
+
+        if (this.currentPlayer === 'white') {
+          this.currentPlayer = 'black'
+        } else if (this.currentPlayer === 'black') {
+          this.currentPlayer = 'white'
+        }
         axios.post('/move', { index: move })
           .then(this.update)
       },
@@ -196,7 +228,7 @@
         axios.post('/reset').then(this.updateBoard)
       },
       onMouseoverMoveButton(move) {
-        if (!this.isMyTurn() || this.auto || !this.game.moves[move]) {
+        if (this.auto || !this.game.moves[move] || this.waiting) {
           return
         }
         const cells = this.game.moves[move].flipCells.map(c => c).concat([move])
@@ -204,7 +236,7 @@
           const dom = this.$refs['cell_' + cell]
           dom[0].classList.add('onMouseoverMove')
           if (cell === move) {
-            const addClass = this.currentPlayer === 'BLACK' ? 'cell-white' : 'cell-black'
+            const addClass = this.currentPlayer === 'black' ? 'cell-white' : 'cell-black'
             dom[0].children[0].classList.add(addClass)
           }
         }
@@ -218,7 +250,7 @@
           const dom = this.$refs['cell_' + cell]
           dom[0].classList.remove('onMouseoverMove')
           if (cell === move) {
-            const addClass = this.currentPlayer === 'BLACK' ? 'cell-white' : 'cell-black'
+            const addClass = this.currentPlayer === 'black' ? 'cell-white' : 'cell-black'
             dom[0].children[0].classList.remove(addClass)
           }
         }
@@ -290,6 +322,7 @@
   .cellState.cell-white, .cellState.cell-black {
     border-radius: calc(var(--cell-size) / 1);
     box-shadow: calc(var(--cell-size) / 25) calc(var(--cell-size) / 10) calc(var(--cell-size) / 20) calc(var(--cell-size) / 150) rgb(0 0 0 / 20%);
+    transition: background-color .2s, border .2s, box-shadow .4s;
   }
   .cellState.cell-white {
     background-color: #fafafa;
