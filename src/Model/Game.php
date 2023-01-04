@@ -9,7 +9,7 @@ class Game
     private Player $currentPlayer;
     private Player $user = Player::WHITE;
     private array $moves;
-    private array $history = [];
+    private Histories $history;
     /** 何手目か */
     private int $moveCount = 0;
     /**
@@ -26,6 +26,7 @@ class Game
         $this->user = $player;
         $this->boardHash = $board->hash();
         $this->ai = new Ai($strategy);
+        $this->history = new Histories;
     }
 
     public static function initialize(Player $player, int $boardSizeX = 8, int $boardSizeY = 8, string $strategy = 'random') : self
@@ -48,15 +49,8 @@ class Game
         if (!isset($moves[$index])) {
             return false;
         }
-        $this->history[$this->boardHash] = [
-            'board' => $this->board->toArray(),
-            'player' => $this->currentPlayer->name,
-            'moveCount' => $this->moveCount,
-        ];
+        $this->history->add($this->boardHash, $this->board, $this->currentPlayer, $this->moveCount);
         $this->moveCount++;
-        if (count($this->history) > 10) {
-            array_shift($this->history);
-        }
         $this->board = $moves[$index]->newState($this->board, $this->currentPlayer);
         // 盤面サイズがでかい場合にメモリが足りなくなるのでクリアする
         $this->moves = [];
@@ -150,11 +144,11 @@ class Game
 
     public function historyBack(string $hash)
     {
-        if (isset($this->history[$hash])) {
-            $this->board = Board::fromArray($this->history[$hash]['board']);
+        if ($history = $this->history->get($hash)) {
+            $this->board = Board::fromArray($history->board);
             $this->boardHash = $hash;
-            $this->currentPlayer = $this->history[$hash]['player'] === Player::WHITE->name ? Player::WHITE : Player::BLACK;
-            $this->moveCount = $this->history[$hash]['moveCount'];
+            $this->currentPlayer = $history->player === Player::WHITE->name ? Player::WHITE : Player::BLACK;
+            $this->moveCount = $history->moveCount;
             $this->moves = [];
         }
     }
@@ -163,7 +157,7 @@ class Game
     {
         $histories = [];
         foreach ($this->history as $hash => $history) {
-            $histories[$history['moveCount']] = $hash;
+            $histories[$history->moveCount] = $hash;
         }
         return $histories;
     }
