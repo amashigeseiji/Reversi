@@ -134,7 +134,6 @@
         currentPlayer: 'white',
         userColor: 'white',
         cellScale,
-        strategy: 'random',
         menu: 'open',
         opponentComputer: localStorage.getItem('opponentComputer'),
         waiting: false,
@@ -232,7 +231,6 @@
         this.auto = false
         this.cellScale = defaultCellScale
         localStorage.setItem('cellScale', defaultCellScale)
-        this.strategy = 'random'
         axios.post('/reset').then(this.updateBoard)
       },
       onMouseoverMoveButton(move) {
@@ -267,7 +265,6 @@
         axios.post('/reset', {
           boardSizeX: this.game.board.xMax,
           boardSizeY: this.game.board.yMax,
-          strategy: this.strategy,
         }).then(this.updateBoard)
       },
       onClickMenu() {

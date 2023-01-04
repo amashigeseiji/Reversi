@@ -6,24 +6,30 @@ use Tenjuu99\Reversi\Model\Move;
 
 class Ai
 {
-    private ThinkInterface $think;
 
-    public function __construct(string $strategy)
+    private Random $random;
+    private MiniMax $miniMax;
+
+    public function __construct()
     {
-        switch ($strategy) {
-        case 'random':
-          $this->think = new Random();
-          break;
-        case 'minimax':
-          $this->think = new MiniMax();
-          break;
-        default:
-          $this->think = new Random();
-        }
+        $this->random = new Random();
+        $this->miniMax = new MiniMax();
     }
 
-    public function choice(Game $game): ?Move
+    public function choice(Game $game, string $strategy): ?Move
     {
-        return $this->think->choice($game);
+        return $this->think($strategy)->choice($game);
+    }
+
+    private function think(string $strategy) : ThinkInterface
+    {
+        switch($strategy) {
+        case 'random':
+            return $this->random;
+        case 'minimax':
+            return $this->miniMax;
+        default:
+            return $this->random;
+        }
     }
 }

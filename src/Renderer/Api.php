@@ -13,8 +13,6 @@ class Api
      */
     private array $handler;
 
-    private string $strategy = 'random';
-
     public function __construct()
     {
         session_start();
@@ -111,11 +109,10 @@ class Api
     /**
      * @Post
      */
-    public function reset(int $boardSizeX = 8, int $boardSizeY = 8, string $strategy = 'random')
+    public function reset(int $boardSizeX = 8, int $boardSizeY = 8)
     {
         if (isset($_SESSION['game'])) {
-            $_SESSION['game'] = Game::initialize(Player::WHITE, $boardSizeX, $boardSizeY, $strategy);
-            $this->strategy = $strategy;
+            $_SESSION['game'] = Game::initialize(Player::WHITE, $boardSizeX, $boardSizeY);
         }
     }
 

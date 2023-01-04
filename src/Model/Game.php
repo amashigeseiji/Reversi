@@ -19,17 +19,17 @@ class Game
     private string $boardHash;
     private Ai $ai;
 
-    private function __construct(Board $board, Player $player, string $strategy = 'random')
+    private function __construct(Board $board, Player $player)
     {
         $this->board = $board;
         $this->currentPlayer = $player;
         $this->user = $player;
         $this->boardHash = $board->hash();
-        $this->ai = new Ai($strategy);
         $this->history = new Histories;
+        $this->ai = new Ai();
     }
 
-    public static function initialize(Player $player, int $boardSizeX = 8, int $boardSizeY = 8, string $strategy = 'random') : self
+    public static function initialize(Player $player, int $boardSizeX = 8, int $boardSizeY = 8) : self
     {
         $halfX = round($boardSizeX / 2);
         $halfY = round($boardSizeY / 2);
@@ -130,9 +130,9 @@ class Game
         return true;
     }
 
-    public function compute() : string
+    public function compute(string $strategy = 'random') : string
     {
-        $move = $this->ai->choice($this);
+        $move = $this->ai->choice($this, $strategy);
         if ($move) {
             $this->move($move->index);
             return $move->index;
