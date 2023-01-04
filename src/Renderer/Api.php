@@ -160,6 +160,7 @@ class Api
             'userColor' => $this->game(),
             'strategy' => $this->strategy,
             'history' => $this->game()->history(),
+            'moveCount' => $this->game()->moveCount(),
         ];
         if (DEBUG) {
             $data['memoryUsage'] = number_format((memory_get_usage() / 1000)) . 'KB';

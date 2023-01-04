@@ -9,6 +9,8 @@ class Game
     private Player $currentPlayer;
     private array $moves;
     private array $history = [];
+    /** 何手目か */
+    private int $moveCount = 0;
     /**
      * boardをハッシュ化した値
      * 初期化、一手うったタイミングで計算しなおす
@@ -47,7 +49,9 @@ class Game
         $this->history[$this->boardHash] = [
             'board' => $this->board->toArray(),
             'player' => $this->currentPlayer->name,
+            'moveCount' => $this->moveCount,
         ];
+        $this->moveCount++;
         if (count($this->history) > 10) {
             array_shift($this->history);
         }
@@ -148,12 +152,22 @@ class Game
             $this->board = Board::fromArray($this->history[$hash]['board']);
             $this->boardHash = $hash;
             $this->currentPlayer = $this->history[$hash]['player'] === Player::WHITE->name ? Player::WHITE : Player::BLACK;
+            $this->moveCount = $this->history[$hash]['moveCount'];
             $this->moves = [];
         }
     }
 
     public function history() : array
     {
-        return array_keys($this->history);
+        $histories = [];
+        foreach ($this->history as $hash => $history) {
+            $histories[$history['moveCount']] = $hash;
+        }
+        return $histories;
+    }
+
+    public function moveCount() : int
+    {
+        return $this->moveCount;
     }
 }

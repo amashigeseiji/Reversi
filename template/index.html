@@ -36,6 +36,11 @@
           </div>
           <div class="row">
             <div class="column col2">
+              {{ game.moveCount }}手目
+            </div>
+          </div>
+          <div class="row">
+            <div class="column col2">
               <span>AUTO: <input type="checkbox" v-model="auto"></span>
               コンピュータ: <input type="checkbox" v-model="opponentComputer" :disabled="auto">
             </div>
@@ -55,7 +60,7 @@
         <div class="history">
           <h2>history </h2>
           <ul class="history--list">
-            <li v-for="(history, index) in game.history" :key="history"><a href="#" @click="historyBack(history)">{{game.history.length - index}}手前({{history}})</a></li>
+            <li v-for="(history, moveCount) in game.history" :key="history"><a href="#" @click="historyBack(history)">{{moveCount}}手({{history}})</a></li>
           </ul>
         </div>
         <div class="moves" v-show="!auto">
