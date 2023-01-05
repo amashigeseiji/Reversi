@@ -1,12 +1,26 @@
 # Reversi
 
-![](img/reversi.png)
+# 初期化
 
+```
+php composer.phar dumpautoload
+```
+
+## Web
+
+![](img/web.png)
 
 ## 起動
 
 ```
-php composer.phar dumpautoload
 php -S localhost:8080 bin/api.php
 ```
 
+
+## CLI
+
+![](img/cli.png)
+
+```
+php bin/cli.php
+```
