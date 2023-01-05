@@ -23,42 +23,40 @@ class Cli
         if ((int)$yokohaba - ($this->game->boardSizeX * 4) - 3 <= 0) {
             $this->simple = true;
         }
+        $this->render();
         while (true) {
             if ($this->exit) {
                 break;
             }
             switch($this->game->state()) {
             case GameState::WIN_WHITE:
-                $this->render();
                 $this->renderMessage('white win!' . PHP_EOL);
                 $this->command('Input: ');
                 break;
             case GameState::WIN_BLACK:
-                $this->render();
                 $this->renderMessage('black win!' . PHP_EOL);
                 $this->command('Input: ');
                 break;
             case GameState::DRAW:
-                $this->render();
                 $this->renderMessage('draw!' . PHP_EOL);
                 $this->command('Input: ');
                 break;
             }
             if ($this->game->isMyTurn() || !$this->game->opponentComputer) {
-                $this->render();
                 $this->renderMessage('moves: ' . $this->game->moves() . PHP_EOL);
                 $return = $this->command($this->game->currentPlayer() . ": ");
                 if ($return) {
                     $this->renderMessage($return . PHP_EOL);
+                } else {
+                    $this->render();
                 }
             } else {
                 $message = $this->game->currentPlayer() . ": thinking... ";
                 $this->renderMessage($message);
                 $this->sleep($this->game->sleep);
                 $command = $this->game->compute();
-                if ($this->game->auto) {
-                    $this->render();
-                }
+                $this->render();
+                $this->renderMessage($message . $command . PHP_EOL);
             }
         }
     }
@@ -77,12 +75,10 @@ class Cli
         $done = [];
         for ($i = 0; $i < $count; $i++) {
             $start = microtime(true);
-            $state = $this->game->state();
-            while ($state === GameState::ONGOING) {
-                $state = $this->game->state();
+            while ($this->game->state() === GameState::ONGOING) {
                 $this->game->compute();
             }
-            switch($state) {
+            switch($this->game->state()) {
             case GameState::WIN_WHITE:
                 echo 'white win!';
                 break;
@@ -95,7 +91,7 @@ class Cli
             }
             echo PHP_EOL;
             $done[] = microtime(true) - $start;
-            echo 'time: ' . microtime(true) - $start . PHP_EOL;
+            echo 'time: ' . (string)(microtime(true) - $start) . PHP_EOL;
             $this->game->reset();
         }
         echo 'average: ' . array_sum($done) / count($done) . PHP_EOL;
