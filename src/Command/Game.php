@@ -134,7 +134,7 @@ class Game
     {
         $commandInput = explode(' ', $input);
         $command = array_shift($commandInput);
-        if (preg_match('/^\d-\d$/', $command)) {
+        if (preg_match('/^\d+-\d+$/', $command)) {
             $commandInput = [$command];
             $command = 'move';
         }
