@@ -20,6 +20,10 @@ class Game
 
     public int $boardSizeX;
     public int $boardSizeY;
+    public array $strategy = [
+        'white' => 'random',
+        'black' => 'random',
+    ];
 
     public bool $opponentComputer = true;
     public bool $auto = false;
@@ -116,6 +120,7 @@ class Game
             'simple',
             'exit',
             'resize',
+            'strategy'
         ];
         if (!$command) {
             return implode(' ', $commands);
@@ -154,7 +159,8 @@ class Game
 
     public function compute() : string
     {
-        return $this->game->compute();
+        $player = strtolower($this->game->getCurrentPlayer()->name);
+        return $this->game->compute($this->strategy[$player]);
     }
 
     public function state() : GameState
@@ -228,5 +234,16 @@ class Game
         $this->boardSizeX = $x;
         $this->boardSizeY = $y;
         $this->reset();
+    }
+
+    /**
+     * Usage:
+     * - strategy [strategy] [player] コンピュータ選択の戦略を設定します
+     */
+    public function strategy(string $strategy, string $player = 'black')
+    {
+        if (isset($this->strategy[$player])) {
+            $this->strategy[$player] = $strategy;
+        }
     }
 }
