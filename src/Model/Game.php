@@ -49,7 +49,7 @@ class Game
         if (!isset($moves[$index])) {
             return false;
         }
-        $this->history->add($this->boardHash, $this->board, $this->currentPlayer, $this->moveCount);
+        $this->history->push($this);
         $this->moveCount++;
         $this->board = $moves[$index]->newState($this->board, $this->currentPlayer);
         // 盤面サイズがでかい場合にメモリが足りなくなるのでクリアする
@@ -145,12 +145,22 @@ class Game
     public function historyBack(string $hash)
     {
         if ($history = $this->history->get($hash)) {
-            $this->board = Board::fromArray($history->board);
-            $this->boardHash = $hash;
-            $this->currentPlayer = $history->player === Player::WHITE->name ? Player::WHITE : Player::BLACK;
-            $this->moveCount = $history->moveCount;
-            $this->moves = [];
+            $this->fromHistory($history);
         }
+    }
+
+    public function toHistory() : History
+    {
+        return new History($this->board, $this->currentPlayer, $this->moveCount);
+    }
+
+    public function fromHistory(History $history)
+    {
+        $this->board = Board::fromArray($history->board);
+        $this->boardHash = $history->hash;
+        $this->currentPlayer = $history->player === Player::WHITE->name ? Player::WHITE : Player::BLACK;
+        $this->moveCount = $history->moveCount;
+        $this->moves = [];
     }
 
     public function history() : array

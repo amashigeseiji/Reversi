@@ -7,12 +7,14 @@ use Traversable;
 
 class Histories implements IteratorAggregate
 {
+    /** @var History[] */
     private array $history = [];
     private int $historyMax = 10;
 
-    public function add(string $hash, Board $board, Player $player, int $moveCount)
+    public function push(Game $game)
     {
-        $this->history[$hash] = new History($hash, $board, $player, $moveCount);
+        $history = $game->toHistory();
+        $this->history[$history->hash] = $history;
         if (count($this->history) > $this->historyMax) {
             array_shift($this->history);
         }
