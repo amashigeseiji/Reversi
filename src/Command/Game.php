@@ -20,9 +20,9 @@ class Game
 
     public int $boardSizeX;
     public int $boardSizeY;
-    public array $strategy = [
+    private array $strategy = [
         'white' => 'random',
-        'black' => 'random',
+        'black' => 'minimax',
     ];
 
     public bool $opponentComputer = true;
@@ -120,7 +120,8 @@ class Game
             'simple',
             'exit',
             'resize',
-            'strategy'
+            'strategy',
+            'wait',
         ];
         if (!$command) {
             return implode(' ', $commands);
@@ -245,5 +246,14 @@ class Game
         if (isset($this->strategy[$player])) {
             $this->strategy[$player] = $strategy;
         }
+    }
+
+    /**
+     * Usage: 
+     * - wait [sleep] コンピュータが手番のときの待機時間を設定します
+     */
+    public function wait(float|int $sleep = 0.2)
+    {
+        $this->sleep = $sleep;
     }
 }

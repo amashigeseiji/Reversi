@@ -65,10 +65,7 @@ class Cli
 
     private function command(string $inputMessage = '')
     {
-        if ($inputMessage) {
-            $this->renderMessage($inputMessage);
-        }
-        $input = trim(fgets(STDIN));
+        $input = readline($this->renderMessage($inputMessage, true));
         return $this->game->invoke($input);
     }
 
@@ -178,12 +175,13 @@ class Cli
         };
     }
 
-    private function renderMessage(string $message)
+    private function renderMessage(string $message, bool $return = false)
     {
-        if ($this->simple) {
-            echo $message;
+        $message = $this->simple ? $message : sprintf($this->sprintfFormat(), ' ') . $message;
+        if ($return) {
+            return $message;
         } else {
-            echo sprintf($this->sprintfFormat(), ' ') . $message;
+            echo $message;
         }
     }
 
