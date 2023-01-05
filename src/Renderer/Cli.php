@@ -2,7 +2,6 @@
 namespace Tenjuu99\Reversi\Renderer;
 
 use Tenjuu99\Reversi\Command\Game;
-use Tenjuu99\Reversi\Model\Cell;
 use Tenjuu99\Reversi\Model\CellState;
 use Tenjuu99\Reversi\Model\GameState;
 use Tenjuu99\Reversi\Model\Player;
@@ -10,50 +9,67 @@ use Tenjuu99\Reversi\Model\Player;
 class Cli
 {
     private Game $game;
-    private int $boardSizeX;
-    private int $boardSizeY;
+    public bool $simple = false;
+    public bool $exit = false;
 
     public function __construct(int $boardSizeX = 8, int $boardSizeY = 8)
     {
-        $this->game = new Game(Player::WHITE, $boardSizeX, $boardSizeY);
-        $this->boardSizeX = $boardSizeX;
-        $this->boardSizeY = $boardSizeY;
+        $this->game = new Game($this, Player::WHITE, $boardSizeX, $boardSizeY);
     }
 
     public function play()
     {
-        $this->render();
-        while ($this->game->state() === GameState::ONGOING) {
-          if ($this->game->isMyTurn()) {
-              $this->renderMessage('moves: ' . $this->game->moves() . PHP_EOL);
-              $this->renderMessage($this->game->currentPlayer() . ": ");
-              $input = trim(fgets(STDIN));
-              $return = $this->game->invoke($input);
-              if ($return) {
-                  $this->renderMessage($return . PHP_EOL);
-              } else {
-                  $this->render();
-              }
-          } else {
-              $message = $this->game->currentPlayer() . ": thinking... ";
-              $this->renderMessage($message);
-              sleep(1);
-              $command = $this->game->compute();
-              $this->render();
-              $this->renderMessage($message . $command. PHP_EOL);
-          }
+        $yokohaba = trim(shell_exec('tput cols'));
+        if ((int)$yokohaba - ($this->game->boardSizeX * 4) - 3 <= 0) {
+            $this->simple = true;
         }
-        switch($this->game->state()) {
-        case GameState::WIN_WHITE:
-            echo 'white win!';
-            break;
-        case GameState::WIN_BLACK:
-            echo 'black win!';
-            break;
-        case GameState::DRAW:
-            echo 'draw!';
-            break;
+        while (true) {
+            if ($this->exit) {
+                break;
+            }
+            switch($this->game->state()) {
+            case GameState::WIN_WHITE:
+                $this->render();
+                $this->renderMessage('white win!' . PHP_EOL);
+                $this->command('Input: ');
+                break;
+            case GameState::WIN_BLACK:
+                $this->render();
+                $this->renderMessage('black win!' . PHP_EOL);
+                $this->command('Input: ');
+                break;
+            case GameState::DRAW:
+                $this->render();
+                $this->renderMessage('draw!' . PHP_EOL);
+                $this->command('Input: ');
+                break;
+            }
+            if ($this->game->isMyTurn() || !$this->game->opponentComputer) {
+                $this->render();
+                $this->renderMessage('moves: ' . $this->game->moves() . PHP_EOL);
+                $return = $this->command($this->game->currentPlayer() . ": ");
+                if ($return) {
+                    $this->renderMessage($return . PHP_EOL);
+                }
+            } else {
+                $message = $this->game->currentPlayer() . ": thinking... ";
+                $this->renderMessage($message);
+                $this->sleep($this->game->sleep);
+                $command = $this->game->compute();
+                if ($this->game->auto) {
+                    $this->render();
+                }
+            }
         }
+    }
+
+    private function command(string $inputMessage = '')
+    {
+        if ($inputMessage) {
+            $this->renderMessage($inputMessage);
+        }
+        $input = trim(fgets(STDIN));
+        return $this->game->invoke($input);
     }
 
     public function benchmark(int $count = 10)
@@ -87,35 +103,65 @@ class Cli
 
     public function render()
     {
+        if ($this->simple) {
+            return $this->renderSimple();
+        }
         $format = $this->sprintfFormat();
-        system('clear');
         $board = $this->game->board();
         $lines = [];
         foreach ($board as $index => $cell) {
             $lines[$cell->y -1][$cell->x -1] = $cell;
         }
+        system('clear');
         echo sprintf($format, ' ') . ' ';
-        for ($i = 1; $i <= $this->boardSizeX; $i++) {
+        for ($i = 1; $i <= $this->game->boardSizeX; $i++) {
             echo sprintf('% 2d ', $i) . ' ';
         }
         echo PHP_EOL;
 
         foreach ($lines as $line) {
             echo sprintf($format, ' ') . $this->beforeLineRender();
-            echo  sprintf($format, $line[0]->y);
+            echo  sprintf($format, $line[0]->y . ' ');
             foreach ($line as $cell) {
                 echo $this->color('|', CliColor::Black, CliColor::BG_LightGray) . $this->cellRenderer($cell->state);
             }
             echo $this->color('|', CliColor::Black, CliColor::BG_LightGray) . PHP_EOL;
         }
-        echo  sprintf($format, ' ') . $this->beforeLineRender();
+        echo sprintf($format, ' ') . $this->beforeLineRender();
+    }
+
+    public function renderSimple()
+    {
+        $board = $this->game->board();
+        $lines = [];
+        foreach ($board as $index => $cell) {
+            $lines[$cell->y -1][$cell->x -1] = $cell;
+        }
+        system('clear');
+        echo '  ';
+        for ($i = 1; $i <= $this->game->boardSizeX; $i++) {
+            if ($i % 10 === 0) {
+                echo $i;
+            } else {
+                echo sprintf('% 2d', substr($i, -1));
+            }
+        }
+        echo PHP_EOL;
+
+        foreach ($lines as $line) {
+            echo sprintf('% 2d', $line[0]->y . ' ');
+            foreach ($line as $cell) {
+                echo $this->color('|', CliColor::Black, CliColor::BG_LightGray) . $this->cellRenderer($cell->state);
+            }
+            echo $this->color('|', CliColor::Black, CliColor::BG_LightGray) . PHP_EOL;
+        }
     }
 
     private function beforeLineRender()
     {
         $unit = '+---';
         $beforeLine = '';
-        for ($i = 1; $i <= $this->boardSizeX; $i++) {
+        for ($i = 1; $i <= $this->game->boardSizeX; $i++) {
             $beforeLine .= $unit;
         }
         $beforeLine .= '+' . PHP_EOL;
@@ -124,27 +170,42 @@ class Cli
 
     private function cellRenderer(CellState $state)
     {
+        $empty = $this->simple ? ' ' : '   ';
+        $white = $this->simple ? 'w' : ' ○ ';
+        $black = $this->simple ? 'b' : ' ● ';
         return match($state) {
-            CellState::EMPTY => $this->color("   ", CliColor::LightGray, CliColor::BG_LightGray),
-            CellState::WHITE => $this->color(' ○ ', CliColor::Red, CliColor::BG_LightGray),
-            CellState::BLACK => $this->color(' ● ', CliColor::Black, CliColor::BG_LightGray)
+            CellState::EMPTY => $this->color($empty, CliColor::LightGray, CliColor::BG_LightGray),
+            CellState::WHITE => $this->color($white, CliColor::Red, CliColor::BG_LightGray),
+            CellState::BLACK => $this->color($black, CliColor::Black, CliColor::BG_LightGray)
         };
     }
 
     private function renderMessage(string $message)
     {
-        echo sprintf($this->sprintfFormat(), ' ') . $message;
+        if ($this->simple) {
+            echo $message;
+        } else {
+            echo sprintf($this->sprintfFormat(), ' ') . $message;
+        }
     }
 
     private function sprintfFormat()
     {
-        $yokohaba = trim(shell_exec('tput cols'));
-        $space = ((int)$yokohaba / 4);
+        $space = 3;
         return '% ' . $space . 's';
     }
 
     private function color($message, CliColor $color = CliColor::DEFAULT, CliColor $bgColor = CliColor::BG_DEFAULT)
     {
         return sprintf("\033[%d;%dm%s\033[m", $color->value, $bgColor->value, $message);
+    }
+
+    private function sleep(int|float $sleep)
+    {
+        if (gettype($sleep) === 'integer') {
+            sleep($sleep);
+        } elseif (gettype($sleep) === 'double') {
+            usleep($sleep * 1000000);
+        }
     }
 }
