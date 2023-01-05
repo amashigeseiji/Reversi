@@ -12,6 +12,8 @@ class Cli
     public bool $simple = false;
     public bool $exit = false;
 
+    private CliColor $bgColor = CliColor::BG_LightGreen;
+
     public function __construct(int $boardSizeX = 8, int $boardSizeY = 8)
     {
         $this->game = new Game($this, Player::WHITE, $boardSizeX, $boardSizeY);
@@ -119,9 +121,9 @@ class Cli
             echo sprintf($format, ' ') . $this->beforeLineRender();
             echo  sprintf($format, $line[0]->y . ' ');
             foreach ($line as $cell) {
-                echo $this->color('|', CliColor::Black, CliColor::BG_LightGray) . $this->cellRenderer($cell->state);
+                echo $this->color('|', CliColor::Black, $this->bgColor) . $this->cellRenderer($cell->state);
             }
-            echo $this->color('|', CliColor::Black, CliColor::BG_LightGray) . PHP_EOL;
+            echo $this->color('|', CliColor::Black, $this->bgColor) . PHP_EOL;
         }
         echo sprintf($format, ' ') . $this->beforeLineRender();
     }
@@ -147,9 +149,9 @@ class Cli
         foreach ($lines as $line) {
             echo sprintf('% 2d', $line[0]->y . ' ');
             foreach ($line as $cell) {
-                echo $this->color('|', CliColor::Black, CliColor::BG_LightGray) . $this->cellRenderer($cell->state);
+                echo $this->color('|', CliColor::Black, $this->bgColor) . $this->cellRenderer($cell->state);
             }
-            echo $this->color('|', CliColor::Black, CliColor::BG_LightGray) . PHP_EOL;
+            echo $this->color('|', CliColor::Black, $this->bgColor) . PHP_EOL;
         }
     }
 
@@ -161,18 +163,18 @@ class Cli
             $beforeLine .= $unit;
         }
         $beforeLine .= '+' . PHP_EOL;
-        return $this->color($beforeLine, CliColor::Black, CliColor::BG_LightGray);
+        return $this->color($beforeLine, CliColor::Black, $this->bgColor);
     }
 
     private function cellRenderer(CellState $state)
     {
         $empty = $this->simple ? ' ' : '   ';
-        $white = $this->simple ? 'w' : ' ○ ';
+        $white = $this->simple ? 'w' : ' ● ';
         $black = $this->simple ? 'b' : ' ● ';
         return match($state) {
-            CellState::EMPTY => $this->color($empty, CliColor::LightGray, CliColor::BG_LightGray),
-            CellState::WHITE => $this->color($white, CliColor::Red, CliColor::BG_LightGray),
-            CellState::BLACK => $this->color($black, CliColor::Black, CliColor::BG_LightGray)
+            CellState::EMPTY => $this->color($empty, CliColor::LightGray, $this->bgColor),
+            CellState::WHITE => $this->color($white, CliColor::White, $this->bgColor),
+            CellState::BLACK => $this->color($black, CliColor::Black, $this->bgColor)
         };
     }
 
