@@ -22,25 +22,28 @@ class Cli
 
     public function play()
     {
-        $state = $this->game->state();
-        while ($state === GameState::ONGOING) {
-          $state = $this->game->state();
-          $this->render();
+        $this->render();
+        while ($this->game->state() === GameState::ONGOING) {
           if ($this->game->isMyTurn()) {
-              echo 'moves: ' . $this->game->moves() . PHP_EOL;
-              echo $this->game->currentPlayer() . ": ";
+              $this->renderMessage('moves: ' . $this->game->moves() . PHP_EOL);
+              $this->renderMessage($this->game->currentPlayer() . ": ");
               $input = trim(fgets(STDIN));
               $return = $this->game->invoke($input);
               if ($return) {
-                  echo $return . PHP_EOL;
+                  $this->renderMessage($return . PHP_EOL);
+              } else {
+                  $this->render();
               }
           } else {
-              echo $this->game->currentPlayer() . ": thinking..." . PHP_EOL;
+              $message = $this->game->currentPlayer() . ": thinking... ";
+              $this->renderMessage($message);
+              sleep(1);
               $command = $this->game->compute();
-              echo $command . PHP_EOL;
+              $this->render();
+              $this->renderMessage($message . $command. PHP_EOL);
           }
         }
-        switch($state) {
+        switch($this->game->state()) {
         case GameState::WIN_WHITE:
             echo 'white win!';
             break;
@@ -84,26 +87,28 @@ class Cli
 
     public function render()
     {
+        $format = $this->sprintfFormat();
+        system('clear');
         $board = $this->game->board();
         $lines = [];
         foreach ($board as $index => $cell) {
             $lines[$cell->y -1][$cell->x -1] = $cell;
         }
-        echo '   ';
+        echo sprintf($format, ' ') . ' ';
         for ($i = 1; $i <= $this->boardSizeX; $i++) {
-            echo sprintf('%02d ', $i) . ' ';
+            echo sprintf('% 2d ', $i) . ' ';
         }
         echo PHP_EOL;
 
         foreach ($lines as $line) {
-            echo '  ' . $this->beforeLineRender();
-            echo  sprintf('%02d', $line[0]->y);
+            echo sprintf($format, ' ') . $this->beforeLineRender();
+            echo  sprintf($format, $line[0]->y);
             foreach ($line as $cell) {
-                echo '|' . $this->cellRenderer($cell->state);
+                echo $this->color('|', CliColor::Black, CliColor::BG_LightGray) . $this->cellRenderer($cell->state);
             }
-            echo '|' . PHP_EOL;
+            echo $this->color('|', CliColor::Black, CliColor::BG_LightGray) . PHP_EOL;
         }
-        echo '  ' . $this->beforeLineRender();
+        echo  sprintf($format, ' ') . $this->beforeLineRender();
     }
 
     private function beforeLineRender()
@@ -114,15 +119,32 @@ class Cli
             $beforeLine .= $unit;
         }
         $beforeLine .= '+' . PHP_EOL;
-        return $beforeLine;
+        return $this->color($beforeLine, CliColor::Black, CliColor::BG_LightGray);
     }
 
     private function cellRenderer(CellState $state)
     {
         return match($state) {
-            CellState::EMPTY => "   ",
-            CellState::WHITE => ' w ',
-            CellState::BLACK => ' b '
+            CellState::EMPTY => $this->color("   ", CliColor::LightGray, CliColor::BG_LightGray),
+            CellState::WHITE => $this->color(' ○ ', CliColor::Red, CliColor::BG_LightGray),
+            CellState::BLACK => $this->color(' ● ', CliColor::Black, CliColor::BG_LightGray)
         };
+    }
+
+    private function renderMessage(string $message)
+    {
+        echo sprintf($this->sprintfFormat(), ' ') . $message;
+    }
+
+    private function sprintfFormat()
+    {
+        $yokohaba = trim(shell_exec('tput cols'));
+        $space = ((int)$yokohaba / 4);
+        return '% ' . $space . 's';
+    }
+
+    private function color($message, CliColor $color = CliColor::DEFAULT, CliColor $bgColor = CliColor::BG_DEFAULT)
+    {
+        return sprintf("\033[%d;%dm%s\033[m", $color->value, $bgColor->value, $message);
     }
 }

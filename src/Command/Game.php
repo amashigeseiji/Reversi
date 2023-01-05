@@ -6,6 +6,7 @@ use ReflectionMethod;
 use Tenjuu99\Reversi\Model\Board;
 use Tenjuu99\Reversi\Model\Game as ModelGame;
 use Tenjuu99\Reversi\Model\GameState;
+use Tenjuu99\Reversi\Model\History;
 use Tenjuu99\Reversi\Model\Move;
 use Tenjuu99\Reversi\Model\Player;
 
@@ -68,7 +69,7 @@ class Game
 
     public function help(): string
     {
-        return 'move pass reset moves help';
+        return 'move pass reset moves help history back';
     }
 
     public function invoke(string $input)
@@ -80,6 +81,7 @@ class Game
                 return $method->invokeArgs($this, $commandInput);
             }
         }
+        return "invalid command: {$input}. Commands: ["  . $this->help() . "]";
     }
 
     public function compute() : string
@@ -95,5 +97,15 @@ class Game
     public function state() : GameState
     {
         return $this->game->state();
+    }
+
+    public function history(): string
+    {
+        return implode(' ', array_values($this->game->history()));
+    }
+
+    public function back(string $hash)
+    {
+        $this->game->historyBack($hash);
     }
 }
