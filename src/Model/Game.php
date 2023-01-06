@@ -117,7 +117,7 @@ class Game
         }
     }
 
-    private function isGameEnd() : bool
+    public function isGameEnd() : bool
     {
         $moves = $this->getMoves($this->board, $this->currentPlayer);
         if (count($moves) > 0) {

@@ -17,7 +17,7 @@ class Evaluator
     {
         $white = count($game->board()->whites());
         $black = count($game->board()->blacks());
-        $gameEnd = $game->state() !== GameState::ONGOING;
+        $gameEnd = $game->isGameEnd();
         switch ($game->state()) {
         case GameState::WIN_WHITE:
             return $player === Player::WHITE ? 500000 : -500000;

@@ -65,8 +65,13 @@ class Cli
         }
     }
 
-    public function benchmark(int $count = 10)
+    public function benchmark(int $count, array $strategies)
     {
+        if ($strategies) {
+            foreach ($strategies as $setting) {
+                $this->game->strategy($setting['strategy'], $setting['searchLevel'], $setting['player']);
+            }
+        }
         $done = [];
         $white = 0;
         $black = 0;
