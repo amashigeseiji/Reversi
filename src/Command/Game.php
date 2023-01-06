@@ -21,8 +21,8 @@ class Game
     public int $boardSizeX;
     public int $boardSizeY;
     private array $strategy = [
-        'white' => 'random',
-        'black' => 'minimax',
+        'white' => ['strategy' => 'random', 'searchLevel' => 2],
+        'black' => ['strategy' => 'ramdom', 'searchLevel' => 2],
     ];
 
     public bool $opponentComputer = true;
@@ -161,7 +161,8 @@ class Game
     public function compute() : string
     {
         $player = strtolower($this->game->getCurrentPlayer()->name);
-        return $this->game->compute($this->strategy[$player]);
+        $strategy = $this->strategy[$player];
+        return $this->game->compute($strategy['strategy'], $strategy['searchLevel']);
     }
 
     public function state() : GameState
@@ -239,12 +240,15 @@ class Game
 
     /**
      * Usage:
-     * - strategy [strategy] [player] コンピュータ選択の戦略を設定します
+     * - strategy [strategy] [searchLevel] [player] コンピュータ選択の戦略を設定します
      */
-    public function strategy(string $strategy, string $player = 'black')
+    public function strategy(string $strategy, ?int $searchLevel = null, string $player = 'black')
     {
         if (isset($this->strategy[$player])) {
-            $this->strategy[$player] = $strategy;
+            $this->strategy[$player]['strategy'] = $strategy;
+            if ($searchLevel) {
+                $this->strategy[$player]['searchLevel'] = $searchLevel;
+            }
         }
     }
 

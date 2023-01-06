@@ -16,9 +16,13 @@ class Ai
         $this->miniMax = new MiniMax();
     }
 
-    public function choice(Game $game, string $strategy): ?Move
+    public function choice(Game $game, string $strategy, int $searchLevel = 2): ?Move
     {
-        return $this->think($strategy)->choice($game);
+        $think = $this->think($strategy);
+        if ($think instanceof GameTreeInterface) {
+            $think->searchLevel($searchLevel);
+        }
+        return $think->choice($game);
     }
 
     private function think(string $strategy) : ThinkInterface

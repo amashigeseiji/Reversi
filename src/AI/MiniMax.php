@@ -5,9 +5,9 @@ use Tenjuu99\Reversi\Model\Game;
 use Tenjuu99\Reversi\Model\History;
 use Tenjuu99\Reversi\Model\Move;
 
-class MiniMax implements ThinkInterface
+class MiniMax implements ThinkInterface, GameTreeInterface
 {
-    private $searchLevel = 3;
+    private $searchLevel = 2;
     private History $history;
 
     public function choice(Game $game) : ?Move
@@ -16,6 +16,11 @@ class MiniMax implements ThinkInterface
         $choice = $this->miniMax($game, $this->searchLevel, true);
         $game->fromHistory($this->history);
         return $choice === 'pass' ? null : $choice;
+    }
+
+    public function searchLevel(int $searchLevel) : void
+    {
+        $this->searchLevel = $searchLevel;
     }
 
     /**

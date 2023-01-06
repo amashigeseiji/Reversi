@@ -130,9 +130,9 @@ class Game
         return true;
     }
 
-    public function compute(string $strategy = 'random') : string
+    public function compute(string $strategy = 'random', int $searchLevel = 2) : string
     {
-        $move = $this->ai->choice($this, $strategy);
+        $move = $this->ai->choice($this, $strategy, $searchLevel);
         if ($move) {
             $this->move($move->index);
             return $move->index;
