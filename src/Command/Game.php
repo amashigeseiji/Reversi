@@ -27,7 +27,7 @@ class Game
 
     public bool $opponentComputer = true;
     public bool $auto = false;
-    public float|int $sleep = 0.5;
+    public float|int $sleep = 0;
 
     private Cli $cli;
 
@@ -200,7 +200,7 @@ class Game
      * Usage:
      * - auto [sleep] 自動対戦モードです。sleep の値に数値を指定すると実行待ち時間を指定できます。
      */
-    public function auto(float|int $sleep = 0.2)
+    public function auto(float|int $sleep = 0)
     {
         $this->opponentComputer = true;
         $this->auto = true;
@@ -249,7 +249,7 @@ class Game
     }
 
     /**
-     * Usage: 
+     * Usage:
      * - wait [sleep] コンピュータが手番のときの待機時間を設定します
      */
     public function wait(float|int $sleep = 0.2)

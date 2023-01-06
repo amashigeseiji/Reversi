@@ -14,13 +14,18 @@ class Cli
 
     private CliColor $bgColor = CliColor::BG_LightGreen;
 
+    public $stream;
+    private $filename = __DIR__ . '/../../tmp/buffer';
+
     public function __construct(int $boardSizeX = 8, int $boardSizeY = 8)
     {
         $this->game = new Game($this, Player::WHITE, $boardSizeX, $boardSizeY);
+        $this->stream = fopen($this->filename, 'w+');
     }
 
     public function play()
     {
+        echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
         $yokohaba = trim(shell_exec('tput cols'));
         if ((int)$yokohaba - ($this->game->boardSizeX * 4) - 3 <= 0) {
             $this->simple = true;
@@ -34,14 +39,17 @@ class Cli
             case GameState::WIN_WHITE:
                 $this->renderMessage('white win!' . PHP_EOL);
                 $this->command('Input: ');
+                $this->render();
                 break;
             case GameState::WIN_BLACK:
                 $this->renderMessage('black win!' . PHP_EOL);
                 $this->command('Input: ');
+                $this->render();
                 break;
             case GameState::DRAW:
                 $this->renderMessage('draw!' . PHP_EOL);
                 $this->command('Input: ');
+                $this->render();
                 break;
             }
             if ($this->game->isMyTurn() || !$this->game->opponentComputer) {
@@ -65,13 +73,20 @@ class Cli
 
     private function command(string $inputMessage = '')
     {
+        ob_start();
         $input = readline($this->renderMessage($inputMessage, true));
+        $content = ob_get_clean();
+        fwrite($this->stream, $content);
+        system("tput cup 0 0 && tput civis && cat {$this->filename} && tput cnorm");
+        system('clear');
         return $this->game->invoke($input);
     }
 
     public function benchmark(int $count = 10)
     {
         $done = [];
+        $white = 0;
+        $black = 0;
         for ($i = 0; $i < $count; $i++) {
             $start = microtime(true);
             while ($this->game->state() === GameState::ONGOING) {
@@ -80,9 +95,11 @@ class Cli
             switch($this->game->state()) {
             case GameState::WIN_WHITE:
                 echo 'white win!';
+                $white++;
                 break;
             case GameState::WIN_BLACK:
                 echo 'black win!';
+                $black++;
                 break;
             case GameState::DRAW:
                 echo 'draw!';
@@ -93,6 +110,8 @@ class Cli
             echo 'time: ' . (string)(microtime(true) - $start) . PHP_EOL;
             $this->game->reset();
         }
+        echo 'WHITE win: ' . $white . PHP_EOL;
+        echo 'BLACK win: ' . $black . PHP_EOL;
         echo 'average: ' . array_sum($done) / count($done) . PHP_EOL;
     }
 
@@ -107,7 +126,7 @@ class Cli
         foreach ($board as $index => $cell) {
             $lines[$cell->y -1][$cell->x -1] = $cell;
         }
-        system('clear');
+        ob_start();
         echo sprintf($format, ' ') . ' ';
         for ($i = 1; $i <= $this->game->boardSizeX; $i++) {
             echo sprintf('% 2d ', $i) . ' ';
@@ -123,6 +142,10 @@ class Cli
             echo $this->color('|', CliColor::Black, $this->bgColor) . PHP_EOL;
         }
         echo sprintf($format, ' ') . $this->beforeLineRender();
+        ftruncate($this->stream, 0);
+        rewind($this->stream);
+        fwrite($this->stream, ob_get_clean());
+        system("tput cup 0 0 && tput civis && cat {$this->filename} && tput cnorm");
     }
 
     public function renderSimple()
@@ -132,7 +155,7 @@ class Cli
         foreach ($board as $index => $cell) {
             $lines[$cell->y -1][$cell->x -1] = $cell;
         }
-        system('clear');
+        ob_start();
         echo '  ';
         for ($i = 1; $i <= $this->game->boardSizeX; $i++) {
             if ($i % 10 === 0) {
@@ -150,6 +173,10 @@ class Cli
             }
             echo $this->color('|', CliColor::Black, $this->bgColor) . PHP_EOL;
         }
+        ftruncate($this->stream, 0);
+        rewind($this->stream);
+        fwrite($this->stream, ob_get_clean());
+        system("tput cup 0 0 && tput civis && cat {$this->filename} && tput cnorm");
     }
 
     private function beforeLineRender()
@@ -181,7 +208,11 @@ class Cli
         if ($return) {
             return $message;
         } else {
+            ob_start();
             echo $message;
+            $content = ob_get_clean();
+            fwrite($this->stream, $content);
+            system("tput cup 0 0 && tput civis && cat {$this->filename} && tput cnorm");
         }
     }
 
@@ -203,5 +234,13 @@ class Cli
         } elseif (gettype($sleep) === 'double') {
             usleep($sleep * 1000000);
         }
+    }
+
+    public function __destruct()
+    {
+        fclose($this->stream);
+        system("tput cnorm");
+        echo 'bye!';
+        exit;
     }
 }
