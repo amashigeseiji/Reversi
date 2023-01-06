@@ -213,7 +213,7 @@ class Game
      */
     public function simple()
     {
-        $this->cli->simple = !$this->cli->simple;
+        $this->cli->simple();
     }
 
     /**
