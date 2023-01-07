@@ -3,6 +3,7 @@ namespace Tenjuu99\Reversi\Command;
 
 use ReflectionClass;
 use ReflectionMethod;
+use Tenjuu99\Reversi\AI\Ai;
 use Tenjuu99\Reversi\Model\Board;
 use Tenjuu99\Reversi\Model\Game as ModelGame;
 use Tenjuu99\Reversi\Model\GameState;
@@ -30,6 +31,7 @@ class Game
     public float|int $sleep = 0;
 
     private Cli $cli;
+    private Ai $ai;
 
     public function __construct(Cli $cli, Player $player, int $boardSizeX = 8, int $boardSizeY = 8)
     {
@@ -47,6 +49,7 @@ class Game
         }
         $this->boardSizeX = $boardSizeX;
         $this->boardSizeY = $boardSizeY;
+        $this->ai = new Ai();
     }
 
     /**
@@ -162,7 +165,14 @@ class Game
     {
         $player = strtolower($this->game->getCurrentPlayer()->name);
         $strategy = $this->strategy[$player];
-        return $this->game->compute($strategy['strategy'], $strategy['searchLevel']);
+        $move = $this->ai->choice($this->game, $strategy['strategy'], $strategy['searchLevel']);
+        if ($move) {
+            $this->game->move($move->index);
+            return $move->index;
+        } else {
+            $this->game->next();
+            return 'pass';
+        }
     }
 
     public function state() : GameState

@@ -1,8 +1,6 @@
 <?php
 namespace Tenjuu99\Reversi\Model;
 
-use Tenjuu99\Reversi\AI\Ai;
-
 class Game
 {
     private Board $board;
@@ -17,7 +15,6 @@ class Game
      * 初期化、一手うったタイミングで計算しなおす
      */
     private string $boardHash;
-    private Ai $ai;
 
     private function __construct(Board $board, Player $player, ?int $moveCount = null)
     {
@@ -26,7 +23,6 @@ class Game
         $this->user = $player;
         $this->boardHash = $board->hash();
         $this->history = new Histories;
-        $this->ai = new Ai();
         if ($moveCount) {
             $this->moveCount = $moveCount;
         }
@@ -153,18 +149,6 @@ class Game
             return false;
         }
         return true;
-    }
-
-    public function compute(string $strategy = 'random', int $searchLevel = 2) : string
-    {
-        $move = $this->ai->choice($this, $strategy, $searchLevel);
-        if ($move) {
-            $this->move($move->index);
-            return $move->index;
-        } else {
-            $this->next();
-            return 'pass';
-        }
     }
 
     public function historyBack(string $hash)

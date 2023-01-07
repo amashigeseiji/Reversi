@@ -3,6 +3,7 @@ namespace Tenjuu99\Reversi\Renderer;
 
 use ReflectionClass;
 use ReflectionMethod;
+use Tenjuu99\Reversi\AI\Ai;
 use Tenjuu99\Reversi\Model\Game;
 use Tenjuu99\Reversi\Model\Player;
 
@@ -13,9 +14,12 @@ class Api
      */
     private array $handler;
 
+    private Ai $ai;
+
     public function __construct()
     {
         session_start();
+        $this->ai = new Ai();
         $this->setHandler();
     }
 
@@ -140,7 +144,12 @@ class Api
      */
     public function compute()
     {
-        $this->game()->compute();
+        $move = $this->ai->choice($this->game(), 'alphabeta');
+        if ($move) {
+            $this->game()->move($move->index);
+        } else {
+            $this->game()->next();
+        }
         header('Content-Type: application/json');
         echo $this->gameJson();
     }
