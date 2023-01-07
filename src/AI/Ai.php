@@ -40,4 +40,13 @@ class Ai
             return $this->random;
         }
     }
+
+    public function strategies() : array
+    {
+        return [
+            'random',
+            'minimax',
+            'alphabeta',
+        ];
+    }
 }

@@ -55,6 +55,9 @@
             <div class="column">探索深さ(白): <input type="number" :value="game.strategy.WHITE.searchLevel" @change="onChangeStrategy" data-player="WHITE" data-type="searchLevel"></div>
           </div>
           <div class="row">
+            <div class="column col2">待ち時間(コンピュータが処理するのが早すぎる場合)<input type="number" v-model="waitTime"></div>
+          </div>
+          <div class="row">
             <div class="column col2">
               {{ game.moveCount }}手目
             </div>
@@ -158,6 +161,7 @@
         menu: 'open',
         opponentComputer: localStorage.getItem('opponentComputer'),
         waiting: false,
+        waitTime: 0.3,
       }
     },
     watch: {
@@ -221,7 +225,9 @@
         return !this.isMyTurn() && this.opponentComputer
       },
       async compute() {
+        const wait = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
         this.waiting = true
+        await wait(this.waitTime * 1000)
         await axios.post('/compute').then(this.update)
       },
       onClickMoveButton(move) {
