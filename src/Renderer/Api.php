@@ -16,11 +16,17 @@ class Api
 
     private Ai $ai;
 
+    private array $strategy;
+
     public function __construct()
     {
         session_start();
         $this->ai = new Ai();
         $this->setHandler();
+        $this->strategy = [
+            Player::WHITE->name => ['strategy' => 'random', 'searchLevel' => 2],
+            Player::BLACK->name => ['strategy' => 'alphabeta', 'searchLevel' => 4],
+        ];
     }
 
     private function game() : Game
@@ -144,7 +150,8 @@ class Api
      */
     public function compute()
     {
-        $move = $this->ai->choice($this->game(), 'alphabeta');
+        $strategy = $this->strategy();
+        $move = $this->ai->choice($this->game(), $strategy['strategy'], $strategy['searchLevel']);
         if ($move) {
             $this->game()->move($move->index);
         } else {
@@ -181,5 +188,10 @@ class Api
         $this->game()->historyBack($hash);
         header('Content-Type: application/json');
         echo $this->gameJson();
+    }
+
+    private function strategy() : array
+    {
+        return $this->strategy[$this->game()->getCurrentPlayer()->name];
     }
 }
