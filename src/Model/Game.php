@@ -185,14 +185,4 @@ class Game
     {
         return $this->moveCount;
     }
-
-    public function userPlayer() : Player
-    {
-        return $this->user;
-    }
-
-    public function computerPlayer(): Player
-    {
-        return $this->user->enemy();
-    }
 }
