@@ -2,7 +2,6 @@
 namespace Tenjuu99\Reversi\AI;
 
 use Tenjuu99\Reversi\Model\Game;
-use Tenjuu99\Reversi\Model\Move;
 use Tenjuu99\Reversi\Model\Player;
 
 class MiniMax implements ThinkInterface, GameTreeInterface
@@ -36,17 +35,18 @@ class MiniMax implements ThinkInterface, GameTreeInterface
         $value = $flag ? PHP_INT_MIN : PHP_INT_MAX;
         $bestIndex = null;
 
-        $moves = $game->moves();
-        if (!$moves) {
-            $moves['pass'] = 'pass';
-        }
-        foreach ($moves as $index => $move) {
-            $gameNode = $game->node($index);
-            $childValue = $this->miniMax($gameNode, $depth - 1, !$flag);
-            $condition = $flag ? $value <= $childValue : $value >= $childValue;
-            if ($condition) {
-                $value = $childValue;
-                $bestIndex = $index;
+        foreach ($game->expandNode() as $index => $node) {
+            $childValue = $this->miniMax($node, $depth - 1, !$flag);
+            if ($flag) {
+                if ($value <= $childValue) {
+                    $value = $childValue;
+                    $bestIndex = $index;
+                }
+            } else {
+                if ($value >= $childValue) {
+                    $value = $childValue;
+                    $bestIndex = $index;
+                }
             }
         }
 

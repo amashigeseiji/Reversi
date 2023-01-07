@@ -2,7 +2,6 @@
 namespace Tenjuu99\Reversi\AI;
 
 use Tenjuu99\Reversi\Model\Game;
-use Tenjuu99\Reversi\Model\Move;
 use Tenjuu99\Reversi\Model\Player;
 
 class AlphaBeta implements ThinkInterface, GameTreeInterface
@@ -38,16 +37,11 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
         $value = 0;
         $bestIndex = null;
 
-        $moves = $game->moves();
-        if (!$moves) {
-            $moves['pass'] = 'pass';
-        }
-        foreach ($moves as $index => $move) {
+        foreach ($game->expandNode() as $index => $node) {
             if (!$bestIndex) {
                 $bestIndex = $index;
             }
-            $gameNode = $game->node($index);
-            $childValue = $this->alphaBeta($gameNode, $depth - 1, !$flag, $alpha, $beta);
+            $childValue = $this->alphaBeta($node, $depth - 1, !$flag, $alpha, $beta);
 
             if ($flag) { // AIのノードの場合
                 // 子ノードのなかでおおきい値を取得する

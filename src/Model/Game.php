@@ -1,6 +1,8 @@
 <?php
 namespace Tenjuu99\Reversi\Model;
 
+use Traversable;
+
 class Game
 {
     private Board $board;
@@ -76,6 +78,17 @@ class Game
             : $moves[$index]->newState($this->board, $this->currentPlayer);
         $player = $this->currentPlayer->enemy();
         return new Game($board, $player, $moveCount);
+    }
+
+    public function expandNode(): Traversable
+    {
+        $moves = $this->moves();
+        if (!$moves) {
+            $moves['pass'] = 'pass';
+        }
+        foreach ($moves as $index => $move) {
+            yield $index => $this->node($index);
+        }
     }
 
     /**
