@@ -9,11 +9,13 @@ class Ai
 
     private Random $random;
     private MiniMax $miniMax;
+    private AlphaBeta $alphaBeta;
 
     public function __construct()
     {
         $this->random = new Random();
         $this->miniMax = new MiniMax();
+        $this->alphaBeta = new AlphaBeta();
     }
 
     public function choice(Game $game, string $strategy, int $searchLevel = 2): ?Move
@@ -32,6 +34,8 @@ class Ai
             return $this->random;
         case 'minimax':
             return $this->miniMax;
+        case 'alphabeta':
+            return $this->alphaBeta;
         default:
             return $this->random;
         }
