@@ -252,14 +252,18 @@ class Game
      * Usage:
      * - strategy [strategy] [searchLevel] [player] コンピュータ選択の戦略を設定します
      */
-    public function strategy(string $strategy, ?int $searchLevel = null, string $player = 'black')
+    public function strategy(string $strategy = '', ?int $searchLevel = null, string $player = 'black') : ?string
     {
+        if (!$strategy) {
+            return 'white: ' . $this->strategy['white']['strategy']. ', black: ' . $this->strategy['black']['strategy'];
+        }
         if (isset($this->strategy[$player])) {
             $this->strategy[$player]['strategy'] = $strategy;
             if ($searchLevel) {
                 $this->strategy[$player]['searchLevel'] = $searchLevel;
             }
         }
+        return null;
     }
 
     /**

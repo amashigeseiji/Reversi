@@ -207,7 +207,7 @@ class Api
             return;
         }
         $_SESSION['strategy'][$player->name]['strategy'] = $strategy;
-        if (!is_null($searchLevel)) {
+        if (!is_null($searchLevel) && $searchLevel > 0) {
             $_SESSION['strategy'][$player->name]['searchLevel'] = $searchLevel;
         }
     }

@@ -44,6 +44,7 @@ class CliRenderer
     {
         ob_start();
         $input = readline($this->message($inputMessage, true));
+        readline_add_history($input);
         $content = ob_get_clean();
         file_put_contents($this->filename, $content, FILE_APPEND);
         system("tput cup 0 0 && tput civis && cat {$this->filename} && tput cnorm");
