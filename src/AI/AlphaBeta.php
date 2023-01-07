@@ -34,29 +34,22 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
             // score を返す
             return Evaluator::score($game, $this->player);
         }
-        $value = 0;
+        $value = $flag ? PHP_INT_MIN : PHP_INT_MAX;
         $bestIndex = null;
 
         foreach ($game->expandNode() as $index => $node) {
-            if (!$bestIndex) {
-                $bestIndex = $index;
-            }
             $childValue = $this->alphaBeta($node, $depth - 1, !$flag, $alpha, $beta);
 
             if ($flag) { // AIのノードの場合
                 // 子ノードのなかでおおきい値を取得する
-                if ($childValue >= $value) {
+                if ($childValue > $value) {
                     $value = $childValue;
                     $alpha = $value;
                     $bestIndex = $index;
                 }
                 // ベータカット
-                if ($value >= $beta) {
-                    if ($depth === $this->searchLevel) {
-                        break;
-                    } else {
-                        return $value;
-                    }
+                if ($value > $beta) {
+                    break;
                 }
             } else { // 敵のノードの場合
                 // 子ノードのなかで小さい値を取得する
@@ -65,8 +58,8 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
                     $beta = $value;
                     $bestIndex = $index;
                 }
-                if ($value <= $alpha) {
-                    return $value;
+                if ($value < $alpha) {
+                    break;
                 }
             }
         }
