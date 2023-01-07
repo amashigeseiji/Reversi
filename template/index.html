@@ -225,6 +225,9 @@
         return !this.isMyTurn() && this.opponentComputer
       },
       async compute() {
+        if (this.gameOver) {
+          return
+        }
         const wait = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
         this.waiting = true
         await wait(this.waitTime * 1000)

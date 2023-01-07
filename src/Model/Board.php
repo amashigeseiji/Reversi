@@ -124,4 +124,14 @@ class Board implements ArrayAccess, IteratorAggregate
     {
         return $player === Player::WHITE  ? $this->white : $this->black;
     }
+
+    public function corner() : array
+    {
+        return [
+            '1-1',
+            "1-{$this->yMax}",
+            "{$this->xMax}-1",
+            "{$this->xMax}-{$this->yMax}",
+        ];
+    }
 }

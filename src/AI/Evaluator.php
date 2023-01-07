@@ -10,7 +10,12 @@ class Evaluator
 {
     public static function score(Game $game, Player $player)
     {
-        return self::calc($game, $player);
+        $nokori = count($game->board()->empties());
+        $score = self::calc($game, $player);
+        if ($nokori > 10) {
+            $score = self::cornerPoint($score, $game->board(), $player);
+        }
+        return $score;
     }
 
     public static function calc(Game $game, Player $player): int
@@ -28,5 +33,19 @@ class Evaluator
         default:
             return $player === Player::WHITE ? $white - $black : $black - $white;
         }
+    }
+
+    public static function cornerPoint(int $score, Board $board, Player $player) : int
+    {
+        $corner = $board->corner();
+        $players = array_intersect($corner, $board->getPlayersCells($player));
+        $enemies = array_intersect($corner, $board->getPlayersCells($player->enemy()));
+        if (count($players) > 0) {
+            $score = $score + count($players) * 20;
+        }
+        if (count($enemies) > 0) {
+            $score = $score - count($enemies) * 20;
+        }
+        return $score;
     }
 }
