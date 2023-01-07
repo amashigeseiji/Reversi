@@ -28,11 +28,31 @@
             <div class="column">black: {{ game.board.black.length }}</div>
           </div>
           <div class="row">
-            <div class="column col2">{{ game.state === 'on going' ? 'status' : 'winner'}}: {{ game.state }}</div>
+            <div class="column col2" :class="{gameOver}">{{ gameOver ? 'winner' : 'status'}}: {{ game.state }}</div>
           </div>
           <div class="row">
             <div class="column">player {{ userColor }}</div>
             <div class="column">current: {{ currentPlayer }}</div>
+          </div>
+          <div class="row">
+            <div class="column">思考アルゴリズム(黒):
+              <select :value="game.strategy.BLACK.strategy" @change="onChangeStrategy" data-player="BLACK" data-type="strategy">
+                <option value="alphabeta">AlphaBeta</option>
+                <option value="minimax">MiniMax</option>
+                <option value="random">ランダム</option>
+              </select>
+            </div>
+            <div class="column">探索深さ(黒): <input type="number" :value="game.strategy.BLACK.searchLevel" @change="onChangeStrategy" data-player="BLACK" data-type="searchLevel"></div>
+          </div>
+          <div class="row">
+            <div class="column">思考アルゴリズム(白):
+              <select :value="game.strategy.WHITE.strategy" @change="onChangeStrategy" data-player="WHITE" data-type="strategy">
+                <option value="alphabeta">AlphaBeta</option>
+                <option value="minimax">MiniMax</option>
+                <option value="random">ランダム</option>
+              </select>
+            </div>
+            <div class="column">探索深さ(白): <input type="number" :value="game.strategy.WHITE.searchLevel" @change="onChangeStrategy" data-player="WHITE" data-type="searchLevel"></div>
           </div>
           <div class="row">
             <div class="column col2">
@@ -100,6 +120,7 @@
 </html>
 
 <script>
+  <?php echo "const gameJson = JSON.parse('{$gameJson}')" ?>
 
   const boardMatrix = (board) => {
     const matrix = {}
@@ -128,8 +149,8 @@
     data() {
       const cellScale = localStorage.getItem('cellScale') ? localStorage.getItem('cellScale') : defaultCellScale
       return {
-        board: {},
-        game: { board: { xMax: 8, yMax: 8, white: [], black: [] }},
+        board: boardMatrix(gameJson.board),
+        game: gameJson,
         auto: false,
         currentPlayer: 'white',
         userColor: 'white',
@@ -150,7 +171,7 @@
       },
       opponentComputer() {
         localStorage.setItem('opponentComputer', this.opponentComputer)
-      }
+      },
     },
     async mounted() {
       await this.updateBoard()
@@ -161,6 +182,9 @@
           '--cell-size': this.cellScale + 'px'
         }
       },
+      gameOver() {
+        return this.game.end
+      }
     },
     methods: {
       async updateBoard() {
@@ -278,7 +302,19 @@
         axios.post('/historyBack', {
           hash: history
         }).then(this.updateBoard)
-      }
+      },
+      onChangeStrategy(e) {
+        const { player, type }  = e.target.dataset
+        const value = e.target.value
+        const params = { player }
+        params.strategy = type === 'strategy'
+          ? value
+          : this.game.strategy[player].strategy
+        if (type === 'searchLevel') {
+          params.searchLevel = value
+        }
+        axios.post('/strategy', params).then(this.update)
+      },
     }
   }).mount('#app')
 </script>
@@ -454,7 +490,9 @@
   .menu button.reset:hover {
     background: #f3cc88;
   }
-
+  .menu .gameOver {
+    color: #5679ff;
+  }
 
   .main-menu-open, .main-menu-close {
     position: absolute;

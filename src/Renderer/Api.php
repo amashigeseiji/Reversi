@@ -16,17 +16,11 @@ class Api
 
     private Ai $ai;
 
-    private array $strategy;
-
     public function __construct()
     {
         session_start();
         $this->ai = new Ai();
         $this->setHandler();
-        $this->strategy = [
-            Player::WHITE->name => ['strategy' => 'random', 'searchLevel' => 2],
-            Player::BLACK->name => ['strategy' => 'alphabeta', 'searchLevel' => 4],
-        ];
     }
 
     private function game() : Game
@@ -150,7 +144,7 @@ class Api
      */
     public function compute()
     {
-        $strategy = $this->strategy();
+        $strategy = $this->getStrategy($this->game()->getCurrentPlayer());
         $move = $this->ai->choice($this->game(), $strategy['strategy'], $strategy['searchLevel']);
         if ($move) {
             $this->game()->move($move->index);
@@ -169,10 +163,12 @@ class Api
             'board' => $board,
             'moves' => $moves ?: ['pass' => 'pass'],
             'state' => $this->game()->state()->value,
+            'end' => $this->game()->isGameEnd() ? 1 : 0,
             'currentPlayer' => $this->game()->getCurrentPlayer()->name,
             'userColor' => $this->game(),
             'history' => $this->game()->history(),
             'moveCount' => $this->game()->moveCount(),
+            'strategy' => $this->getStrategy(),
         ];
         if (DEBUG) {
             $data['memoryUsage'] = number_format((memory_get_usage() / 1000)) . 'KB';
@@ -190,8 +186,41 @@ class Api
         echo $this->gameJson();
     }
 
-    private function strategy() : array
+    private function getStrategy(?Player $player = null) : array
     {
-        return $this->strategy[$this->game()->getCurrentPlayer()->name];
+        if (!isset($_SESSION['strategy'])) {
+            $_SESSION['strategy'] = [
+                Player::WHITE->name => ['strategy' => 'random', 'searchLevel' => 2],
+                Player::BLACK->name => ['strategy' => 'alphabeta', 'searchLevel' => 5],
+            ];
+        }
+        if ($player) {
+            return $_SESSION['strategy'][$player->name];
+        }
+        return $_SESSION['strategy'];
+    }
+
+    private function setStrategy(string $strategy, Player $player, ?int $searchLevel = null)
+    {
+        $strategies = $this->ai->strategies();
+        if (!in_array($strategy, $strategies)) {
+            return;
+        }
+        $_SESSION['strategy'][$player->name]['strategy'] = $strategy;
+        if (!is_null($searchLevel)) {
+            $_SESSION['strategy'][$player->name]['searchLevel'] = $searchLevel;
+        }
+    }
+
+    /**
+     * @Post
+     */
+    public function strategy(string $strategy, string $player, ?int $searchLevel = null)
+    {
+        $strategies = $this->ai->strategies();
+        $player = strtolower(Player::WHITE->name) === strtolower($player) ? Player::WHITE : Player::BLACK;
+        $this->setStrategy($strategy, $player, $searchLevel);
+        header('Content-Type: application/json');
+        echo $this->gameJson();
     }
 }
