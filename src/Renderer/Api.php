@@ -146,10 +146,10 @@ class Api
     {
         $strategy = $this->getStrategy($this->game()->getCurrentPlayer());
         $move = $this->ai->choice($this->game(), $strategy['strategy'], $strategy['searchLevel']);
-        if ($move) {
-            $this->game()->move($move->index);
-        } else {
+        if ($move === 'pass') {
             $this->game()->next();
+        } else {
+            $this->game()->move($move);
         }
         header('Content-Type: application/json');
         echo $this->gameJson();

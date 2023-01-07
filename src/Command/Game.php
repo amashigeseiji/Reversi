@@ -166,12 +166,12 @@ class Game
         $player = strtolower($this->game->getCurrentPlayer()->name);
         $strategy = $this->strategy[$player];
         $move = $this->ai->choice($this->game, $strategy['strategy'], $strategy['searchLevel']);
-        if ($move) {
-            $this->game->move($move->index);
-            return $move->index;
-        } else {
+        if ($move === 'pass') {
             $this->game->next();
             return 'pass';
+        } else {
+            $this->game->move($move);
+            return $move;
         }
     }
 

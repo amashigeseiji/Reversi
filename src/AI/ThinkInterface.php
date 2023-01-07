@@ -6,5 +6,5 @@ use Tenjuu99\Reversi\Model\Move;
 
 Interface ThinkInterface
 {
-    public function choice(Game $game) : ?Move;
+    public function choice(Game $game) : string;
 }

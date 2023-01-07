@@ -6,14 +6,14 @@ use Tenjuu99\Reversi\Model\Move;
 
 class Random implements ThinkInterface
 {
-    public function choice(Game $game) : ?Move
+    public function choice(Game $game) : string
     {
         $moves = $game->moves();
         if ($moves) {
             $key = array_rand($moves);
-            return $moves[$key];
+            return $key;
         } else {
-            return null;
+            return 'pass';
         }
     }
 }

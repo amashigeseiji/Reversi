@@ -18,8 +18,11 @@ class Ai
         $this->alphaBeta = new AlphaBeta();
     }
 
-    public function choice(Game $game, string $strategy, int $searchLevel = 2): ?Move
+    public function choice(Game $game, string $strategy, int $searchLevel = 2): ?string
     {
+        if ($game->isGameEnd()) {
+            return null;
+        }
         $think = $this->think($strategy);
         if ($think instanceof GameTreeInterface) {
             $think->searchLevel($searchLevel);

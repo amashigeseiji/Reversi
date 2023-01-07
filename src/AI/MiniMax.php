@@ -10,11 +10,11 @@ class MiniMax implements ThinkInterface, GameTreeInterface
     private $searchLevel = 2;
     private Player $player;
 
-    public function choice(Game $game) : ?Move
+    public function choice(Game $game) : string
     {
         $this->player = $game->getCurrentPlayer();
         $choice = $this->miniMax($game, $this->searchLevel, true);
-        return $choice === 'pass' ? null : $choice;
+        return $choice;
     }
 
     public function searchLevel(int $searchLevel) : void
@@ -46,7 +46,7 @@ class MiniMax implements ThinkInterface, GameTreeInterface
             $condition = $flag ? $value <= $childValue : $value >= $childValue;
             if ($condition) {
                 $value = $childValue;
-                $bestIndex = $move;
+                $bestIndex = $index;
             }
         }
 

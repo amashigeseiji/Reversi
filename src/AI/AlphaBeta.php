@@ -10,16 +10,18 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
     private $searchLevel = 2;
     private Player $player;
 
-    public function choice(Game $game) : ?Move
+    public function choice(Game $game) : string
     {
         $this->player = $game->getCurrentPlayer();
         $choice = $this->alphaBeta($game, $this->searchLevel, true, PHP_INT_MIN, PHP_INT_MAX);
-        return $choice === 'pass' ? null : $choice;
+        return $choice;
     }
 
     public function searchLevel(int $searchLevel) : void
     {
-        $this->searchLevel = $searchLevel;
+        if ($searchLevel > 0) {
+            $this->searchLevel = $searchLevel;
+        }
     }
 
     /**
@@ -42,7 +44,7 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
         }
         foreach ($moves as $index => $move) {
             if (!$bestIndex) {
-                $bestIndex = $move;
+                $bestIndex = $index;
             }
             $gameNode = $game->node($index);
             $childValue = $this->alphaBeta($gameNode, $depth - 1, !$flag, $alpha, $beta);
@@ -52,7 +54,7 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
                 if ($childValue >= $value) {
                     $value = $childValue;
                     $alpha = $value;
-                    $bestIndex = $move;
+                    $bestIndex = $index;
                 }
                 // ベータカット
                 if ($value >= $beta) {
@@ -67,7 +69,7 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
                 if ($childValue < $value) {
                     $value = $childValue;
                     $beta = $value;
-                    $bestIndex = $move;
+                    $bestIndex = $index;
                 }
                 if ($value <= $alpha) {
                     return $value;
