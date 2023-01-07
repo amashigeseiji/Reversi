@@ -2,22 +2,18 @@
 namespace Tenjuu99\Reversi\AI;
 
 use Tenjuu99\Reversi\Model\Game;
-use Tenjuu99\Reversi\Model\History;
 use Tenjuu99\Reversi\Model\Move;
 use Tenjuu99\Reversi\Model\Player;
 
 class MiniMax implements ThinkInterface, GameTreeInterface
 {
     private $searchLevel = 2;
-    private History $history;
     private Player $player;
 
     public function choice(Game $game) : ?Move
     {
         $this->player = $game->getCurrentPlayer();
-        $this->history = $game->toHistory();
         $choice = $this->miniMax($game, $this->searchLevel, true);
-        $game->fromHistory($this->history);
         return $choice === 'pass' ? null : $choice;
     }
 
@@ -42,22 +38,16 @@ class MiniMax implements ThinkInterface, GameTreeInterface
 
         $moves = $game->moves();
         if (!$moves) {
-            $moves[] = 'pass';
+            $moves['pass'] = 'pass';
         }
         foreach ($moves as $index => $move) {
-            $history = $game->toHistory();
-            if ($move === 'pass') {
-                $game->next();
-            } else {
-                $game->move($index);
-            }
-            $childValue = $this->miniMax($game, $depth - 1, !$flag);
-            $condition = $flag ? $value < $childValue : $value > $childValue;
+            $gameNode = $game->node($index);
+            $childValue = $this->miniMax($gameNode, $depth - 1, !$flag);
+            $condition = $flag ? $value <= $childValue : $value >= $childValue;
             if ($condition) {
                 $value = $childValue;
                 $bestIndex = $move;
             }
-            $game->fromHistory($history);
         }
 
         return $depth === $this->searchLevel ? $bestIndex : $value;

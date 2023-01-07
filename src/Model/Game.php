@@ -19,7 +19,7 @@ class Game
     private string $boardHash;
     private Ai $ai;
 
-    private function __construct(Board $board, Player $player)
+    private function __construct(Board $board, Player $player, ?int $moveCount = null)
     {
         $this->board = $board;
         $this->currentPlayer = $player;
@@ -27,6 +27,9 @@ class Game
         $this->boardHash = $board->hash();
         $this->history = new Histories;
         $this->ai = new Ai();
+        if ($moveCount) {
+            $this->moveCount = $moveCount;
+        }
     }
 
     public static function initialize(Player $player, int $boardSizeX = 8, int $boardSizeY = 8) : self
@@ -58,6 +61,25 @@ class Game
         // ハッシュ値の再計算
         $this->boardHash = $this->board->hash();
         return true;
+    }
+
+    /**
+     * ゲーム木の子ノードを生成する
+     * @param string $index 手もしくはパス
+     * @return Game|null
+     */
+    public function node(string $index) : ?Game
+    {
+        $moves = $this->moves();
+        if ($index !== 'pass' && !isset($moves[$index])) {
+            return null;
+        }
+        $moveCount = $this->moveCount + 1;
+        $board = $index === 'pass'
+            ? Board::fromArray($this->board->toArray())
+            : $moves[$index]->newState($this->board, $this->currentPlayer);
+        $player = $this->currentPlayer->enemy();
+        return new Game($board, $player, $moveCount);
     }
 
     /**
@@ -119,6 +141,9 @@ class Game
 
     public function isGameEnd() : bool
     {
+        if (count($this->board->empties()) === 0) {
+            return true;
+        }
         $moves = $this->getMoves($this->board, $this->currentPlayer);
         if (count($moves) > 0) {
             return false;
