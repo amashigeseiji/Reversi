@@ -34,11 +34,9 @@ class Game
     {
         $halfX = round($boardSizeX / 2);
         $halfY = round($boardSizeY / 2);
-        $board = new Board($boardSizeX, $boardSizeY);
-        $board->put($halfX . '-' . $halfY, CellState::WHITE);
-        $board->put($halfX . '-' . ($halfY + 1), CellState::BLACK);
-        $board->put(($halfX + 1) . '-' . $halfY, CellState::BLACK);
-        $board->put(($halfX + 1) . '-' . ($halfY + 1), CellState::WHITE);
+        $white = [$halfX . '-' . $halfY, ($halfX + 1) . '-' . ($halfY + 1)];
+        $black = [$halfX . '-' . ($halfY + 1), ($halfX + 1) . '-' . $halfY];
+        $board = new Board($boardSizeX, $boardSizeY, $white, $black);
         $game = new self($board, $player);
 
         return $game;

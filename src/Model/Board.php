@@ -107,19 +107,6 @@ class Board implements ArrayAccess, IteratorAggregate
         return $board;
     }
 
-    public function put(string $index, CellState $cellState)
-    {
-        if (!isset($this->cells[$index])) {
-            throw new \Exception();
-        }
-        $this->cells[$index]->state = $cellState;
-        if ($cellState === CellState::WHITE) {
-            $this->white[] = $index;
-        } elseif ($cellState === CellState::BLACK) {
-            $this->black[] = $index;
-        }
-    }
-
     public function getPlayersCells(Player $player) : array
     {
         return $player === Player::WHITE  ? $this->white : $this->black;
