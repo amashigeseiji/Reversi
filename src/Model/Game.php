@@ -7,7 +7,6 @@ class Game
 {
     private Board $board;
     private Player $currentPlayer;
-    private Player $user = Player::WHITE;
     private array $moves;
     private Histories $history;
     /** 何手目か */
@@ -22,7 +21,6 @@ class Game
     {
         $this->board = $board;
         $this->currentPlayer = $player;
-        $this->user = $player;
         $this->boardHash = $board->hash();
         $this->history = new Histories;
         if ($moveCount) {
@@ -72,7 +70,7 @@ class Game
         }
         $moveCount = $this->moveCount + 1;
         $board = $index === 'pass'
-            ? Board::fromArray($this->board->toArray())
+            ? $this->board
             : $moves[$index]->newState($this->board, $this->currentPlayer);
         $player = $this->currentPlayer->enemy();
         return new Game($board, $player, $moveCount);
@@ -148,7 +146,13 @@ class Game
 
     public function isGameEnd() : bool
     {
-        if (count($this->board->empties()) === 0) {
+        if (count($this->board->empties) === 0) {
+            return true;
+        }
+        if (
+            count($this->board->white) === 0
+            || count($this->board->black) === 0
+        ) {
             return true;
         }
         $moves = $this->getMoves($this->board, $this->currentPlayer);
