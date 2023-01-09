@@ -9,9 +9,10 @@ class Random implements ThinkInterface
     public function choice(Game $game) : string
     {
         $moves = $game->moves();
-        if ($moves) {
-            $key = array_rand($moves);
-            return $key;
+        if ($moves->hasMoves()) {
+            $indices = $moves->indices();
+            $key = array_rand($indices);
+            return $indices[$key];
         } else {
             return 'pass';
         }

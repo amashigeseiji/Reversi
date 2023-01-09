@@ -1,12 +1,28 @@
 <?php
 namespace Tenjuu99\Reversi\Model;
 
-class Moves
+use ArrayAccess;
+use ArrayIterator;
+use IteratorAggregate;
+use Traversable;
+
+class Moves implements ArrayAccess, IteratorAggregate
 {
+    private readonly array $moves;
+
+    /**
+     * @param Board $board
+     * @param Player $player
+     */
+    public function __construct(Board $board, Player $player)
+    {
+        $this->moves = self::generate($board, $player);
+    }
+
     /**
      * @return array<string, Move>
      */
-    public static function generate(Board $board, Player $player) : array
+    private static function generate(Board $board, Player $player) : array
     {
         $moves = [];
         $owns = $board->getPlayersCells($player);
@@ -140,5 +156,40 @@ class Moves
             }
         }
         return [];
+    }
+
+    public function offsetExists(mixed $offset): bool
+    {
+        return isset($this->moves[$offset]);
+    }
+
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->moves[$offset] ?: null;
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        throw new \Exception();
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        throw new \Exception();
+    }
+
+    public function hasMoves() : bool
+    {
+        return count($this->moves) > 0;
+    }
+
+    public function getIterator(): Traversable
+    {
+        return new ArrayIterator($this->moves);
+    }
+
+    public function indices(): array
+    {
+        return array_keys($this->moves);
     }
 }

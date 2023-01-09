@@ -23,6 +23,8 @@ class Board implements ArrayAccess, IteratorAggregate
     {
         $this->xMax = $xMax;
         $this->yMax = $yMax;
+        sort($white);
+        sort($black);
         $this->white = $white;
         $this->black = $black;
         $cells = [];

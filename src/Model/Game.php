@@ -54,7 +54,7 @@ class Game
      * @param string $index 手もしくはパス
      * @return Game|null
      */
-    public function node(string $index) : ?Game
+    private function node(string $index) : ?Game
     {
         $moves = $this->moves();
         if ($index !== 'pass' && !isset($moves[$index])) {
@@ -71,35 +71,33 @@ class Game
     public function expandNode(): Traversable
     {
         $moves = $this->moves();
-        if (!$moves) {
-            $moves['pass'] = 'pass';
-        }
-        foreach ($moves as $index => $move) {
-            yield $index => $this->node($index);
+        if (!$moves->hasMoves()) {
+            yield 'pass' => $this->node('pass');
+        } else {
+            foreach ($moves as $index => $move) {
+                yield $index => $this->node($index);
+            }
         }
     }
 
     /**
-     * @return array<string, Move>
+     * @return Moves
      */
-    public function moves() : array
+    public function moves() : Moves
     {
         return $this->getMoves($this->board, $this->currentPlayer);
     }
 
     /**
-     * @return array<string, Move>
+     * @return Moves
      */
-    private function getMoves(Board $board, Player $player) : array
+    private function getMoves(Board $board, Player $player) : Moves
     {
         if (isset($this->moves[$player->name])) {
             return $this->moves[$player->name];
         }
-        $moves = Moves::generate($board, $player);
-        if ($moves) {
-            return $this->moves[$player->name] = $moves;
-        }
-        return [];
+        $moves = new Moves($board, $player);
+        return $this->moves[$player->name] = $moves;
     }
 
     public function board() : Board
@@ -137,21 +135,19 @@ class Game
 
     public function isGameEnd() : bool
     {
-        if (count($this->board->empties) === 0) {
-            return true;
-        }
         if (
-            count($this->board->white) === 0
+            count($this->board->empties) === 0
+            || count($this->board->white) === 0
             || count($this->board->black) === 0
         ) {
             return true;
         }
         $moves = $this->getMoves($this->board, $this->currentPlayer);
-        if (count($moves) > 0) {
+        if ($moves->hasMoves()) {
             return false;
         }
         $enemyMoves = $this->getMoves($this->board, $this->currentPlayer->enemy());
-        if (count($enemyMoves) > 0) {
+        if ($enemyMoves->hasMoves()) {
             return false;
         }
         return true;

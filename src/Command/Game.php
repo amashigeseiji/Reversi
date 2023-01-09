@@ -82,7 +82,7 @@ class Game
 
     public function moves() : string
     {
-        return '[' . implode(' ', array_keys($this->game->moves())) . ']';
+        return '[' . implode(' ', $this->game->moves()->indices()) . ']';
     }
 
     public function board(): Board

@@ -161,7 +161,7 @@ class Api
         $board = $this->game()->board()->toArray();
         $data = [
             'board' => $board,
-            'moves' => $moves ?: ['pass' => 'pass'],
+            'moves' => $moves->hasMoves() ? iterator_to_array($moves) : ['pass' => 'pass'],
             'state' => $this->game()->state()->value,
             'end' => $this->game()->isGameEnd() ? 1 : 0,
             'currentPlayer' => $this->game()->getCurrentPlayer()->name,
