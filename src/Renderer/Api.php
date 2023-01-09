@@ -16,6 +16,8 @@ class Api
 
     private Ai $ai;
 
+    private $retry = 0;
+
     public function __construct()
     {
         session_start();
@@ -69,13 +71,21 @@ class Api
         if ($uriFirst === "") {
             $uriFirst = 'index';
         }
-        if (isset($this->handler[$method][$uriFirst])) {
-            $invoker = $this->handler[$method][$uriFirst];
-            $args = $method === 'get' ? $_GET : $_POST;
-            $this->render($invoker, $args);
-        } else {
-            header("HTTP/1.0 404 Not Found");
-            echo 'Not found';
+        try {
+            if (isset($this->handler[$method][$uriFirst])) {
+                $invoker = $this->handler[$method][$uriFirst];
+                $args = $method === 'get' ? $_GET : $_POST;
+                $this->render($invoker, $args);
+            } else {
+                header("HTTP/1.0 404 Not Found");
+                echo 'Not found';
+            }
+        } catch (\Throwable $e) {
+            $this->retry++;
+            $this->reset();
+            if ($this->retry <= 3) {
+                $this->handle($request);
+            }
         }
     }
 
