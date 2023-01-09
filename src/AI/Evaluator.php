@@ -10,7 +10,7 @@ class Evaluator
 {
     public static function score(Game $game, Player $player)
     {
-        $nokori = count($game->board()->empties());
+        $nokori = count($game->board()->empties);
         $score = self::calc($game, $player);
         if ($nokori > 10) {
             $score = self::cornerPoint($score, $game->board(), $player);
@@ -20,8 +20,8 @@ class Evaluator
 
     public static function calc(Game $game, Player $player): int
     {
-        $white = count($game->board()->whites());
-        $black = count($game->board()->blacks());
+        $white = count($game->board()->white);
+        $black = count($game->board()->black);
         $gameEnd = $game->isGameEnd();
         switch ($game->state()) {
         case GameState::WIN_WHITE:

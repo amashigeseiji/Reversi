@@ -10,7 +10,7 @@ class Moves
     {
         $moves = [];
         $owns = $board->getPlayersCells($player);
-        $empties = $board->empties();
+        $empties = $board->empties;
         if (count($owns) < count($empties)) {
             foreach ($owns as $index) {
                 $cell = $board[$index];

@@ -6,14 +6,18 @@ use ArrayIterator;
 use IteratorAggregate;
 use Traversable;
 
+/**
+ * イミュータブル
+ */
 class Board implements ArrayAccess, IteratorAggregate
 {
-    private array $cells;
+    private readonly array $cells;
 
-    public int $xMax = 8;
-    public int $yMax = 8;
-    private array $white = [];
-    private array $black = [];
+    public readonly int $xMax;
+    public readonly int $yMax;
+    public readonly array $white;
+    public readonly array $black;
+    public readonly array $empties;
 
     public function __construct(int $xMax = 8, int $yMax = 8, array $white = [], array $black = [])
     {
@@ -22,18 +26,23 @@ class Board implements ArrayAccess, IteratorAggregate
         $this->white = $white;
         $this->black = $black;
         $cells = [];
-        for ($x = 1; $x <= $xMax; $x++) {
-          for ($y = 1; $y <= $yMax; $y++) {
-              $cell = new Cell($x, $y, $this);
-              $cells[$cell->index] = $cell;
-          }
+        $columns = range(1, $xMax);
+        $rows = range(1, $yMax);
+        foreach ($columns as $x) {
+            foreach ($rows as $y) {
+                $cell = new Cell($x, $y, $this);
+                $cells[$cell->index] = $cell;
+            }
         }
+        // cell は本来イミュータブルオブジェクトにできるが、
+        // 計算コストがちょっと増えてしまうため変更可になっている。ここでしか state のセットはしていない。
         foreach ($white as $index) {
             $cells[$index]->state = CellState::WHITE;
         }
         foreach ($black as $index) {
             $cells[$index]->state = CellState::BLACK;
         }
+        $this->empties = array_filter($cells, fn($cell) => $cell->state === CellState::EMPTY);
         $this->cells = $cells;
     }
 
@@ -65,21 +74,6 @@ class Board implements ArrayAccess, IteratorAggregate
         return new ArrayIterator($this->cells);
     }
 
-    public function empties(): array
-    {
-        return array_filter($this->cells, fn($cell) => $cell->state === CellState::EMPTY);
-    }
-
-    public function whites(): array
-    {
-        return $this->white;
-    }
-
-    public function blacks(): array
-    {
-        return $this->black;
-    }
-
     public function hash(): string
     {
         $string = json_encode($this->toArray());
@@ -96,8 +90,8 @@ class Board implements ArrayAccess, IteratorAggregate
         return [
             'xMax' => $this->xMax,
             'yMax' => $this->yMax,
-            CellState::WHITE->value => array_values($this->white),
-            CellState::BLACK->value => array_values($this->black),
+            CellState::WHITE->value => $this->white,
+            CellState::BLACK->value => $this->black,
         ];
     }
 
