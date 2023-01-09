@@ -2,7 +2,6 @@
 namespace Tenjuu99\Reversi\Model;
 
 use ArrayAccess;
-use ArrayIterator;
 use IteratorAggregate;
 use Traversable;
 
@@ -23,8 +22,6 @@ class Board implements ArrayAccess, IteratorAggregate
     {
         $this->xMax = $xMax;
         $this->yMax = $yMax;
-        sort($white);
-        sort($black);
         $this->white = $white;
         $this->black = $black;
         $cells = [];
@@ -50,7 +47,7 @@ class Board implements ArrayAccess, IteratorAggregate
 
     public function offsetExists($offset): bool
     {
-        return array_key_exists($offset, $this->cells);
+        return isset($this->cells[$offset]);
     }
 
     public function offsetGet($offset): mixed
@@ -73,7 +70,9 @@ class Board implements ArrayAccess, IteratorAggregate
 
     public function getIterator() : Traversable
     {
-        return new ArrayIterator($this->cells);
+        foreach ($this->cells as $index => $cell) {
+            yield $index => $cell;
+        }
     }
 
     public function hash(): string
@@ -94,6 +93,17 @@ class Board implements ArrayAccess, IteratorAggregate
             'yMax' => $this->yMax,
             CellState::WHITE->value => $this->white,
             CellState::BLACK->value => $this->black,
+        ];
+    }
+
+    public function toArrayForJson(): array
+    {
+        return [
+            'xMax' => $this->xMax,
+            'yMax' => $this->yMax,
+            // json に変換するときに歯脱けだとオブジェクトにされてしまう...
+            CellState::WHITE->value => array_values($this->white),
+            CellState::BLACK->value => array_values($this->black),
         ];
     }
 

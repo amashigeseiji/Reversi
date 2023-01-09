@@ -158,7 +158,7 @@ class Api
     private function gameJson()
     {
         $moves = $this->game()->moves();
-        $board = $this->game()->board()->toArray();
+        $board = $this->game()->board()->toArrayForJson();
         $data = [
             'board' => $board,
             'moves' => $moves->hasMoves() ? iterator_to_array($moves) : ['pass' => 'pass'],
