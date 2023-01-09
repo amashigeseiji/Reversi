@@ -2,6 +2,8 @@
 namespace Tenjuu99\Reversi\AI;
 
 use Tenjuu99\Reversi\Model\Game;
+use Tenjuu99\Reversi\Model\Move;
+use Tenjuu99\Reversi\Model\Moves;
 use Tenjuu99\Reversi\Model\Player;
 
 class AlphaBeta implements ThinkInterface, GameTreeInterface
@@ -37,7 +39,31 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
         $value = $flag ? PHP_INT_MIN : PHP_INT_MAX;
         $bestIndex = null;
 
-        foreach ($game->expandNode() as $index => $node) {
+        // 枝刈りのための効率化
+        // ノードを評価が高いであろう順にならべなおす
+        $sort = function (Moves $moves) use($game) {
+            $moves = $moves->getAll();
+            $corner = array_flip($game->board()->corner());
+            $cornerMoves = [];
+            $else = [];
+            foreach ($moves as $index => $move) {
+                if (isset($corner[$index])) {
+                    $cornerMoves[$index] = $move;
+                } else {
+                    $else[$index] = $move;
+                }
+            }
+            uasort($else, function (Move $a, Move $b) {
+                $countA = count($a->flipCells);
+                $countB = count($b->flipCells);
+                if ($countA === $countB) {
+                    return 0;
+                }
+                return $countA < $countB ? 1 : -1;
+            });
+            return [...$cornerMoves, ...$else];
+        };
+        foreach ($game->expandNode($sort) as $index => $node) {
             $childValue = $this->alphaBeta($node, $depth - 1, !$flag, $alpha, $beta);
 
             if ($flag) { // AIのノードの場合

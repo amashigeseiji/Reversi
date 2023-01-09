@@ -65,33 +65,14 @@ class Game
         return new Game($board, $player, $moveCount);
     }
 
-    public function expandNode(): Traversable
+    public function expandNode(?callable $sort = null): Traversable
     {
         $moves = $this->moves();
         if (!$moves->hasMoves()) {
             yield 'pass' => $this->node('pass');
         } else {
-            $moves = $moves->getAll();
-            $corner = array_flip($this->board->corner());
-            $cornerMoves = [];
-            $else = [];
+            $moves = $sort ? $sort($moves) : $moves->getAll();
             foreach ($moves as $index => $move) {
-                if (isset($corner[$index])) {
-                    $cornerMoves[$index] = $move;
-                } else {
-                    $else[$index] = $move;
-                }
-            }
-            uasort($else, function (Move $a, Move $b) {
-                $countA = count($a->flipCells);
-                $countB = count($b->flipCells);
-                if ($countA === $countB) {
-                    return 0;
-                }
-                return $countA < $countB ? 1 : -1;
-            });
-            $sorted = [...$cornerMoves, ...$else];
-            foreach ($sorted as $index => $move) {
                 yield $index => $this->node($index);
             }
         }
