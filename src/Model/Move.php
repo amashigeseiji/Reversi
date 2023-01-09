@@ -27,7 +27,11 @@ class Move
         $enemy = $player->enemy()->toCellState();
 
         $owns = array_merge($this->flipCells, [$this->index], $board[$owner->value]);
-        $enemies = array_filter($board[$enemy->value], fn(string $cellIndex) => !in_array($cellIndex, $this->flipCells));
+        $enemies = array_combine($board[$enemy->value], $board[$enemy->value]);
+        foreach ($this->flipCells as $index) {
+            unset($enemies[$index]);
+        }
+        $enemies = array_values($enemies);
 
         $newBoard = [
             'xMax' => $board['xMax'],
