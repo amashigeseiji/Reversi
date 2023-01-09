@@ -2,11 +2,8 @@
 namespace Tenjuu99\Reversi\Model;
 
 use ArrayAccess;
-use ArrayIterator;
-use IteratorAggregate;
-use Traversable;
 
-class Moves implements ArrayAccess, IteratorAggregate
+class Moves implements ArrayAccess
 {
     private readonly array $moves;
 
@@ -183,13 +180,16 @@ class Moves implements ArrayAccess, IteratorAggregate
         return count($this->moves) > 0;
     }
 
-    public function getIterator(): Traversable
-    {
-        return new ArrayIterator($this->moves);
-    }
-
     public function indices(): array
     {
         return array_keys($this->moves);
+    }
+
+    /**
+     * @return Move[]
+     */
+    public function getAll(): array
+    {
+        return $this->moves;
     }
 }
