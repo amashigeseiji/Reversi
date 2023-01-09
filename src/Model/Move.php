@@ -17,7 +17,7 @@ class Move
         if ($this->index !== $move->index) {
             throw new \Exception('Invalid move index.');
         }
-        return new Move($this->index, [...$this->flipCells, ...$move->flipCells]);
+        return new Move($this->index, array_merge($this->flipCells, $move->flipCells));
     }
 
     public function newState(Board $board, Player $player) : Board

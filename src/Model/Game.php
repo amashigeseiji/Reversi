@@ -52,14 +52,11 @@ class Game
     /**
      * ゲーム木の子ノードを生成する
      * @param string $index 手もしくはパス
-     * @return Game|null
+     * @return Game
      */
-    private function node(string $index) : ?Game
+    private function node(string $index) : Game
     {
         $moves = $this->moves();
-        if ($index !== 'pass' && !isset($moves[$index])) {
-            return null;
-        }
         $moveCount = $this->moveCount + 1;
         $board = $index === 'pass'
             ? $this->board
