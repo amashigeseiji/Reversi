@@ -107,11 +107,38 @@ class Moves
         ];
         $cells = [];
         foreach ($orientations as $orientation) {
-            $chain = $cell->chain($orientation);
-            if ($chain && $chain[0]->state === $player->enemy()->toCellState()) {
+            $chain = self::chainFromEmptyCell($cell, $orientation, $player);
+            if ($chain) {
                 $cells = array_merge($cells, array_map(fn(Cell $cell) => $cell->index, $chain));
             }
         }
         return $cells;
+    }
+
+    /**
+     * 指定された方向に、ひっくりかえすことができる
+     * セルのチェーン状のつらなりを生成する。
+     * (空)白白(黒)、(空)黒黒黒(白)、(空)黒(白)などの連なりのパターン
+     * にあてはまる場合に配列を生成する。
+     *
+     * @return Cell[]
+     */
+    public static function chainFromEmptyCell(Cell $cell, string $orientation, Player $player) : array
+    {
+        $cells = [];
+        $current = $cell;
+        $enemyState = $player->enemy()->toCellState();
+        while($current = $current->{$orientation}()) {
+            // 隣が空白セルの場合は終了
+            if ($current->state === CellState::EMPTY) {
+                break;
+            } elseif ($current->state === $enemyState) {
+                $cells[] = $current;
+                continue;
+            } else {
+                return $cells;
+            }
+        }
+        return [];
     }
 }

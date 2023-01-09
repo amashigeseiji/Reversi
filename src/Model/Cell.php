@@ -90,38 +90,4 @@ class Cell
         $index = $this->x -1 . self::SEPARATOR . $this->y +1;
         return $this->board[$index];
     }
-
-    /**
-     * 指定された方向に、ひっくりかえすことができる
-     * セルのチェーン状のつらなりを生成する。
-     * (空)白白(黒)、(空)黒黒黒(白)、(空)黒(白)などの連なりのパターン
-     * にあてはまる場合に配列を生成する。
-     * どちらの色であるかは問わない。
-     *
-     * @return Cell[]
-     */
-    public function chain(string $orientation) : array
-    {
-        $cells = [];
-        $current = $this;
-        $prev;
-        while(true) {
-            $current = $current->{$orientation}();
-            // 隣のセルがない場合は終了
-            if (!$current) {
-                break;
-            }
-            // 隣が空白セルの場合は終了
-            if ($current->state === CellState::EMPTY) {
-                break;
-            }
-            // チェーンの色がかわったらチェーン終了
-            if (isset($prev) && $prev !== $current->state) {
-                return $cells;
-            }
-            $cells[] = $current;
-            $prev = $current->state;
-        }
-        return [];
-    }
 }
