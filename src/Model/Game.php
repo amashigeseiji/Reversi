@@ -11,17 +11,11 @@ class Game
     private Histories $history;
     /** 何手目か */
     private int $moveCount = 0;
-    /**
-     * boardをハッシュ化した値
-     * 初期化、一手うったタイミングで計算しなおす
-     */
-    private string $boardHash;
 
     private function __construct(Board $board, Player $player, ?int $moveCount = null)
     {
         $this->board = $board;
         $this->currentPlayer = $player;
-        $this->boardHash = $board->hash();
         $this->history = new Histories;
         if ($moveCount) {
             $this->moveCount = $moveCount;
@@ -52,8 +46,6 @@ class Game
         // 盤面サイズがでかい場合にメモリが足りなくなるのでクリアする
         $this->moves = [];
         $this->next();
-        // ハッシュ値の再計算
-        $this->boardHash = $this->board->hash();
         return true;
     }
 
@@ -100,13 +92,12 @@ class Game
      */
     private function getMoves(Board $board, Player $player) : array
     {
-        $hash = $this->boardHash . $player->name;
-        if (isset($this->moves[$hash])) {
-            return $this->moves[$hash];
+        if (isset($this->moves[$player->name])) {
+            return $this->moves[$player->name];
         }
         $moves = Moves::generate($board, $player);
         if ($moves) {
-            return $this->moves[$hash] = $moves;
+            return $this->moves[$player->name] = $moves;
         }
         return [];
     }
@@ -181,7 +172,6 @@ class Game
     public function fromHistory(History $history)
     {
         $this->board = Board::fromArray($history->board);
-        $this->boardHash = $history->hash;
         $this->currentPlayer = $history->player === Player::WHITE->name ? Player::WHITE : Player::BLACK;
         $this->moveCount = $history->moveCount;
         $this->moves = [];
