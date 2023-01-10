@@ -14,7 +14,7 @@ class Cli
 
     public function __construct(int $boardSizeX = 8, int $boardSizeY = 8)
     {
-        $this->game = new Game($this, Player::WHITE, $boardSizeX, $boardSizeY);
+        $this->game = new Game($this, Player::BLACK, $boardSizeX, $boardSizeY);
         $this->renderer = new CliRenderer(new CliBoard($this->game));
     }
 

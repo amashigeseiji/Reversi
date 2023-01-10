@@ -30,7 +30,7 @@ class Api
         if (isset($_SESSION['game'])) {
             return $_SESSION['game'];
         }
-        return $_SESSION['game'] = Game::initialize(Player::WHITE);
+        return $_SESSION['game'] = Game::initialize(Player::BLACK);
     }
 
     private function setHandler()
@@ -126,7 +126,7 @@ class Api
     public function reset(int $boardSizeX = 8, int $boardSizeY = 8)
     {
         if (isset($_SESSION['game'])) {
-            $_SESSION['game'] = Game::initialize(Player::WHITE, $boardSizeX, $boardSizeY);
+            $_SESSION['game'] = Game::initialize(Player::BLACK, $boardSizeX, $boardSizeY);
         }
     }
 
@@ -200,7 +200,7 @@ class Api
     {
         if (!isset($_SESSION['strategy'])) {
             $_SESSION['strategy'] = [
-                Player::WHITE->name => ['strategy' => 'random', 'searchLevel' => 2],
+                Player::WHITE->name => ['strategy' => 'alphabeta', 'searchLevel' => 5],
                 Player::BLACK->name => ['strategy' => 'alphabeta', 'searchLevel' => 5],
             ];
         }

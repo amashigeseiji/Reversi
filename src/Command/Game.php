@@ -23,7 +23,7 @@ class Game
     public int $boardSizeY;
     private array $strategy = [
         'white' => ['strategy' => 'random', 'searchLevel' => 2],
-        'black' => ['strategy' => 'ramdom', 'searchLevel' => 2],
+        'black' => ['strategy' => 'random', 'searchLevel' => 2],
     ];
 
     public bool $opponentComputer = true;

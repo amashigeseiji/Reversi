@@ -35,16 +35,6 @@
             <div class="column">current: {{ currentPlayer }}</div>
           </div>
           <div class="row">
-            <div class="column">思考アルゴリズム(黒):
-              <select :value="game.strategy.BLACK.strategy" @change="onChangeStrategy" data-player="BLACK" data-type="strategy">
-                <option value="alphabeta">AlphaBeta</option>
-                <option value="minimax">MiniMax</option>
-                <option value="random">ランダム</option>
-              </select>
-            </div>
-            <div class="column">探索深さ(黒): <input type="number" :value="game.strategy.BLACK.searchLevel" @change="onChangeStrategy" data-player="BLACK" data-type="searchLevel"></div>
-          </div>
-          <div class="row">
             <div class="column">思考アルゴリズム(白):
               <select :value="game.strategy.WHITE.strategy" @change="onChangeStrategy" data-player="WHITE" data-type="strategy">
                 <option value="alphabeta">AlphaBeta</option>
@@ -53,6 +43,16 @@
               </select>
             </div>
             <div class="column">探索深さ(白): <input type="number" :value="game.strategy.WHITE.searchLevel" @change="onChangeStrategy" data-player="WHITE" data-type="searchLevel"></div>
+          </div>
+          <div class="row">
+            <div class="column">思考アルゴリズム(黒):
+              <select :value="game.strategy.BLACK.strategy" @change="onChangeStrategy" data-player="BLACK" data-type="strategy">
+                <option value="alphabeta">AlphaBeta</option>
+                <option value="minimax">MiniMax</option>
+                <option value="random">ランダム</option>
+              </select>
+            </div>
+            <div class="column">探索深さ(黒): <input type="number" :value="game.strategy.BLACK.searchLevel" @change="onChangeStrategy" data-player="BLACK" data-type="searchLevel"></div>
           </div>
           <div class="row">
             <div class="column col2">待ち時間(コンピュータが処理するのが早すぎる場合)<input type="number" v-model="waitTime"></div>
@@ -155,13 +155,13 @@
         board: boardMatrix(gameJson.board),
         game: gameJson,
         auto: false,
-        currentPlayer: 'white',
-        userColor: 'white',
+        currentPlayer: 'black',
+        userColor: 'black',
         cellScale,
         menu: 'open',
         opponentComputer: localStorage.getItem('opponentComputer'),
         waiting: false,
-        waitTime: 0.3,
+        waitTime: 0,
       }
     },
     watch: {
