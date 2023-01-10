@@ -47,13 +47,13 @@
           </div>
           <div class="row">
             <div class="column">思考アルゴリズム(白):
-              <select :value="game.strategy.WHITE.strategy" @change="onChangeStrategy" data-player="WHITE" data-type="strategy">
+              <select :value="game.strategy.WHITE.strategy" @change="onChangeStrategy" data-player="WHITE" data-type="strategy" :disabled="!opponentComputer">
                 <option value="alphabeta">AlphaBeta</option>
                 <option value="minimax">MiniMax</option>
                 <option value="random">ランダム</option>
               </select>
             </div>
-            <div class="column">探索深さ(白): <input type="number" :value="game.strategy.WHITE.searchLevel" @change="onChangeStrategy" data-player="WHITE" data-type="searchLevel"></div>
+            <div class="column">探索深さ(白): <input type="number" :value="game.strategy.WHITE.searchLevel" @change="onChangeStrategy" data-player="WHITE" data-type="searchLevel" :disabled="!opponentComputer"></div>
           </div>
           <div class="row">
             <div class="column">思考アルゴリズム(黒):
