@@ -108,7 +108,7 @@
     <div class="moves">
       <div v-show="opponentComputer && !auto" class="thinking">
         <template v-if="currentPlayer !== userColor">Thinking...</template>
-        <template v-if="game.choice">Choiced: {{ game.choice }}</template>
+        <template v-if="currentPlayer === userColor && game.choice">Choiced: {{ game.choice }}</template>
       </div>
       <div v-show="!auto" v-if="game.state == 'on going' && !auto">
         <button @click="onClickPass" v-if="game.moves.pass">パス</button>
