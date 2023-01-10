@@ -36,7 +36,12 @@
              <div class="column col2" :class="{gameOver}">{{ gameOver ? 'winner' : 'status'}}: {{ game.state }}</div>
           </div>
           <div class="row">
-            <div class="column">player {{ userColor }}</div>
+            <div class="column">player
+              <select :value="userColor" @change="onChangePlayer">
+                <option value="white">白</option>
+                <option value="black">黒</option>
+              </select>
+            </div>
             <div class="column">current: {{ gameOver ? '' : currentPlayer }}</div>
           </div>
           <div class="row">
@@ -158,7 +163,7 @@
     }
     return config
   })
-  const defaultCellScale = 40
+  const defaultCellScale = 30
   const { createApp } = Vue
 
   createApp({
@@ -359,6 +364,12 @@
         }
         return className
       },
+      onChangePlayer(e) {
+        this.userColor = e.target.value
+        if (this.opponentComputer && this.currentPlayer !== e.target.value) {
+          this.compute()
+        }
+      }
     }
   }).mount('#app')
 </script>
@@ -387,12 +398,16 @@
     overflow: scroll;
   }
   .board tbody {
-    border: 1px solid #666;
+    border: 0.3px solid #999;
   }
   .board td {
-    border: calc(var(--cell-size) / 100) dotted #666;
+    border: calc(var(--cell-size) / 100) dotted rgba(100, 100, 100, 0.2);
     width: calc(var(--cell-size) + var(--cell-size) / 4);
     height: calc(var(--cell-size) + var(--cell-size) / 4);
+    max-width: calc(var(--cell-size) + var(--cell-size) / 4);
+    max-height: calc(var(--cell-size) + var(--cell-size) / 4);
+    min-width: calc(var(--cell-size) + var(--cell-size) / 4);
+    min-height: calc(var(--cell-size) + var(--cell-size) / 4);
     background-color: #00d202;
   }
   .board td.onMouseoverMove {
