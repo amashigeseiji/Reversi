@@ -88,7 +88,7 @@
         </div>
       </div>
     </aside>
-    <main :class="menu === 'open' ? 'main-menu-open' : 'main-menu-close'">
+    <main>
       <table class="board" :style="cellSize">
         <tr v-for="(line, group) in board" :key="group">
           <td
@@ -368,6 +368,7 @@
     margin: 0;
     max-width: 100%;
     background: #ececec;
+    font-family: "Helvetica Neue", "Helvetica", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Arial", "Yu Gothic", "Meiryo", sans-serif;
   }
   #app {
     max-width: 100%;
@@ -382,9 +383,11 @@
     border-spacing: 0;
     border-collapse: collapse;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
-    border: 1px outset #999;
     margin: 10px auto;
     overflow: scroll;
+  }
+  .board tbody {
+    border: 1px solid #666;
   }
   .board td {
     border: calc(var(--cell-size) / 100) dotted #666;
@@ -427,7 +430,8 @@
   }
 
   .moves {
-    background: rgba(0, 2, 8, .3);
+    background: #333;
+    color: #aaa;
     margin: 0 auto;
     padding: 10px;
     display: flex;
@@ -460,6 +464,9 @@
     cursor: pointer;
   }
 
+  .moves--auto .gameOver {
+    color: #90d4f6;
+  }
   .gameOver {
     color: #5679ff;
   }
@@ -475,25 +482,12 @@
     width: 100%;
     height: fit-content;
     transition: bottom .3s;
-    border-top: .1px solid #999;
+    border-top: .3px solid #333;
     flex-direction: row;
     flex-wrap: wrap;
     align-content: flex-end;
     justify-content: center;
     padding: 0;
-  }
-  div.menu-open:before {
-    content: '︿';
-    top: unset;
-  }
-  div.menu-close {
-    position: relative;
-    left: 0;
-    text-align: center;
-    width: 100%;
-  }
-  div.menu-close:before {
-    content: '﹀';
   }
   .sidemenu > div.sidemenuInner {
     width: 100%;
@@ -504,35 +498,41 @@
     left: 0;
     transition: bottom .3s;
   }
+  .menu-open, .menu-close {
+    color: #666;
+    cursor: pointer;
+    transition: bottom .3s;
+    line-height: 1;
+  }
   .menu-open {
     position: fixed;
     bottom: 0;
-    transition: bottom .3s;
     background: rgba(143,205,176,.8);
-    border-top:.1px solid #999;
+    border-top:.3px solid #333;
     height: 20px;
     width: 100vw;
     padding: 5px 5px;
     text-align: center;
-    color: #666;
-    cursor: pointer;
   }
   .menu-close {
-    color: #666;
-    width: 15px;
     text-align: center;
     background: rgba(255,255,255,.2);
+    position: relative;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    border-bottom: 0.05px solid #5daa85;
   }
   .menu-close:hover {
     cursor: pointer;
   }
   .menu-open:before {
     content: '>';
+    content: '︿';
     position: absolute;
-    top: 50%;
   }
   .menu-close:before {
-    content: '<';
+    content: '﹀';
     position: absolute;
     top: 50%;
     margin: 0 auto;
@@ -542,6 +542,7 @@
     display: flex;
     flex-direction: column;
     flex-basis: 50%;
+    border-right: 0.1px solid #999;
   }
   .menu input {
     width: 50px;
@@ -550,6 +551,9 @@
     display: flex;
     border-top: 0.1px solid #aaa;
     padding: 3px 30px;
+  }
+  .menu .row:first-child {
+    border-top: none;
   }
   .menu .column {
     flex-basis: 50%;
@@ -584,6 +588,8 @@
   }
 
   .thinking {
+    font-weight: bold;
+    font-style: '';
     padding: 0 0 8px;
   }
 
@@ -610,7 +616,6 @@
     background: #669;
     color: #fff;
     font-size: 17px;
-    height: 25px;
   }
   @media screen and (max-width: 600px) {
     .title {
@@ -621,6 +626,9 @@
     }
     .sidemenu > div.sidemenuInner {
       flex-direction: column;
+    }
+    .menu {
+      border-right: none;
     }
   }
 </style>
