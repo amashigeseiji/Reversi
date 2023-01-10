@@ -8,6 +8,7 @@ class MiniMax implements ThinkInterface, GameTreeInterface
 {
     private $searchLevel = 2;
     private Player $player;
+    private int $nodeCount = 0;
 
     public function choice(Game $game) : string
     {
@@ -19,6 +20,11 @@ class MiniMax implements ThinkInterface, GameTreeInterface
     public function searchLevel(int $searchLevel) : void
     {
         $this->searchLevel = $searchLevel;
+    }
+
+    public function nodeCount(): int
+    {
+        return $this->nodeCount;
     }
 
     /**
@@ -37,6 +43,7 @@ class MiniMax implements ThinkInterface, GameTreeInterface
 
         foreach ($game->expandNode() as $index => $node) {
             $childValue = $this->miniMax($node, $depth - 1, !$flag);
+            $this->nodeCount++;
             if ($flag) {
                 if ($value <= $childValue) {
                     $value = $childValue;

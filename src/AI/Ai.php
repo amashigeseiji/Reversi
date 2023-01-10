@@ -10,6 +10,7 @@ class Ai
     private Random $random;
     private MiniMax $miniMax;
     private AlphaBeta $alphaBeta;
+    public int $nodeCount = 0;
 
     public function __construct()
     {
@@ -27,7 +28,11 @@ class Ai
         if ($think instanceof GameTreeInterface) {
             $think->searchLevel($searchLevel);
         }
-        return $think->choice($game);
+        $choice = $think->choice($game);
+        if ($think instanceof GameTreeInterface) {
+            $this->nodeCount = $think->nodeCount();
+        }
+        return $choice;
     }
 
     private function think(string $strategy) : ThinkInterface

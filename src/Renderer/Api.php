@@ -186,6 +186,7 @@ class Api
             'strategy' => $this->getStrategy(),
             'choice' => $choice,
             'flippedCells' => $flip,
+            'nodeCount' => $this->ai->nodeCount,
         ];
         if (DEBUG) {
             $data['memoryUsage'] = number_format((memory_get_usage() / 1000)) . 'KB';

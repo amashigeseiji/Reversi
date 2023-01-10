@@ -10,6 +10,7 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
 {
     private $searchLevel = 2;
     private Player $player;
+    private int $nodeCount = 0;
 
     public function choice(Game $game) : string
     {
@@ -23,6 +24,11 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
         if ($searchLevel > 0) {
             $this->searchLevel = $searchLevel;
         }
+    }
+
+    public function nodeCount(): int
+    {
+        return $this->nodeCount;
     }
 
     /**
@@ -65,6 +71,7 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
         };
         foreach ($game->expandNode($sort) as $index => $node) {
             $childValue = $this->alphaBeta($node, $depth - 1, !$flag, $alpha, $beta);
+            $this->nodeCount++;
 
             if ($flag) { // AIのノードの場合
                 // 子ノードのなかでおおきい値を取得する

@@ -28,16 +28,14 @@
             <div class="column">black: {{ game.board.black.length }}</div>
           </div>
           <div class="row">
-            <div class="column col2">
+            <div class="column">
               {{ game.moveCount }}手目
             </div>
-          </div>
-          <div class="row">
-             <div class="column col2" :class="{gameOver}">{{ gameOver ? 'winner' : 'status'}}: {{ game.state }}</div>
+             <div class="column" :class="{gameOver}">{{ gameOver ? 'winner' : 'status'}}: {{ game.state }}</div>
           </div>
           <div class="row">
             <div class="column">player
-              <select :value="userColor" @change="onChangePlayer">
+              <select :value="userColor" @change="onChangePlayer" :disabled="auto">
                 <option value="white">白</option>
                 <option value="black">黒</option>
               </select>
@@ -45,8 +43,10 @@
             <div class="column">current: {{ gameOver ? '' : currentPlayer }}</div>
           </div>
           <div class="row">
-            <div class="column col2">
+            <div class="column">
               <span>自動対戦: <input type="checkbox" v-model="auto"></span>
+            </div>
+            <div class="column">
               コンピュータ対戦: <input type="checkbox" v-model="opponentComputer" :disabled="auto">
             </div>
           </div>
@@ -58,7 +58,7 @@
                 <option value="random">ランダム</option>
               </select>
             </div>
-            <div class="column">探索深さ(白): <input type="number" :value="game.strategy.WHITE.searchLevel" @change="onChangeStrategy" data-player="WHITE" data-type="searchLevel" :disabled="!opponentComputer"></div>
+            <div class="column">探索深さ(白): <input type="number" :value="game.strategy.WHITE.searchLevel" @change="onChangeStrategy" data-player="WHITE" data-type="searchLevel" :disabled="!opponentComputer"> node展開:{{ currentPlayer === 'black' ? game.nodeCount: 0 }}</div>
           </div>
           <div class="row">
             <div class="column">思考アルゴリズム(黒):
@@ -68,7 +68,7 @@
                 <option value="random">ランダム</option>
               </select>
             </div>
-            <div class="column">探索深さ(黒): <input type="number" :value="game.strategy.BLACK.searchLevel" @change="onChangeStrategy" data-player="BLACK" data-type="searchLevel" :disabled="!opponentComputer"></div>
+            <div class="column">探索深さ(黒): <input type="number" :value="game.strategy.BLACK.searchLevel" @change="onChangeStrategy" data-player="BLACK" data-type="searchLevel" :disabled="!opponentComputer"> node展開:{{ currentPlayer === 'white' ? game.nodeCount: 0 }}</div>
           </div>
           <div class="row">
             <div class="column col2">待ち時間(コンピュータが処理するのが早すぎる場合)<input type="number" v-model="waitTime" :disabled="!opponentComputer"></div>
