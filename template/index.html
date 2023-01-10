@@ -86,19 +86,6 @@
             <li v-for="(history, moveCount) in game.history" :key="history"><a href="#" @click="historyBack(history)">{{moveCount}}手({{history}})</a></li>
           </ul>
         </div>
-        <div class="moves" v-show="!auto">
-          <div v-if="game.state == 'on going' && !auto">
-            <button @click="onClickPass" v-if="game.moves.pass">パス</button>
-            <template v-for="(move, index) in game.moves" :key="move.index">
-              <button
-                v-if="move !== 'pass'"
-                @click="onClickMoveButton(move.index)"
-                @mouseover="onMouseoverMoveButton(move.index)"
-                @mouseleave="onMouseleaveMoveButton(move.index)"
-              >{{ move.index }}</button>
-            </template>
-          </div>
-        </div>
       </div>
     </aside>
     <main :class="menu === 'open' ? 'main-menu-open' : 'main-menu-close'">
@@ -118,6 +105,19 @@
         </tr>
       </table>
     </main>
+    <div class="moves" v-show="!auto">
+      <div v-if="game.state == 'on going' && !auto">
+        <button @click="onClickPass" v-if="game.moves.pass">パス</button>
+        <template v-for="(move, index) in game.moves" :key="move.index">
+          <button
+            v-if="move !== 'pass'"
+            @click="onClickMoveButton(move.index)"
+            @mouseover="onMouseoverMoveButton(move.index)"
+            @mouseleave="onMouseleaveMoveButton(move.index)"
+          >{{ move.index }}</button>
+        </template>
+      </div>
+    </div>
   </div>
 </body>
 </html>
@@ -335,7 +335,7 @@
   }
   #app {
     max-width: 100%;
-    margin: 30px 0 15px 0;
+    margin: 30px 0 30px 0;
     overflow: scroll;
   }
   main {
@@ -423,30 +423,52 @@
   .sidemenu {
     position: fixed;
     background: rgba(143,205,176,.8);
-    border-right: .1px solid #999;
-    height: 100%;
-    transition: left .2s;
-    left: 0;
-    top: 25px;
-    width: 350px;
     color: #666;
     display: flex;
-    flex-direction: row-reverse;
+
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: fit-content;
+    transition: bottom .3s;
+    border-top: .1px solid #999;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    justify-content: center;
+    padding: 0;
   }
+    div.menu-open:before {
+      content: '︿';
+      top: unset;
+    }
+    div.menu-close {
+      position: relative;
+      left: 0;
+      text-align: center;
+      width: 100%;
+    }
+    div.menu-close:before {
+      content: '﹀';
+    }
   .sidemenu > div.sidemenuInner {
     width: 100%;
   }
   .sidemenu.close {
-    left: -350px;
+    bottom: -1000px;
+    left: 0;
+    transition: bottom .3s;
   }
   .menu-open {
     position: fixed;
-    top: 25px;
-    left: 0;
+    bottom: 0;
+    transition: bottom .3s;
     background: rgba(143,205,176,.8);
-    border-right: .1px solid #999;
-    height: 100%;
+    border-top:.1px solid #999;
+    height: 20px;
+    width: 100vw;
     padding: 5px 5px;
+    text-align: center;
     color: #666;
     cursor: pointer;
   }
@@ -503,17 +525,6 @@
     color: #5679ff;
   }
 
-  .main-menu-open, .main-menu-close {
-    position: absolute;
-    left: 0;
-    z-index: -1;
-    transition: left .3s;
-    width: 100%;
-  }
-  .main-menu-open {
-    left: 335px;
-  }
-
   .history {
     height: 200px;
     overflow: scroll;
@@ -546,55 +557,6 @@
     }
     #app {
       align-items: flex-start;
-    }
-    .sidemenu {
-      bottom: 0;
-      top: unset;
-      left: 0;
-      width: 100%;
-      height: fit-content;
-      transition: bottom .3s;
-      border-top: .1px solid #999;
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-content: flex-end;
-      justify-content: center;
-      padding: 0;
-    }
-    aside.sidemenu.close {
-      bottom: -1000px;
-      left: 0;
-      transition: bottom .3s;
-    }
-    .menu-open {
-      position: fixed;
-      top: unset;
-      left: unset;
-      bottom: 0;
-      transition: bottom .3s;
-      border-right: .1px solid #999;
-      border-top:.1px solid #999;
-      height: 20px;
-      width: 100vw;
-      text-align: center;
-    }
-    div.menu-open:before {
-      content: '︿';
-      top: unset;
-    }
-    div.menu-close {
-      position: relative;
-      left: 0;
-      text-align: center;
-      width: 100%;
-    }
-    div.menu-close:before {
-      content: '﹀';
-    }
-    .main-menu-open, .main-menu-close {
-      position: inherit;
-      left: unset;
-      z-index: unset;
     }
   }
 </style>
