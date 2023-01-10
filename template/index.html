@@ -28,11 +28,22 @@
             <div class="column">black: {{ game.board.black.length }}</div>
           </div>
           <div class="row">
-            <div class="column col2" :class="{gameOver}">{{ gameOver ? 'winner' : 'status'}}: {{ game.state }}</div>
+            <div class="column col2">
+              {{ game.moveCount }}手目
+            </div>
+          </div>
+          <div class="row">
+             <div class="column col2" :class="{gameOver}">{{ gameOver ? 'winner' : 'status'}}: {{ game.state }}</div>
           </div>
           <div class="row">
             <div class="column">player {{ userColor }}</div>
-            <div class="column">current: {{ currentPlayer }}</div>
+            <div class="column">current: {{ gameOver ? '' : currentPlayer }}</div>
+          </div>
+          <div class="row">
+            <div class="column col2">
+              <span>自動対戦: <input type="checkbox" v-model="auto"></span>
+              コンピュータ対戦: <input type="checkbox" v-model="opponentComputer" :disabled="auto">
+            </div>
           </div>
           <div class="row">
             <div class="column">思考アルゴリズム(白):
@@ -46,27 +57,16 @@
           </div>
           <div class="row">
             <div class="column">思考アルゴリズム(黒):
-              <select :value="game.strategy.BLACK.strategy" @change="onChangeStrategy" data-player="BLACK" data-type="strategy">
+              <select :value="game.strategy.BLACK.strategy" @change="onChangeStrategy" data-player="BLACK" data-type="strategy" :disabled="!opponentComputer">
                 <option value="alphabeta">AlphaBeta</option>
                 <option value="minimax">MiniMax</option>
                 <option value="random">ランダム</option>
               </select>
             </div>
-            <div class="column">探索深さ(黒): <input type="number" :value="game.strategy.BLACK.searchLevel" @change="onChangeStrategy" data-player="BLACK" data-type="searchLevel"></div>
+            <div class="column">探索深さ(黒): <input type="number" :value="game.strategy.BLACK.searchLevel" @change="onChangeStrategy" data-player="BLACK" data-type="searchLevel" :disabled="!opponentComputer"></div>
           </div>
           <div class="row">
-            <div class="column col2">待ち時間(コンピュータが処理するのが早すぎる場合)<input type="number" v-model="waitTime"></div>
-          </div>
-          <div class="row">
-            <div class="column col2">
-              {{ game.moveCount }}手目
-            </div>
-          </div>
-          <div class="row">
-            <div class="column col2">
-              <span>AUTO: <input type="checkbox" v-model="auto"></span>
-              コンピュータ: <input type="checkbox" v-model="opponentComputer" :disabled="auto">
-            </div>
+            <div class="column col2">待ち時間(コンピュータが処理するのが早すぎる場合)<input type="number" v-model="waitTime" :disabled="!opponentComputer"></div>
           </div>
           <div class="row">
             <div class="column col2">
@@ -105,8 +105,8 @@
         </tr>
       </table>
     </main>
-    <div class="moves" v-show="!auto">
-      <div v-if="game.state == 'on going' && !auto">
+    <div class="moves">
+      <div v-show="!auto" v-if="game.state == 'on going' && !auto">
         <button @click="onClickPass" v-if="game.moves.pass">パス</button>
         <template v-for="(move, index) in game.moves" :key="move.index">
           <button
@@ -116,6 +116,14 @@
             @mouseleave="onMouseleaveMoveButton(move.index)"
           >{{ move.index }}</button>
         </template>
+      </div>
+      <div v-else class="moves--auto">
+        <div :class="{gameOver}">{{ gameOver ? game.state + ' win!' : 'status: ' + game.state }}</div>
+        <div>white: {{ game.board.white.length }}, black: {{ game.board.black.length }}</div>
+        <div>
+          <button @click="onClickUpdateBoardSize">Restart</button>
+          <button @click="onClickReset" class="reset">reset</button>
+        </div>
       </div>
     </div>
   </div>
@@ -167,6 +175,7 @@
     watch: {
       auto() {
         if (this.auto) {
+          this.opponentComputer = true
           this.compute()
         }
       },
@@ -407,6 +416,9 @@
     overflow: scroll;
     max-height: 300px;
   }
+  .moves div.moves--auto {
+    flex-direction: column;
+  }
   .moves button, .menu button {
     background: #eee;
     color: #666;
@@ -418,6 +430,10 @@
   .moves button:hover, .menu button:hover {
     background: #fff;
     cursor: pointer;
+  }
+
+  .gameOver {
+    color: #5679ff;
   }
 
   .sidemenu {
@@ -453,6 +469,7 @@
     }
   .sidemenu > div.sidemenuInner {
     width: 100%;
+    display: flex;
   }
   .sidemenu.close {
     bottom: -1000px;
@@ -514,20 +531,18 @@
   .menu button {
     margin: 3px 5px;
   }
-  .menu button.reset {
+  button.reset {
     background: #ff1717;
     color: #fff;
   }
-  .menu button.reset:hover {
+  button.reset:hover {
     background: #f3cc88;
-  }
-  .menu .gameOver {
-    color: #5679ff;
   }
 
   .history {
     height: 200px;
     overflow: scroll;
+    padding: 20px;
   }
   .history h2 {
     margin: 0;
@@ -557,6 +572,9 @@
     }
     #app {
       align-items: flex-start;
+    }
+    .sidemenu > div.sidemenuInner {
+      flex-direction: column;
     }
   }
 </style>
