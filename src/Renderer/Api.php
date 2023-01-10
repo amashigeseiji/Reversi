@@ -115,9 +115,11 @@ class Api
      */
     public function move(string $index)
     {
+        $moves = $this->game()->moves();
+        $flip = isset($moves[$index]) ? $moves[$index]->flipCells : [];
         $this->game()->move($index);
         header('Content-Type: application/json');
-        echo $this->gameJson();
+        echo $this->gameJson($index, $flip);
     }
 
     /**
@@ -156,16 +158,19 @@ class Api
     {
         $strategy = $this->getStrategy($this->game()->getCurrentPlayer());
         $move = $this->ai->choice($this->game(), $strategy['strategy'], $strategy['searchLevel']);
+        $flip = [];
         if ($move === 'pass') {
             $this->game()->next();
         } else {
+            $moves = $this->game()->moves();
+            $flip = $moves[$move]->flipCells;
             $this->game()->move($move);
         }
         header('Content-Type: application/json');
-        echo $this->gameJson();
+        echo $this->gameJson($move, $flip);
     }
 
-    private function gameJson()
+    private function gameJson(string $choice = '', array $flip = [])
     {
         $moves = $this->game()->moves();
         $board = $this->game()->board()->toArrayForJson();
@@ -179,6 +184,8 @@ class Api
             'history' => $this->game()->history(),
             'moveCount' => $this->game()->moveCount(),
             'strategy' => $this->getStrategy(),
+            'choice' => $choice,
+            'flippedCells' => $flip,
         ];
         if (DEBUG) {
             $data['memoryUsage'] = number_format((memory_get_usage() / 1000)) . 'KB';

@@ -95,7 +95,7 @@
             v-for="cell in line"
             :key="cell"
             :ref="'cell_' + cell"
-            :class="['cell_' + cell, game.moves[cell] ? 'movable' : null]"
+            :class="cellClass(cell)"
             @mouseover="onMouseoverMoveButton(cell)"
             @mouseleave="onMouseleaveMoveButton(cell)"
             @click="onClickMoveButton(cell)"
@@ -106,10 +106,15 @@
       </table>
     </main>
     <div class="moves">
+      <div v-show="opponentComputer && !auto" class="thinking">
+        <template v-if="currentPlayer !== userColor">Thinking...</template>
+        <template v-if="game.choice">Choiced: {{ game.choice }}</template>
+      </div>
       <div v-show="!auto" v-if="game.state == 'on going' && !auto">
         <button @click="onClickPass" v-if="game.moves.pass">パス</button>
         <template v-for="(move, index) in game.moves" :key="move.index">
           <button
+            class="moveButton"
             v-if="move !== 'pass'"
             @click="onClickMoveButton(move.index)"
             @mouseover="onMouseoverMoveButton(move.index)"
@@ -338,6 +343,22 @@
         }
         axios.post('/strategy', params).then(this.update)
       },
+      cellClass(cell) {
+        const className = ['cell_' + cell]
+        if (this.auto) {
+          return className
+        }
+        if (this.game.moves[cell]) {
+          className.push('movable')
+        }
+        if (this.game.choice && this.game.choice === cell) {
+          className.push('choiced')
+        }
+        if (this.game.flippedCells && this.game.flippedCells.filter(index => index === cell).length > 0) {
+          className.push('flipped')
+        }
+        return className
+      },
     }
   }).mount('#app')
 </script>
@@ -346,6 +367,7 @@
   body {
     margin: 0;
     max-width: 100%;
+    background: #ececec;
   }
   #app {
     max-width: 100%;
@@ -360,17 +382,18 @@
     border-spacing: 0;
     border-collapse: collapse;
     box-shadow: 1px 2px 0.4px 0.1px rgb(0 0 0 / 20%);
-    border: 1px solid #999;
+    border: 1px outset #999;
     margin: 10px auto;
     overflow: scroll;
   }
   .board td {
-    border: calc(var(--cell-size) / 100) solid #666;
+    border: calc(var(--cell-size) / 100) dotted #666;
     width: calc(var(--cell-size) + var(--cell-size) / 4);
     height: calc(var(--cell-size) + var(--cell-size) / 4);
     background-color: #00d202;
   }
   .board td.onMouseoverMove {
+    transition: background-color 0.3s;
     background-color: #92ff9d;
   }
   .board td.movable {
@@ -405,7 +428,6 @@
 
   .moves {
     background: rgba(0, 2, 8, .3);
-    color: #67666b;
     margin: 0 auto;
     padding: 10px;
     display: flex;
@@ -559,6 +581,23 @@
     margin: 0;
     padding: 0;
     font-size: 10px;
+  }
+
+  .thinking {
+    padding: 0 0 8px;
+  }
+
+  @keyframes choiced-fade-out {
+    from {
+      background-color: #92ff9d;
+    }
+    to {
+      background-color: #00d202;
+    }
+  }
+  td.choiced, td.flipped {
+    animation-name: choiced-fade-out;
+    animation-duration: 3s;
   }
 
   .title {
