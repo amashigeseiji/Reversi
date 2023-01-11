@@ -3,43 +3,35 @@ namespace Tenjuu99\Reversi\Command;
 
 use ReflectionClass;
 use ReflectionMethod;
-use Tenjuu99\Reversi\AI\Ai;
 use Tenjuu99\Reversi\Model\Board;
-use Tenjuu99\Reversi\Model\Game as ModelGame;
 use Tenjuu99\Reversi\Model\GameState;
-use Tenjuu99\Reversi\Model\Histories;
-use Tenjuu99\Reversi\Model\History;
-use Tenjuu99\Reversi\Model\Move;
 use Tenjuu99\Reversi\Model\Player;
 use Tenjuu99\Reversi\Renderer\Cli;
+use Tenjuu99\Reversi\Reversi;
 
 class Game
 {
-    private ModelGame $game;
     private Player $userPlayer;
     /** @var ReflectionMethod[] */
     private $commands = [];
 
     public int $boardSizeX;
     public int $boardSizeY;
-    private array $strategy = [
-        'white' => ['strategy' => 'random', 'searchLevel' => 2],
-        'black' => ['strategy' => 'random', 'searchLevel' => 2],
-    ];
 
     public bool $opponentComputer = true;
     public bool $auto = false;
     public float|int $sleep = 0;
 
     private Cli $cli;
-    private Ai $ai;
-    private Histories $history;
+    private Reversi $reversi;
 
     public function __construct(Cli $cli, Player $player, int $boardSizeX = 8, int $boardSizeY = 8)
     {
+        $this->reversi = new Reversi;
+        $this->reversi->setStrategy('random', Player::WHITE);
+        $this->reversi->setStrategy('random', Player::BLACK);
         $this->cli = $cli;
         $this->userPlayer = $player;
-        $this->game = ModelGame::initialize($player, $boardSizeX, $boardSizeY);
         $reflection = new ReflectionClass($this);
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
         $commands = explode(' ', $this->help());
@@ -51,9 +43,6 @@ class Game
         }
         $this->boardSizeX = $boardSizeX;
         $this->boardSizeY = $boardSizeY;
-        $this->ai = new Ai();
-        $this->history = new Histories;
-        $this->history->push($this->game->toHistory());
     }
 
     /**
@@ -62,8 +51,7 @@ class Game
      */
     public function move(string $index)
     {
-        $this->game->move($index);
-        $this->history->push($this->game->toHistory());
+        $this->reversi->move($index);
     }
 
     /**
@@ -72,8 +60,7 @@ class Game
      */
     public function pass()
     {
-        $this->game->next();
-        $this->history->push($this->game->toHistory());
+        $this->reversi->pass();
     }
 
     /**
@@ -83,18 +70,18 @@ class Game
     public function reset()
     {
         $this->auto = false;
-        $this->game = ModelGame::initialize($this->userPlayer, $this->boardSizeX, $this->boardSizeY);
-        $this->history->clear();
+        $this->reversi->newGame($this->boardSizeX, $this->boardSizeY);
+        $this->reversi->clearHistory();
     }
 
     public function moves() : string
     {
-        return '[' . implode(' ', $this->game->moves()->indices()) . ']';
+        return '[' . implode(' ', $this->reversi->getMoves()->indices()) . ']';
     }
 
     public function board(): Board
     {
-        return $this->game->board();
+        return $this->reversi->getBoard();
     }
 
     public function isMyTurn() : bool
@@ -102,12 +89,12 @@ class Game
         if ($this->auto) {
             return false;
         }
-        return $this->userPlayer === $this->game->getCurrentPlayer();
+        return $this->userPlayer === $this->reversi->getCurrentPlayer();
     }
 
     public function currentPlayer(): string
     {
-        return $this->game->getCurrentPlayer()->name;
+        return $this->reversi->getCurrentPlayer()->name;
     }
 
     /**
@@ -170,21 +157,13 @@ class Game
 
     public function compute() : string
     {
-        $player = strtolower($this->game->getCurrentPlayer()->name);
-        $strategy = $this->strategy[$player];
-        $move = $this->ai->choice($this->game, $strategy['strategy'], $strategy['searchLevel']);
-        if ($move === 'pass') {
-            $this->game->next();
-            return 'pass';
-        } else {
-            $this->game->move($move);
-            return $move;
-        }
+        [$move, $flip] = $this->reversi->compute();
+        return $move;
     }
 
     public function state() : GameState
     {
-        return $this->game->state();
+        return $this->reversi->gameState();
     }
 
     /**
@@ -193,7 +172,7 @@ class Game
      */
     public function history(): string
     {
-        $keys = array_keys(iterator_to_array($this->history));
+        $keys = $this->reversi->getHistoriesHashList();
         return implode(' ', $keys);
     }
 
@@ -203,9 +182,7 @@ class Game
      */
     public function back(string $hash)
     {
-        if ($this->history->has($hash)) {
-            $this->game = ModelGame::fromHistory($this->history->get($hash));
-        }
+        $this->reversi->historyBack($hash);
     }
 
     /**
@@ -262,16 +239,16 @@ class Game
      * Usage:
      * - strategy [strategy] [searchLevel] [player] コンピュータ選択の戦略を設定します
      */
-    public function strategy(string $strategy = '', ?int $searchLevel = null, string $player = 'black') : ?string
+    public function strategy(string $strategy = '', ?int $searchLevel = null, ?string $player = 'WHITE') : ?string
     {
+        // todo なんかおかしい
+        $strategies = $this->reversi->getStrategy();
         if (!$strategy) {
-            return 'white: ' . $this->strategy['white']['strategy']. ', black: ' . $this->strategy['black']['strategy'];
+            return 'white: ' . $strategies[Player::WHITE->name]['strategy']. ', black: ' . $strategies[Player::BLACK->name]['strategy'];
         }
-        if (isset($this->strategy[$player])) {
-            $this->strategy[$player]['strategy'] = $strategy;
-            if ($searchLevel) {
-                $this->strategy[$player]['searchLevel'] = $searchLevel;
-            }
+        if (isset($strategies[strtoupper($player)])) {
+            $player = strtoupper($player) === Player::WHITE->name ? Player::WHITE : Player::BLACK;
+            $this->reversi->setStrategy($strategy, $player, $searchLevel);
         }
         return null;
     }

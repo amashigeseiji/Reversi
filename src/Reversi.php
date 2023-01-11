@@ -4,7 +4,9 @@ namespace Tenjuu99\Reversi;
 use Tenjuu99\Reversi\AI\Ai;
 use Tenjuu99\Reversi\Model\Board;
 use Tenjuu99\Reversi\Model\Game;
+use Tenjuu99\Reversi\Model\GameState;
 use Tenjuu99\Reversi\Model\Histories;
+use Tenjuu99\Reversi\Model\Moves;
 use Tenjuu99\Reversi\Model\Player;
 
 class Reversi
@@ -27,7 +29,7 @@ class Reversi
         ];
     }
 
-    public function newGame(int $xSize, int $ySize)
+    public function newGame(int $xSize = 8, int $ySize = 8)
     {
         $this->game = Game::initialize(Player::BLACK, $xSize, $ySize);
     }
@@ -126,5 +128,30 @@ class Reversi
     public function strategyList() : array
     {
         return $this->ai->strategies();
+    }
+
+    public function clearHistory()
+    {
+        $this->history->clear();
+    }
+
+    public function getMoves() : Moves
+    {
+        return $this->game->moves();
+    }
+
+    public function gameState() : GameState
+    {
+        return $this->game->state();
+    }
+
+    public function getHistoriesHashList(): array
+    {
+        return array_keys(iterator_to_array($this->history));
+    }
+
+    public function getCurrentPlayer(): Player
+    {
+        return $this->game->getCurrentPlayer();
     }
 }
