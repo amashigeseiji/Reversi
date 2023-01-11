@@ -18,12 +18,12 @@ class Reversi
     private array $strategy;
     private array $defaultStrategy = ['strategy' => 'alphabeta', 'searchLevel' => 5];
 
-    public function __construct()
+    public function __construct(int $boardSizeX = 8, int $boardSizeY = 8, array $strategies = [])
     {
         $this->ai = new Ai();
-        $this->game = Game::initialize(Player::BLACK);
+        $this->game = Game::initialize(Player::BLACK, $boardSizeX, $boardSizeY);
         $this->history = new Histories;
-        $this->strategy = [
+        $this->strategy = $strategies ?: [
             Player::WHITE->name => $this->defaultStrategy,
             Player::BLACK->name => $this->defaultStrategy,
         ];

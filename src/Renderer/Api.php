@@ -118,7 +118,8 @@ class Api
      */
     public function reset(int $boardSizeX = 8, int $boardSizeY = 8)
     {
-        $this->reversi->newGame($boardSizeX, $boardSizeY);
+        $this->reversi = new Reversi($boardSizeX, $boardSizeY, $this->reversi->getStrategy());
+        $_SESSION['reversi'] = $this->reversi;
     }
 
     /**

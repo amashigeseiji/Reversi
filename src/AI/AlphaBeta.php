@@ -14,6 +14,7 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
 
     public function choice(Game $game) : string
     {
+        $this->nodeCount = 0;
         $this->player = $game->getCurrentPlayer();
         $choice = $this->alphaBeta($game, $this->searchLevel, true, PHP_INT_MIN, PHP_INT_MAX);
         return $choice;
