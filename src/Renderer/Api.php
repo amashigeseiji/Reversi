@@ -3,10 +3,8 @@ namespace Tenjuu99\Reversi\Renderer;
 
 use ReflectionClass;
 use ReflectionMethod;
-use Tenjuu99\Reversi\AI\Ai;
-use Tenjuu99\Reversi\Model\Game;
-use Tenjuu99\Reversi\Model\Histories;
 use Tenjuu99\Reversi\Model\Player;
+use Tenjuu99\Reversi\Reversi;
 
 class Api
 {
@@ -15,38 +13,17 @@ class Api
      */
     private array $handler;
 
-    private Ai $ai;
+    private Reversi $reversi;
 
     private $retry = 0;
 
     public function __construct()
     {
         session_start();
-        $this->ai = new Ai();
+        $reversi = isset($_SESSION['reversi']) ? $_SESSION['reversi'] : new Reversi;
+        $_SESSION['reversi'] = $reversi;
+        $this->reversi = $reversi;
         $this->setHandler();
-    }
-
-    private function game() : Game
-    {
-        if (isset($_SESSION['game'])) {
-            return $_SESSION['game'];
-        }
-        $histories = $this->history();
-        if ($last = $histories->last()) {
-            $game = Game::fromHistory($last);
-            return $game;
-        }
-        $game = Game::initialize(Player::BLACK);
-        $this->history()->push($game->toHistory());
-        return $_SESSION['game'] = $game;
-    }
-
-    public function history() : Histories
-    {
-        if (isset($_SESSION['history'])) {
-            return $_SESSION['history'];
-        }
-        return $_SESSION['history'] = new Histories();
     }
 
     private function setHandler()
@@ -131,12 +108,9 @@ class Api
      */
     public function move(string $index)
     {
-        $moves = $this->game()->moves();
-        $flip = isset($moves[$index]) ? $moves[$index]->flipCells : [];
-        $this->game()->move($index);
-        $this->history()->push($this->game()->toHistory());
+        [$move, $flip] = $this->reversi->move($index);
         header('Content-Type: application/json');
-        echo $this->gameJson($index, $flip);
+        echo $this->gameJson($move, $flip);
     }
 
     /**
@@ -144,12 +118,7 @@ class Api
      */
     public function reset(int $boardSizeX = 8, int $boardSizeY = 8)
     {
-        if (isset($_SESSION['history'])) {
-            $_SESSION['history'] = new Histories;
-        }
-        if (isset($_SESSION['game'])) {
-            $_SESSION['game'] = Game::initialize(Player::BLACK, $boardSizeX, $boardSizeY);
-        }
+        $this->reversi->newGame($boardSizeX, $boardSizeY);
     }
 
     /**
@@ -157,8 +126,7 @@ class Api
      */
     public function pass()
     {
-        $this->game()->next();
-        $this->history()->push($this->game()->toHistory());
+        $this->reversi->pass();
         header('Content-Type: application/json');
         echo $this->gameJson();
     }
@@ -177,47 +145,17 @@ class Api
      */
     public function compute()
     {
-        $strategy = $this->getStrategy($this->game()->getCurrentPlayer());
-        $move = $this->ai->choice($this->game(), $strategy['strategy'], $strategy['searchLevel']);
-        $flip = [];
-        if ($move === 'pass') {
-            $this->game()->next();
-        } else {
-            $moves = $this->game()->moves();
-            $flip = $moves[$move]->flipCells;
-            $this->game()->move($move);
-        }
-        $this->history()->push($this->game()->toHistory());
+        [$move, $flip] = $this->reversi->compute();
         header('Content-Type: application/json');
         echo $this->gameJson($move, $flip);
     }
 
-    private function gameJson(string $choice = '', array $flip = [])
+    private function gameJson(?string $choice = '', ?array $flip = []) : string
     {
-        $moves = $this->game()->moves();
-        $board = $this->game()->board()->toArrayForJson();
-        $histories = [];
-        foreach ($this->history() as $hash => $history) {
-            $histories[$history->moveCount] = $hash;
-        }
-        $data = [
-            'board' => $board,
-            'moves' => $moves->hasMoves() ? $moves->getAll() : ['pass' => 'pass'],
-            'state' => $this->game()->state()->value,
-            'end' => $this->game()->isGameEnd() ? 1 : 0,
-            'currentPlayer' => $this->game()->getCurrentPlayer()->name,
-            'userColor' => $this->game(),
-            'history' => $histories,
-            'moveCount' => $this->game()->moveCount(),
-            'strategy' => $this->getStrategy(),
-            'choice' => $choice,
-            'flippedCells' => $flip,
-            'nodeCount' => $this->ai->nodeCount,
-        ];
-        if (DEBUG) {
-            $data['memoryUsage'] = number_format((memory_get_usage() / 1000)) . 'KB';
-        }
-        return json_encode($data);
+        $array = $this->reversi->toArray();
+        $array['choice'] = $choice;
+        $array['flippedCells'] = $flip;
+        return json_encode($array);
     }
 
     /**
@@ -225,38 +163,9 @@ class Api
      */
     public function historyBack(string $hash)
     {
-        $histories = $this->history();
-        if ($histories->has($hash)) {
-            $_SESSION['game'] = Game::fromHistory($histories->get($hash));
-        }
+        $this->reversi->historyBack($hash);
         header('Content-Type: application/json');
         echo $this->gameJson();
-    }
-
-    private function getStrategy(?Player $player = null) : array
-    {
-        if (!isset($_SESSION['strategy'])) {
-            $_SESSION['strategy'] = [
-                Player::WHITE->name => ['strategy' => 'alphabeta', 'searchLevel' => 5],
-                Player::BLACK->name => ['strategy' => 'alphabeta', 'searchLevel' => 5],
-            ];
-        }
-        if ($player) {
-            return $_SESSION['strategy'][$player->name];
-        }
-        return $_SESSION['strategy'];
-    }
-
-    private function setStrategy(string $strategy, Player $player, ?int $searchLevel = null)
-    {
-        $strategies = $this->ai->strategies();
-        if (!in_array($strategy, $strategies)) {
-            return;
-        }
-        $_SESSION['strategy'][$player->name]['strategy'] = $strategy;
-        if (!is_null($searchLevel) && $searchLevel > 0) {
-            $_SESSION['strategy'][$player->name]['searchLevel'] = $searchLevel;
-        }
     }
 
     /**
@@ -264,9 +173,9 @@ class Api
      */
     public function strategy(string $strategy, string $player, ?int $searchLevel = null)
     {
-        $strategies = $this->ai->strategies();
+        $strategies = $this->reversi->strategyList();
         $player = strtolower(Player::WHITE->name) === strtolower($player) ? Player::WHITE : Player::BLACK;
-        $this->setStrategy($strategy, $player, $searchLevel);
+        $this->reversi->setStrategy($strategy, $player, $searchLevel);
         header('Content-Type: application/json');
         echo $this->gameJson();
     }
