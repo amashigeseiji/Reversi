@@ -8,7 +8,6 @@ class Game
     private Board $board;
     private Player $currentPlayer;
     private array $moves;
-    private Histories $history;
     /** 何手目か */
     private int $moveCount = 0;
 
@@ -16,7 +15,6 @@ class Game
     {
         $this->board = $board;
         $this->currentPlayer = $player;
-        $this->history = new Histories;
         if ($moveCount) {
             $this->moveCount = $moveCount;
         }
@@ -40,7 +38,6 @@ class Game
         if (!isset($moves[$index])) {
             return false;
         }
-        $this->history->push($this);
         $this->moveCount++;
         $this->board = $moves[$index]->newState($this->board, $this->currentPlayer);
         // 盤面サイズがでかい場合にメモリが足りなくなるのでクリアする
@@ -151,33 +148,17 @@ class Game
         return true;
     }
 
-    public function historyBack(string $hash)
-    {
-        if ($history = $this->history->get($hash)) {
-            $this->fromHistory($history);
-        }
-    }
-
     public function toHistory() : History
     {
         return new History($this->board, $this->currentPlayer, $this->moveCount);
     }
 
-    public function fromHistory(History $history)
+    public static function fromHistory(History $history) : Game
     {
-        $this->board = Board::fromArray($history->board);
-        $this->currentPlayer = $history->player === Player::WHITE->name ? Player::WHITE : Player::BLACK;
-        $this->moveCount = $history->moveCount;
-        $this->moves = [];
-    }
-
-    public function history() : array
-    {
-        $histories = [];
-        foreach ($this->history as $hash => $history) {
-            $histories[$history->moveCount] = $hash;
-        }
-        return $histories;
+        $board = Board::fromArray($history->board);
+        $currentPlayer = $history->player === Player::WHITE->name ? Player::WHITE : Player::BLACK;
+        $moveCount = $history->moveCount;
+        return new self($board, $currentPlayer, $moveCount);
     }
 
     public function moveCount() : int

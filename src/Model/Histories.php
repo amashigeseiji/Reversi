@@ -11,12 +11,14 @@ class Histories implements IteratorAggregate
     private array $history = [];
     private int $historyMax = 10;
 
-    public function push(Game $game)
+    public function push(History $history)
     {
-        $history = $game->toHistory();
         $this->history[$history->hash] = $history;
         if (count($this->history) > $this->historyMax) {
             array_shift($this->history);
+        }
+        if (isset($_SESSION['history'])) {
+            $_SESSION['history'] = $this;
         }
     }
 
@@ -30,8 +32,20 @@ class Histories implements IteratorAggregate
         return $this->history[$hash] ?? null;
     }
 
+    public function last(): ?History
+    {
+        $history = end($this->history);
+        reset($this->history);
+        return $history ?: null;
+    }
+
     public function getIterator() : Traversable
     {
         return new ArrayIterator($this->history);
+    }
+
+    public function clear()
+    {
+        $this->history = [];
     }
 }

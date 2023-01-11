@@ -5,6 +5,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use Tenjuu99\Reversi\AI\Ai;
 use Tenjuu99\Reversi\Model\Game;
+use Tenjuu99\Reversi\Model\Histories;
 use Tenjuu99\Reversi\Model\Player;
 
 class Api
@@ -30,7 +31,22 @@ class Api
         if (isset($_SESSION['game'])) {
             return $_SESSION['game'];
         }
-        return $_SESSION['game'] = Game::initialize(Player::BLACK);
+        $histories = $this->history();
+        if ($last = $histories->last()) {
+            $game = Game::fromHistory($last);
+            return $game;
+        }
+        $game = Game::initialize(Player::BLACK);
+        $this->history()->push($game->toHistory());
+        return $_SESSION['game'] = $game;
+    }
+
+    public function history() : Histories
+    {
+        if (isset($_SESSION['history'])) {
+            return $_SESSION['history'];
+        }
+        return $_SESSION['history'] = new Histories();
     }
 
     private function setHandler()
@@ -118,6 +134,7 @@ class Api
         $moves = $this->game()->moves();
         $flip = isset($moves[$index]) ? $moves[$index]->flipCells : [];
         $this->game()->move($index);
+        $this->history()->push($this->game()->toHistory());
         header('Content-Type: application/json');
         echo $this->gameJson($index, $flip);
     }
@@ -127,6 +144,9 @@ class Api
      */
     public function reset(int $boardSizeX = 8, int $boardSizeY = 8)
     {
+        if (isset($_SESSION['history'])) {
+            $_SESSION['history'] = new Histories;
+        }
         if (isset($_SESSION['game'])) {
             $_SESSION['game'] = Game::initialize(Player::BLACK, $boardSizeX, $boardSizeY);
         }
@@ -138,6 +158,7 @@ class Api
     public function pass()
     {
         $this->game()->next();
+        $this->history()->push($this->game()->toHistory());
         header('Content-Type: application/json');
         echo $this->gameJson();
     }
@@ -166,6 +187,7 @@ class Api
             $flip = $moves[$move]->flipCells;
             $this->game()->move($move);
         }
+        $this->history()->push($this->game()->toHistory());
         header('Content-Type: application/json');
         echo $this->gameJson($move, $flip);
     }
@@ -174,6 +196,10 @@ class Api
     {
         $moves = $this->game()->moves();
         $board = $this->game()->board()->toArrayForJson();
+        $histories = [];
+        foreach ($this->history() as $hash => $history) {
+            $histories[$history->moveCount] = $hash;
+        }
         $data = [
             'board' => $board,
             'moves' => $moves->hasMoves() ? $moves->getAll() : ['pass' => 'pass'],
@@ -181,7 +207,7 @@ class Api
             'end' => $this->game()->isGameEnd() ? 1 : 0,
             'currentPlayer' => $this->game()->getCurrentPlayer()->name,
             'userColor' => $this->game(),
-            'history' => $this->game()->history(),
+            'history' => $histories,
             'moveCount' => $this->game()->moveCount(),
             'strategy' => $this->getStrategy(),
             'choice' => $choice,
@@ -199,7 +225,10 @@ class Api
      */
     public function historyBack(string $hash)
     {
-        $this->game()->historyBack($hash);
+        $histories = $this->history();
+        if ($histories->has($hash)) {
+            $_SESSION['game'] = Game::fromHistory($histories->get($hash));
+        }
         header('Content-Type: application/json');
         echo $this->gameJson();
     }

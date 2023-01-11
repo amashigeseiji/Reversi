@@ -7,6 +7,7 @@ use Tenjuu99\Reversi\AI\Ai;
 use Tenjuu99\Reversi\Model\Board;
 use Tenjuu99\Reversi\Model\Game as ModelGame;
 use Tenjuu99\Reversi\Model\GameState;
+use Tenjuu99\Reversi\Model\Histories;
 use Tenjuu99\Reversi\Model\History;
 use Tenjuu99\Reversi\Model\Move;
 use Tenjuu99\Reversi\Model\Player;
@@ -32,6 +33,7 @@ class Game
 
     private Cli $cli;
     private Ai $ai;
+    private Histories $history;
 
     public function __construct(Cli $cli, Player $player, int $boardSizeX = 8, int $boardSizeY = 8)
     {
@@ -50,6 +52,8 @@ class Game
         $this->boardSizeX = $boardSizeX;
         $this->boardSizeY = $boardSizeY;
         $this->ai = new Ai();
+        $this->history = new Histories;
+        $this->history->push($this->game->toHistory());
     }
 
     /**
@@ -59,6 +63,7 @@ class Game
     public function move(string $index)
     {
         $this->game->move($index);
+        $this->history->push($this->game->toHistory());
     }
 
     /**
@@ -68,6 +73,7 @@ class Game
     public function pass()
     {
         $this->game->next();
+        $this->history->push($this->game->toHistory());
     }
 
     /**
@@ -78,6 +84,7 @@ class Game
     {
         $this->auto = false;
         $this->game = ModelGame::initialize($this->userPlayer, $this->boardSizeX, $this->boardSizeY);
+        $this->history->clear();
     }
 
     public function moves() : string
@@ -186,7 +193,8 @@ class Game
      */
     public function history(): string
     {
-        return implode(' ', array_values($this->game->history()));
+        $keys = array_keys(iterator_to_array($this->history));
+        return implode(' ', $keys);
     }
 
     /**
@@ -195,7 +203,9 @@ class Game
      */
     public function back(string $hash)
     {
-        $this->game->historyBack($hash);
+        if ($this->history->has($hash)) {
+            $this->game = ModelGame::fromHistory($this->history->get($hash));
+        }
     }
 
     /**
