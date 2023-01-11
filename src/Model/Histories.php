@@ -9,7 +9,7 @@ class Histories implements IteratorAggregate
 {
     /** @var History[] */
     private array $history = [];
-    private int $historyMax = 10;
+    private int $historyMax = 100;
 
     public function push(History $history)
     {
