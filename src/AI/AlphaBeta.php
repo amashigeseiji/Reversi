@@ -6,11 +6,9 @@ use Tenjuu99\Reversi\Model\Move;
 use Tenjuu99\Reversi\Model\Moves;
 use Tenjuu99\Reversi\Model\Player;
 
-class AlphaBeta implements ThinkInterface, GameTreeInterface
+class AlphaBeta extends AbstractGameTree implements ThinkInterface
 {
-    private $searchLevel = 2;
     private Player $player;
-    private int $nodeCount = 0;
 
     public function choice(Game $game) : string
     {
@@ -18,18 +16,6 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
         $this->player = $game->getCurrentPlayer();
         $choice = $this->alphaBeta($game, $this->searchLevel, true, PHP_INT_MIN, PHP_INT_MAX);
         return $choice;
-    }
-
-    public function searchLevel(int $searchLevel) : void
-    {
-        if ($searchLevel > 0) {
-            $this->searchLevel = $searchLevel;
-        }
-    }
-
-    public function nodeCount(): int
-    {
-        return $this->nodeCount;
     }
 
     /**
@@ -70,9 +56,8 @@ class AlphaBeta implements ThinkInterface, GameTreeInterface
             });
             return [...$cornerMoves, ...$else];
         };
-        foreach ($game->expandNode($sort) as $index => $node) {
+        foreach ($this->expandNode($game, $sort) as $index => $node) {
             $childValue = $this->alphaBeta($node, $depth - 1, !$flag, $alpha, $beta);
-            $this->nodeCount++;
 
             if ($flag) { // AIのノードの場合
                 // 子ノードのなかでおおきい値を取得する

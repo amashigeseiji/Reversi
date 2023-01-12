@@ -51,7 +51,7 @@ class Game
      * @param string $index 手もしくはパス
      * @return Game
      */
-    private function node(string $index) : Game
+    public function node(string $index) : Game
     {
         $moves = $this->moves();
         $moveCount = $this->moveCount + 1;

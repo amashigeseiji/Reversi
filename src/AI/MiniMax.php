@@ -4,27 +4,16 @@ namespace Tenjuu99\Reversi\AI;
 use Tenjuu99\Reversi\Model\Game;
 use Tenjuu99\Reversi\Model\Player;
 
-class MiniMax implements ThinkInterface, GameTreeInterface
+class MiniMax extends AbstractGameTree implements ThinkInterface
 {
-    private $searchLevel = 2;
     private Player $player;
-    private int $nodeCount = 0;
 
     public function choice(Game $game) : string
     {
+        $this->nodeCount = 0;
         $this->player = $game->getCurrentPlayer();
         $choice = $this->miniMax($game, $this->searchLevel, true);
         return $choice;
-    }
-
-    public function searchLevel(int $searchLevel) : void
-    {
-        $this->searchLevel = $searchLevel;
-    }
-
-    public function nodeCount(): int
-    {
-        return $this->nodeCount;
     }
 
     /**
@@ -41,7 +30,7 @@ class MiniMax implements ThinkInterface, GameTreeInterface
         $value = $flag ? PHP_INT_MIN : PHP_INT_MAX;
         $bestIndex = null;
 
-        foreach ($game->expandNode() as $index => $node) {
+        foreach ($this->expandNode($game) as $index => $node) {
             $childValue = $this->miniMax($node, $depth - 1, !$flag);
             $this->nodeCount++;
             if ($flag) {
