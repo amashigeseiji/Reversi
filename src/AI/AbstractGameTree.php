@@ -25,30 +25,13 @@ class AbstractGameTree implements GameTreeInterface
         $moves = $game->moves();
         if (!$moves->hasMoves()) {
             $this->nodeCount++;
-            yield 'pass' => $this->node($game, 'pass');
+            yield 'pass' => $game->node('pass');
         } else {
             $moves = $sort ? $sort($moves) : $moves->getAll();
             foreach ($moves as $index => $move) {
                 $this->nodeCount++;
-                yield $index => $this->node($game, $index);
+                yield $index => $game->node($index);
             }
         }
-    }
-
-    /**
-     * ゲーム木の子ノードを生成する
-     * @param string $index 手もしくはパス
-     * @return Game
-     */
-    public function node(Game $game, string $index) : Game
-    {
-        $moves = $game->moves();
-        $moveCount = $game->moveCount() + 1;
-        $player = $game->getCurrentPlayer();
-        $board = $index === 'pass'
-            ? $game->board()
-            : $moves[$index]->newState($game->board(), $player);
-        $nextPlayer = $player->enemy();
-        return new Game($board, $nextPlayer, $moveCount);
     }
 }

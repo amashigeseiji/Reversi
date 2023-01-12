@@ -1,23 +1,24 @@
 <?php
 namespace Tenjuu99\Reversi\Model;
 
-use Traversable;
-
 class Game
 {
-    private Board $board;
-    private Player $currentPlayer;
-    private array $moves;
+    private readonly Board $board;
+    private readonly Player $currentPlayer;
+    private readonly Moves $moves;
     /** 何手目か */
-    private int $moveCount = 0;
+    private readonly int $moveCount;
+    public readonly GameState $state;
+    public readonly bool $isGameEnd;
 
-    private function __construct(Board $board, Player $player, ?int $moveCount = null)
+    public function __construct(Board $board, Player $player, int $moveCount = 0)
     {
         $this->board = $board;
         $this->currentPlayer = $player;
-        if ($moveCount) {
-            $this->moveCount = $moveCount;
-        }
+        $this->moveCount = $moveCount;
+        $this->moves = new Moves($board, $player);
+        $this->isGameEnd = $this->isGameEnd();
+        $this->state = $this->state();
     }
 
     public static function initialize(Player $player, int $boardSizeX = 8, int $boardSizeY = 8) : self
@@ -30,20 +31,6 @@ class Game
         $game = new self($board, $player);
 
         return $game;
-    }
-
-    public function move(string $index) : bool
-    {
-        $moves = $this->moves();
-        if (!isset($moves[$index])) {
-            return false;
-        }
-        $this->moveCount++;
-        $this->board = $moves[$index]->newState($this->board, $this->currentPlayer);
-        // 盤面サイズがでかい場合にメモリが足りなくなるのでクリアする
-        $this->moves = [];
-        $this->next();
-        return true;
     }
 
     /**
@@ -62,37 +49,12 @@ class Game
         return new Game($board, $player, $moveCount);
     }
 
-    public function expandNode(?callable $sort = null): Traversable
-    {
-        $moves = $this->moves();
-        if (!$moves->hasMoves()) {
-            yield 'pass' => $this->node('pass');
-        } else {
-            $moves = $sort ? $sort($moves) : $moves->getAll();
-            foreach ($moves as $index => $move) {
-                yield $index => $this->node($index);
-            }
-        }
-    }
-
     /**
      * @return Moves
      */
     public function moves() : Moves
     {
-        return $this->getMoves($this->board, $this->currentPlayer);
-    }
-
-    /**
-     * @return Moves
-     */
-    private function getMoves(Board $board, Player $player) : Moves
-    {
-        if (isset($this->moves[$player->name])) {
-            return $this->moves[$player->name];
-        }
-        $moves = new Moves($board, $player);
-        return $this->moves[$player->name] = $moves;
+        return $this->moves;
     }
 
     public function board() : Board
@@ -105,14 +67,7 @@ class Game
         return $this->currentPlayer;
     }
 
-    public function next()
-    {
-        $this->currentPlayer = $this->currentPlayer === Player::WHITE
-            ? Player::BLACK
-            : Player::WHITE;
-    }
-
-    public function state() : GameState
+    private function state() : GameState
     {
         if (!$this->isGameEnd()) {
             return GameState::ONGOING;
@@ -128,7 +83,7 @@ class Game
         }
     }
 
-    public function isGameEnd() : bool
+    private function isGameEnd() : bool
     {
         if (
             count($this->board->empties) === 0
@@ -137,11 +92,11 @@ class Game
         ) {
             return true;
         }
-        $moves = $this->getMoves($this->board, $this->currentPlayer);
+        $moves = $this->moves;
         if ($moves->hasMoves()) {
             return false;
         }
-        $enemyMoves = $this->getMoves($this->board, $this->currentPlayer->enemy());
+        $enemyMoves = new Moves($this->board, $this->currentPlayer->enemy());
         if ($enemyMoves->hasMoves()) {
             return false;
         }

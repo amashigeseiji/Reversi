@@ -23,7 +23,7 @@ class MiniMax extends AbstractGameTree implements ThinkInterface
      */
     public function miniMax(Game $game, int $depth, bool $flag)
     {
-        if ($depth === 0 || $game->isGameEnd()) {
+        if ($depth === 0 || $game->isGameEnd) {
             // score を返す
             return Evaluator::score($game, $this->player);
         }

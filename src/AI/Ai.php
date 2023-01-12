@@ -21,7 +21,7 @@ class Ai
 
     public function choice(Game $game, string $strategy, int $searchLevel = 2): ?string
     {
-        if ($game->isGameEnd()) {
+        if ($game->isGameEnd) {
             return null;
         }
         $think = $this->think($strategy);

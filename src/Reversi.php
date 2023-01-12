@@ -43,13 +43,14 @@ class Reversi
     {
         $moves = $this->game->moves();
         $flip = isset($moves[$index]) ? $moves[$index]->flipCells : [];
-        $this->game->move($index);
+        $this->game = $this->game->node($index);
         $this->history->push($this->game->toHistory());
+        return [$index, $flip];
     }
 
     public function pass()
     {
-        $this->game->next();
+        $this->game = $this->game->node('pass');
         $this->history->push($this->game->toHistory());
     }
 
@@ -61,11 +62,8 @@ class Reversi
         if ($move === 'pass') {
             $this->pass();
         } else {
-            $moves = $this->game->moves();
-            $flip = $moves[$move]->flipCells;
-            $this->game->move($move);
+            [$move, $flip] = $this->move($move);
         }
-        $this->history->push($this->game->toHistory());
         return [$move, $flip];
     }
 
@@ -108,8 +106,8 @@ class Reversi
         $data = [
             'board' => $board,
             'moves' => $moves->hasMoves() ? $moves->getAll() : ['pass' => 'pass'],
-            'state' => $this->game->state()->value,
-            'end' => $this->game->isGameEnd() ? 1 : 0,
+            'state' => $this->game->state->value,
+            'end' => $this->game->isGameEnd ? 1 : 0,
             'currentPlayer' => $this->game->getCurrentPlayer()->name,
             // 'userColor' => $this->game,
             'history' => $histories,
@@ -142,7 +140,7 @@ class Reversi
 
     public function gameState() : GameState
     {
-        return $this->game->state();
+        return $this->game->state;
     }
 
     public function getHistoriesHashList(): array

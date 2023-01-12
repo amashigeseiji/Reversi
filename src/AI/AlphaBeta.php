@@ -25,7 +25,7 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
      */
     public function alphaBeta(Game $game, int $depth, bool $flag, int $alpha, int $beta)
     {
-        if ($depth === 0 || $game->isGameEnd()) {
+        if ($depth === 0 || $game->isGameEnd) {
             // score を返す
             return Evaluator::score($game, $this->player);
         }
