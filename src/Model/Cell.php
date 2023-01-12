@@ -10,6 +10,10 @@ class Cell
     const SEPARATOR = '-';
 
     private Board $board;
+    public readonly array $orientations;
+    // resize時に破棄する必要がある
+    // Game::initialize 時にこのキャッシュを破棄している
+    public static array $allOrientations = [];
 
     public function __construct(int $x, int $y, Board $board)
     {
@@ -17,6 +21,44 @@ class Cell
         $this->y = $y;
         $this->index = $x . self::SEPARATOR . $y;
         $this->board = $board;
+        if (isset(self::$allOrientations[$this->index])) {
+            $orientations = self::$allOrientations[$this->index];
+        } else {
+            $orientations = [
+                'right',
+                'left',
+                'upper',
+                'lower',
+                'upperRight',
+                'upperLeft',
+                'lowerRight',
+                'lowerLeft',
+            ];
+            if ($x === 1) {
+                unset($orientations[1], $orientations[5], $orientations[7]);
+            } elseif ($x === $board->xMax) {
+                unset($orientations[0], $orientations[4], $orientations[6]);
+            }
+            if ($y === 1) {
+                unset($orientations[2]);
+                if (isset($orientations[4])) {
+                    unset($orientations[4]);
+                }
+                if (isset($orientations[5])) {
+                    unset($orientations[5]);
+                }
+            } elseif ($y === $board->yMax) {
+                unset($orientations[3]);
+                if (isset($orientations[6])) {
+                    unset($orientations[6]);
+                }
+                if (isset($orientations[7])) {
+                    unset($orientations[7]);
+                }
+            }
+            self::$allOrientations[$this->index] = $orientations;
+        }
+        $this->orientations = $orientations;
     }
 
     public function right() : ?Cell

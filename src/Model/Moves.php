@@ -57,12 +57,8 @@ class Moves implements ArrayAccess
      */
     private static function movesFromOwnCells(Cell $cell, Player $player)
     {
-        $orientations = [
-            'right', 'left', 'upper', 'lower',
-            'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
-        ];
         $moves = [];
-        foreach ($orientations as $orientation) {
+        foreach ($cell->orientations as $orientation) {
             [$move, $flip] = self::chainFromOwnCell($cell, $player, $orientation);
             if (!$move) {
                 continue;
@@ -114,12 +110,8 @@ class Moves implements ArrayAccess
 
     private static function flippableFromEmptyCell(Cell $cell, Player $player) : array
     {
-        $orientations = [
-            'right', 'left', 'upper', 'lower',
-            'upperRight', 'upperLeft', 'lowerRight', 'lowerLeft',
-        ];
         $cells = [];
-        foreach ($orientations as $orientation) {
+        foreach ($cell->orientations as $orientation) {
             $chain = self::chainFromEmptyCell($cell, $orientation, $player);
             if ($chain) {
                 $cells = array_merge($cells, array_map(fn(Cell $cell) => $cell->index, $chain));

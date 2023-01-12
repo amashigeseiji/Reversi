@@ -11,7 +11,7 @@ class Game
     public readonly GameState $state;
     public readonly bool $isGameEnd;
 
-    public function __construct(Board $board, Player $player, int $moveCount = 0)
+    private function __construct(Board $board, Player $player, int $moveCount = 0)
     {
         $this->board = $board;
         $this->currentPlayer = $player;
@@ -23,6 +23,7 @@ class Game
 
     public static function initialize(Player $player, int $boardSizeX = 8, int $boardSizeY = 8) : self
     {
+        Cell::$allOrientations = [];
         $halfX = round($boardSizeX / 2);
         $halfY = round($boardSizeY / 2);
         $white = [$halfX . '-' . $halfY, ($halfX + 1) . '-' . ($halfY + 1)];
