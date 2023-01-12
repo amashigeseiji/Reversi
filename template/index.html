@@ -88,7 +88,7 @@
         <div class="history">
           <h2>history </h2>
           <ul class="history--list">
-            <li v-for="(history, moveCount) in game.history" :key="history"><a href="#" @click="historyBack(history)">{{moveCount}}手({{history}})</a></li>
+            <li v-for="(history, moveCount) in game.history" :key="history"><a href="#" @click="historyBack(history)">{{moveCount}}手</a></li>
           </ul>
         </div>
       </div>
@@ -332,6 +332,8 @@
         }
       },
       historyBack(history) {
+        this.auto = false
+        this.opponentComputer = false
         axios.post('/historyBack', {
           hash: history
         }).then(this.updateBoard)
