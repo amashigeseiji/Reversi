@@ -112,12 +112,6 @@ class Reversi
         }
     }
 
-    public function resume()
-    {
-        $this->suspend = false;
-        $this->game = Game::fromHistory($this->history->last());
-    }
-
     public function toArray() : array
     {
         $moves = $this->game->moves();

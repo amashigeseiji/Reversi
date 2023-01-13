@@ -3,14 +3,13 @@ namespace Tenjuu99\Reversi\Renderer;
 
 use ReflectionClass;
 use ReflectionMethod;
+use Tenjuu99\Reversi\Application\Http;
 use Tenjuu99\Reversi\Model\Player;
 use Tenjuu99\Reversi\Reversi;
 
+#[Http]
 class Api
 {
-    /**
-     * @var array<string, ReflectionMethod[]>
-     */
     private array $handler;
 
     private Reversi $reversi;
@@ -35,19 +34,12 @@ class Api
             'post' => [],
         ];
         foreach ($methods as $method) {
-            $doc = $method->getDocComment();
-            if ($doc) {
-                $comment = trim(str_replace(['/', '*'], '', $doc));
-                $lines = explode("\n", $comment);
-                foreach($lines as $line) {
-                    $line = trim(strtolower($line));
-                    if (strpos($line, '@post') === 0) {
-                        $handler['post'][strtolower($method->name)] = $method;
-                        continue;
-                    }
-                    if (strpos($line, '@get') === 0) {
-                        $handler['get'][strtolower($method->name)] = $method;
-                        continue;
+            $attributes = $method->getAttributes();
+            if ($attributes) {
+                foreach ($attributes as $attribute) {
+                    if ($attribute->getName() === Http::class) {
+                        $http = $attribute->newInstance();
+                        $handler[$http->method][strtolower($method->name)] = ['invoker' => $method, 'attribute' => $http];
                     }
                 }
             }
@@ -82,20 +74,25 @@ class Api
         }
     }
 
-    private function render(ReflectionMethod $invoker, array $args = [])
+    private function render(array $invoker, array $args = [])
     {
+        /** @var ReflectionMethod $method */
+        $method = $invoker['invoker'];
+        /** @var Http $http */
+        $http = $invoker['attribute'];
         ob_start();
-        if ($invoker->getNumberOfParameters() > 0) {
-            $invoker->invokeArgs($this, $args);
+        if ($http->contentType) {
+            header('Content-Type: ' . $http->contentType);
+        }
+        if ($method->getNumberOfParameters() > 0) {
+            $method->invokeArgs($this, $args);
         } else {
-            $invoker->invoke($this);
+            $method->invoke($this);
         }
         ob_end_flush();
     }
 
-    /**
-     * @Get
-     */
+    #[Http(method: "Get", contentType: 'text/html')]
     public function index()
     {
         $template = __DIR__ . '/../../template/index.html';
@@ -103,51 +100,37 @@ class Api
         require($template);
     }
 
-    /**
-     * @Post
-     */
+    #[Http(method: "post", contentType: 'application/json')]
     public function move(string $index)
     {
         [$move, $flip] = $this->reversi->move($index);
-        header('Content-Type: application/json');
         echo $this->gameJson($move, $flip);
     }
 
-    /**
-     * @Post
-     */
+    #[Http(method: "post")]
     public function reset(int $boardSizeX = 8, int $boardSizeY = 8)
     {
         $this->reversi = new Reversi($boardSizeX, $boardSizeY, $this->reversi->getStrategy());
         $_SESSION['reversi'] = $this->reversi;
     }
 
-    /**
-     * @Post
-     */
+    #[Http(method: "post", contentType: 'application/json')]
     public function pass()
     {
         $this->reversi->pass();
-        header('Content-Type: application/json');
         echo $this->gameJson();
     }
 
-    /**
-     * @Get
-     */
+    #[Http(method: "get", contentType: 'application/json')]
     public function board()
     {
-        header('Content-Type: application/json');
         echo $this->gameJson();
     }
 
-    /**
-     * @Post
-     */
+    #[Http(method: "post", contentType: 'application/json')]
     public function compute()
     {
         [$move, $flip] = $this->reversi->compute();
-        header('Content-Type: application/json');
         echo $this->gameJson($move, $flip);
     }
 
@@ -159,9 +142,7 @@ class Api
         return json_encode($array);
     }
 
-    /**
-     * @Get
-     */
+    #[Http(method: "get", contentType: 'application/json')]
     public function historyBack(string $hash)
     {
         $header = getallheaders();
@@ -172,19 +153,15 @@ class Api
             return;
         }
         $this->reversi->historyBack($hash);
-        header('Content-Type: application/json');
         echo $this->gameJson();
     }
 
-    /**
-     * @Post
-     */
+    #[Http(method: "post", contentType: 'application/json')]
     public function strategy(string $strategy, string $player, ?int $searchLevel = null)
     {
         $strategies = $this->reversi->strategyList();
         $player = strtolower(Player::WHITE->name) === strtolower($player) ? Player::WHITE : Player::BLACK;
         $this->reversi->setStrategy($strategy, $player, $searchLevel);
-        header('Content-Type: application/json');
         echo $this->gameJson();
     }
 }
