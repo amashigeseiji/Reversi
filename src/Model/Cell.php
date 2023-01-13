@@ -61,68 +61,12 @@ class Cell
         $this->orientations = $orientations;
     }
 
-    public function right() : ?Cell
+    public function nextCell(string $orientation) : ?Cell
     {
-        if (!isset($this->orientations['right'])) {
+        if (!isset($this->orientations[$orientation])) {
             return null;
         }
-        return $this->board[$this->orientations['right']];
-    }
-
-    public function left() : ?Cell
-    {
-        if (!isset($this->orientations['left'])) {
-            return null;
-        }
-        return $this->board[$this->orientations['left']];
-    }
-
-    public function upper() : ?Cell
-    {
-        if (!isset($this->orientations['upper'])) {
-            return null;
-        }
-        return $this->board[$this->orientations['upper']];
-    }
-
-    public function lower() : ?Cell
-    {
-        if (!isset($this->orientations['lower'])) {
-            return null;
-        }
-        return $this->board[$this->orientations['lower']];
-    }
-
-    public function upperRight() : ?Cell
-    {
-        if (!isset($this->orientations['upperRight'])) {
-            return null;
-        }
-        return $this->board[$this->orientations['upperRight']];
-    }
-
-    public function lowerRight() : ?Cell
-    {
-        if (!isset($this->orientations['lowerRight'])) {
-            return null;
-        }
-        return $this->board[$this->orientations['lowerRight']];
-    }
-
-    public function upperLeft() : ?Cell
-    {
-        if (!isset($this->orientations['upperLeft'])) {
-            return null;
-        }
-        return $this->board[$this->orientations['upperLeft']];
-    }
-
-    public function lowerLeft() : ?Cell
-    {
-        if (!isset($this->orientations['lowerLeft'])) {
-            return null;
-        }
-        return $this->board[$this->orientations['lowerLeft']];
+        return $this->board[$this->orientations[$orientation]];
     }
 
     private static function name(int $x, int $y) : string

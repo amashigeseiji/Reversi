@@ -76,7 +76,7 @@ class Moves implements ArrayAccess
         $flipCells = [];
         $move = null;
         $enemies = [];
-        while($current = $current->{$orientation}()) {
+        while($current = $current->nextCell($orientation)) {
             if ($current->state === $enemyState) {
                 $enemies[] = $current->index;
                 continue;
@@ -133,7 +133,7 @@ class Moves implements ArrayAccess
         $cells = [];
         $current = $cell;
         $enemyState = $player->enemy()->toCellState();
-        while($current = $current->{$orientation}()) {
+        while($current = $current->nextCell($orientation)) {
             // 隣が空白セルの場合は終了
             if ($current->state === CellState::EMPTY) {
                 break;
