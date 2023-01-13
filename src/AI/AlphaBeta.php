@@ -10,6 +10,7 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
 {
     private Player $player;
 
+    private $score = ['calc', 'cornerPoint', 'moveCount'];
     public function choice(Game $game) : string
     {
         $this->nodeCount = 0;
@@ -27,7 +28,7 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
     {
         if ($depth === 0 || $game->isGameEnd) {
             // score を返す
-            return Evaluator::score($game, $this->player);
+            return Evaluator::score($game, $this->player, $this->score);
         }
         $value = $flag ? PHP_INT_MIN : PHP_INT_MAX;
         $bestIndex = null;
