@@ -1,7 +1,7 @@
 <?php
-namespace Tenjuu99\Reversi\Renderer;
+namespace Tenjuu99\Reversi\Renderer\Cli;
 
-enum CliColor: int
+enum Color: int
 {
     case DEFAULT = 39;
     case Black = 30;

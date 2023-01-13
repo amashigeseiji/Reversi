@@ -1,21 +1,21 @@
 <?php
 namespace Tenjuu99\Reversi\Renderer;
 
-use Tenjuu99\Reversi\Command\Game;
 use Tenjuu99\Reversi\Model\GameState;
 use Tenjuu99\Reversi\Model\Player;
+use Tenjuu99\Reversi\Renderer\Cli\{Board, Renderer, Color, Command};
 
 class Cli
 {
-    private Game $game;
+    private Command $game;
     public bool $exit = false;
 
-    private CliRenderer $renderer;
+    private Renderer $renderer;
 
     public function __construct(int $boardSizeX = 8, int $boardSizeY = 8)
     {
-        $this->game = new Game($this, Player::BLACK, $boardSizeX, $boardSizeY);
-        $this->renderer = new CliRenderer(new CliBoard($this->game));
+        $this->game = new Command($this, Player::BLACK, $boardSizeX, $boardSizeY);
+        $this->renderer = new Renderer(new Board($this->game));
     }
 
     public function play()
@@ -26,28 +26,12 @@ class Cli
             if ($this->exit) {
                 break;
             }
-            switch($this->game->state()) {
-            case GameState::WIN_WHITE:
-                $this->renderer->message('White win!' . PHP_EOL);
-                $this->command('Input: ');
-                $this->renderer->board();
-                break;
-            case GameState::WIN_BLACK:
-                $this->renderer->message('Black win!' . PHP_EOL);
-                $this->command('Input: ');
-                $this->renderer->board();
-                break;
-            case GameState::DRAW:
-                $this->renderer->message('Draw!' . PHP_EOL);
-                $this->command('Input: ');
-                $this->renderer->board();
-                break;
-            }
             if ($this->game->isMyTurn() || !$this->game->opponentComputer) {
                 $this->renderer->message('moves: ' . $this->game->moves() . PHP_EOL);
                 $return = $this->command($this->game->currentPlayer() . ": ");
                 if ($return) {
                     $this->renderer->message($return . PHP_EOL);
+                    unset($return);
                 } else {
                     $this->renderer->board();
                 }
@@ -58,6 +42,32 @@ class Cli
                 $command = $this->game->compute();
                 $this->renderer->board();
                 $this->renderer->message($message . $command . PHP_EOL);
+            }
+            switch($this->game->state()) {
+            case GameState::WIN_WHITE:
+                $this->renderer->message('White win!' . PHP_EOL);
+                $return = $this->command('Input: ');
+                $this->renderer->board();
+                if (isset($return)) {
+                    $this->renderer->message($return);
+                }
+                break;
+            case GameState::WIN_BLACK:
+                $this->renderer->message('Black win!' . PHP_EOL);
+                $return = $this->command('Input: ');
+                $this->renderer->board();
+                if (isset($return)) {
+                    $this->renderer->message($return);
+                }
+                break;
+            case GameState::DRAW:
+                $this->renderer->message('Draw!' . PHP_EOL);
+                $return = $this->command('Input: ');
+                $this->renderer->board();
+                if (isset($return)) {
+                    $this->renderer->message($return);
+                }
+                break;
             }
         }
         if ($this->exit) {

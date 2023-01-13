@@ -1,5 +1,5 @@
 <?php
-namespace Tenjuu99\Reversi\Command;
+namespace Tenjuu99\Reversi\Renderer\Cli;
 
 use ReflectionClass;
 use ReflectionMethod;
@@ -10,7 +10,7 @@ use Tenjuu99\Reversi\Model\Player;
 use Tenjuu99\Reversi\Renderer\Cli;
 use Tenjuu99\Reversi\Reversi;
 
-class Game
+class Command
 {
     private Player $userPlayer;
     /** @var ReflectionMethod[] */
@@ -28,7 +28,7 @@ class Game
 
     public function __construct(Cli $cli, Player $player, int $boardSizeX = 8, int $boardSizeY = 8)
     {
-        $this->reversi = new Reversi;
+        $this->reversi = new Reversi($boardSizeX, $boardSizeY);
         $this->reversi->setStrategy('random', Player::WHITE);
         $this->reversi->setStrategy('random', Player::BLACK);
         $this->cli = $cli;

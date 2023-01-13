@@ -1,17 +1,16 @@
 <?php
-namespace Tenjuu99\Reversi\Renderer;
+namespace Tenjuu99\Reversi\Renderer\Cli;
 
-use Tenjuu99\Reversi\Command\Game;
 use Tenjuu99\Reversi\Model\CellState;
 
-class CliBoard
+class Board
 {
-    private Game $game;
+    private Command $game;
     private bool $simple = false;
-    private CliColor $bgColor = CliColor::BG_LightGreen;
+    private Color $bgColor = Color::BG_LightGreen;
     public int $marginLeft = 3;
 
-    public function __construct(Game $game)
+    public function __construct(Command $game)
     {
         $this->game = $game;
         $yokohaba = trim(shell_exec('tput cols'));
@@ -47,9 +46,9 @@ class CliBoard
             echo $this->marginLeft(' ') . $this->beforeLineRender();
             echo  $this->marginLeft($line[0]->y);
             foreach ($line as $cell) {
-                echo $this->color('|', CliColor::Black, $this->bgColor) . $this->cellRenderer($cell->state);
+                echo $this->color('|', Color::Black, $this->bgColor) . $this->cellRenderer($cell->state);
             }
-            echo $this->color('|', CliColor::Black, $this->bgColor) . PHP_EOL;
+            echo $this->color('|', Color::Black, $this->bgColor) . PHP_EOL;
         }
         echo $this->marginLeft(' ') . $this->beforeLineRender();
         return ob_get_clean();
@@ -71,9 +70,9 @@ class CliBoard
         foreach ($this->lines() as $line) {
             echo sprintf('% 2d', $line[0]->y);
             foreach ($line as $cell) {
-                echo $this->color('|', CliColor::Black, $this->bgColor) . $this->cellRenderer($cell->state);
+                echo $this->color('|', Color::Black, $this->bgColor) . $this->cellRenderer($cell->state);
             }
-            echo $this->color('|', CliColor::Black, $this->bgColor) . PHP_EOL;
+            echo $this->color('|', Color::Black, $this->bgColor) . PHP_EOL;
         }
         return ob_get_clean();
     }
@@ -101,7 +100,7 @@ class CliBoard
             $beforeLine .= $unit;
         }
         $beforeLine .= '+' . PHP_EOL;
-        return $this->color($beforeLine, CliColor::Black, $this->bgColor);
+        return $this->color($beforeLine, Color::Black, $this->bgColor);
     }
 
     private function cellRenderer(CellState $state)
@@ -110,13 +109,13 @@ class CliBoard
         $white = $this->simple ? 'w' : ' ● ';
         $black = $this->simple ? 'b' : ' ● ';
         return match($state) {
-            CellState::EMPTY => $this->color($empty, CliColor::LightGray, $this->bgColor),
-            CellState::WHITE => $this->color($white, CliColor::White, $this->bgColor),
-            CellState::BLACK => $this->color($black, CliColor::Black, $this->bgColor)
+            CellState::EMPTY => $this->color($empty, Color::LightGray, $this->bgColor),
+            CellState::WHITE => $this->color($white, Color::White, $this->bgColor),
+            CellState::BLACK => $this->color($black, Color::Black, $this->bgColor)
         };
     }
 
-    private function color($message, CliColor $color = CliColor::DEFAULT, CliColor $bgColor = CliColor::BG_DEFAULT)
+    private function color($message, Color $color = Color::DEFAULT, Color $bgColor = Color::BG_DEFAULT)
     {
         return sprintf("\033[%d;%dm%s\033[m", $color->value, $bgColor->value, $message);
     }

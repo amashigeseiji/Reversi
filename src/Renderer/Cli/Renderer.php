@@ -1,17 +1,17 @@
 <?php
-namespace Tenjuu99\Reversi\Renderer;
+namespace Tenjuu99\Reversi\Renderer\Cli;
 
 use Tenjuu99\Reversi\Command\Game;
 
-class CliRenderer
+class Renderer
 {
     public bool $simple = false;
     private $filename;
 
-    private CliBoard $cliBoard;
+    private Board $cliBoard;
     private int $marginLeft = 3;
 
-    public function __construct(CliBoard $cliBoard)
+    public function __construct(Board $cliBoard)
     {
         $this->cliBoard = $cliBoard;
         $this->filename = sys_get_temp_dir() . '/reversi_buffer';
