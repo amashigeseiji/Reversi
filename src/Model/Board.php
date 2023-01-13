@@ -75,17 +75,6 @@ class Board implements ArrayAccess, IteratorAggregate
         }
     }
 
-    public function hash(): string
-    {
-        $string = json_encode($this->toArray());
-        return md5($string);
-    }
-
-    public function json() : string
-    {
-        return json_encode($this->toArray());
-    }
-
     public function toArray(): array
     {
         return [
