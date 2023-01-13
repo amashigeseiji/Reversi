@@ -3,6 +3,7 @@ namespace Tenjuu99\Reversi\Command;
 
 use ReflectionClass;
 use ReflectionMethod;
+use Tenjuu99\Reversi\Error\InvalidMoveException;
 use Tenjuu99\Reversi\Model\Board;
 use Tenjuu99\Reversi\Model\GameState;
 use Tenjuu99\Reversi\Model\Player;
@@ -51,7 +52,11 @@ class Game
      */
     public function move(string $index)
     {
-        $this->reversi->move($index);
+        try {
+            $this->reversi->move($index);
+        } catch (InvalidMoveException $e) {
+            return $e->getMessage();
+        }
     }
 
     /**

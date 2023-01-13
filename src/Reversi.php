@@ -2,6 +2,7 @@
 namespace Tenjuu99\Reversi;
 
 use Tenjuu99\Reversi\AI\Ai;
+use Tenjuu99\Reversi\Error\InvalidMoveException;
 use Tenjuu99\Reversi\Model\Board;
 use Tenjuu99\Reversi\Model\Game;
 use Tenjuu99\Reversi\Model\GameState;
@@ -42,6 +43,9 @@ class Reversi
     public function move(string $index)
     {
         $moves = $this->game->moves();
+        if (!isset($moves[$index])) {
+            throw new InvalidMoveException("Invalid move: {$index}");
+        }
         $flip = isset($moves[$index]) ? $moves[$index]->flipCells : [];
         $this->game = $this->game->node($index);
         $this->history->push($this->game->toHistory());

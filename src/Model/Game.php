@@ -1,6 +1,8 @@
 <?php
 namespace Tenjuu99\Reversi\Model;
 
+use Tenjuu99\Reversi\Error\InvalidMoveException;
+
 class Game
 {
     private readonly Board $board;
@@ -42,6 +44,9 @@ class Game
     public function node(string $index) : Game
     {
         $moves = $this->moves();
+        if (!isset($moves[$index]) && $index !== 'pass') {
+            throw new InvalidMoveException('Invalid Move');
+        }
         $moveCount = $this->moveCount + 1;
         $board = $index === 'pass'
             ? $this->board
