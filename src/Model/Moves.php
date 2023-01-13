@@ -152,7 +152,7 @@ class Moves implements ArrayAccess
         return isset($this->moves[$offset]);
     }
 
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet(mixed $offset): ?Move
     {
         return $this->moves[$offset] ?? null;
     }
