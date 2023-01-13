@@ -25,35 +25,35 @@ class Cell
             $orientations = self::$allOrientations[$this->index];
         } else {
             $orientations = [
-                'right',
-                'left',
-                'upper',
-                'lower',
-                'upperRight',
-                'upperLeft',
-                'lowerRight',
-                'lowerLeft',
+                'right' => self::name($x + 1, $y),
+                'left' => self::name($x - 1, $y),
+                'upper' => self::name($x, $y - 1),
+                'lower' => self::name($x, $y + 1),
+                'upperRight' => self::name($x + 1, $y - 1),
+                'upperLeft' => self::name($x - 1, $y - 1),
+                'lowerRight' => self::name($x + 1, $y + 1),
+                'lowerLeft' => self::name($x - 1, $y + 1),
             ];
             if ($x === 1) {
-                unset($orientations[1], $orientations[5], $orientations[7]);
+                unset($orientations['left'], $orientations['upperLeft'], $orientations['lowerLeft']);
             } elseif ($x === $board->xMax) {
-                unset($orientations[0], $orientations[4], $orientations[6]);
+                unset($orientations['right'], $orientations['upperRight'], $orientations['lowerRight']);
             }
             if ($y === 1) {
-                unset($orientations[2]);
-                if (isset($orientations[4])) {
-                    unset($orientations[4]);
+                unset($orientations['upper']);
+                if (isset($orientations['upperRight'])) {
+                    unset($orientations['upperRight']);
                 }
-                if (isset($orientations[5])) {
-                    unset($orientations[5]);
+                if (isset($orientations['upperLeft'])) {
+                    unset($orientations['upperLeft']);
                 }
             } elseif ($y === $board->yMax) {
-                unset($orientations[3]);
-                if (isset($orientations[6])) {
-                    unset($orientations[6]);
+                unset($orientations['lower']);
+                if (isset($orientations['lowerRight'])) {
+                    unset($orientations['lowerRight']);
                 }
-                if (isset($orientations[7])) {
-                    unset($orientations[7]);
+                if (isset($orientations['lowerLeft'])) {
+                    unset($orientations['lowerLeft']);
                 }
             }
             self::$allOrientations[$this->index] = $orientations;
@@ -63,73 +63,70 @@ class Cell
 
     public function right() : ?Cell
     {
-        if ($this->x === $this->board->xMax) {
+        if (!isset($this->orientations['right'])) {
             return null;
         }
-        $index = $this->x +1 . self::SEPARATOR . $this->y;
-        return $this->board[$index];
+        return $this->board[$this->orientations['right']];
     }
 
     public function left() : ?Cell
     {
-        if ($this->x === 1) {
+        if (!isset($this->orientations['left'])) {
             return null;
         }
-        $index = $this->x -1 . self::SEPARATOR . $this->y;
-        return $this->board[$index];
+        return $this->board[$this->orientations['left']];
     }
 
     public function upper() : ?Cell
     {
-        if ($this->y === 1) {
+        if (!isset($this->orientations['upper'])) {
             return null;
         }
-        $index = $this->x . self::SEPARATOR . $this->y -1;
-        return $this->board[$index];
+        return $this->board[$this->orientations['upper']];
     }
 
     public function lower() : ?Cell
     {
-        if ($this->y === $this->board->yMax) {
+        if (!isset($this->orientations['lower'])) {
             return null;
         }
-        $index = $this->x . self::SEPARATOR . $this->y +1;
-        return $this->board[$index];
+        return $this->board[$this->orientations['lower']];
     }
 
     public function upperRight() : ?Cell
     {
-        if ($this->y === 1 || $this->x === $this->board->xMax) {
+        if (!isset($this->orientations['upperRight'])) {
             return null;
         }
-        $index = $this->x +1 . self::SEPARATOR . $this->y -1;
-        return $this->board[$index];
+        return $this->board[$this->orientations['upperRight']];
     }
 
     public function lowerRight() : ?Cell
     {
-        if ($this->y === $this->board->yMax || $this->x === $this->board->xMax) {
+        if (!isset($this->orientations['lowerRight'])) {
             return null;
         }
-        $index = $this->x +1 . self::SEPARATOR . $this->y +1;
-        return $this->board[$index];
+        return $this->board[$this->orientations['lowerRight']];
     }
 
     public function upperLeft() : ?Cell
     {
-        if ($this->y === 1 || $this->x === 1) {
+        if (!isset($this->orientations['upperLeft'])) {
             return null;
         }
-        $index = $this->x -1 . self::SEPARATOR . $this->y -1;
-        return $this->board[$index];
+        return $this->board[$this->orientations['upperLeft']];
     }
 
     public function lowerLeft() : ?Cell
     {
-        if ($this->y === $this->board->yMax || $this->x === 1) {
+        if (!isset($this->orientations['lowerLeft'])) {
             return null;
         }
-        $index = $this->x -1 . self::SEPARATOR . $this->y +1;
-        return $this->board[$index];
+        return $this->board[$this->orientations['lowerLeft']];
+    }
+
+    private static function name(int $x, int $y) : string
+    {
+        return $x . self::SEPARATOR . $y;
     }
 }
