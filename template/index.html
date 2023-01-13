@@ -315,6 +315,7 @@
       onClickReset() {
         this.auto = false
         this.cellScale = defaultCellScale
+        this.suspend = false
         localStorage.setItem('cellScale', defaultCellScale)
         axios.post('/reset').then(this.updateBoard)
       },
@@ -347,6 +348,7 @@
         }
       },
       onClickUpdateBoardSize() {
+        this.suspend = false
         axios.post('/reset', {
           boardSizeX: this.game.board.xMax,
           boardSizeY: this.game.board.yMax,
