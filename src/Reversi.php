@@ -18,6 +18,7 @@ class Reversi
 
     private array $strategy;
     private array $defaultStrategy = ['strategy' => 'alphabeta', 'searchLevel' => 5];
+    private bool $suspend = false;
 
     public function __construct(int $boardSizeX = 8, int $boardSizeY = 8, array $strategies = [])
     {
@@ -28,10 +29,12 @@ class Reversi
             Player::WHITE->name => $this->defaultStrategy,
             Player::BLACK->name => $this->defaultStrategy,
         ];
+        $this->history->push($this->game->toHistory());
     }
 
     public function newGame(int $xSize = 8, int $ySize = 8)
     {
+        $this->history = new Histories;
         $this->game = Game::initialize(Player::BLACK, $xSize, $ySize);
     }
 
@@ -42,6 +45,9 @@ class Reversi
 
     public function move(string $index)
     {
+        if ($this->suspend) {
+            return;
+        }
         $moves = $this->game->moves();
         if (!isset($moves[$index])) {
             throw new InvalidMoveException("Invalid move: {$index}");
@@ -54,12 +60,18 @@ class Reversi
 
     public function pass()
     {
+        if ($this->suspend) {
+            return;
+        }
         $this->game = $this->game->node('pass');
         $this->history->push($this->game->toHistory());
     }
 
     public function compute() : array
     {
+        if ($this->suspend) {
+            return ['suspend'];
+        }
         $strategy = $this->getStrategy($this->game->getCurrentPlayer());
         $move = $this->ai->choice($this->game, $strategy['strategy'], $strategy['searchLevel']);
         $flip = [];
@@ -95,8 +107,15 @@ class Reversi
     {
         $histories = $this->history;
         if ($histories->has($hash)) {
+            $this->suspend = $hash !== $this->history->last()->hash;
             $this->game = Game::fromHistory($histories->get($hash));
         }
+    }
+
+    public function resume()
+    {
+        $this->suspend = false;
+        $this->game = Game::fromHistory($this->history->last());
     }
 
     public function toArray() : array
@@ -113,12 +132,9 @@ class Reversi
             'state' => $this->game->state->value,
             'end' => $this->game->isGameEnd ? 1 : 0,
             'currentPlayer' => $this->game->getCurrentPlayer()->name,
-            // 'userColor' => $this->game,
             'history' => $histories,
             'moveCount' => $this->game->moveCount(),
             'strategy' => $this->getStrategy(),
-            // 'choice' => $choice,
-            // 'flippedCells' => $flip,
             'nodeCount' => $this->ai->nodeCount,
         ];
         if (DEBUG) {
@@ -135,6 +151,11 @@ class Reversi
     public function clearHistory()
     {
         $this->history->clear();
+    }
+
+    public function hasHistory(string $hash)
+    {
+        return $this->history->has($hash);
     }
 
     public function getMoves() : Moves

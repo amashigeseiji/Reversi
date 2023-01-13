@@ -86,9 +86,14 @@
           <?php endif ?>
         </div>
         <div class="history">
-          <h2>history </h2>
-          <ul class="history--list">
-            <li v-for="(history, moveCount) in game.history" :key="history"><a href="#" @click="historyBack(history)">{{moveCount}}手</a></li>
+            <div class="history-back">
+              <a href="#" @click="historyBack(movePrev)" :data-hash="movePrev" :class="[movePrev ? 'history-back-link' : '']">&lt;&nbsp;一手もどる</a>
+              <h2>history</h2>
+              <a href="#" @click="historyBack(moveNext)" :data-hash="moveNext" :class="[moveNext ? 'history-back-link' : '']">一手進む&nbsp;&gt;</a>
+              <a href="#" @click="historyBack(latest)" :class="moveNext? 'history-back-link' : ''">&gt;&gt;</a>
+            </div>
+          <ul class="history-list">
+            <li v-for="(hash, key) in history" :key="key" :class="[key === game.moveCount? 'currentHistory' : '']">{{key}}手目: {{ hash }}</li>
           </ul>
         </div>
       </div>
@@ -177,9 +182,11 @@
         userColor: 'black',
         cellScale,
         menu: 'close',
-        opponentComputer: localStorage.getItem('opponentComputer'),
+        opponentComputer: localStorage.getItem('opponentComputer') === 'true',
         waiting: false,
         waitTime: 0,
+        history: gameJson.history,
+        suspend: false,
       }
     },
     watch: {
@@ -194,6 +201,9 @@
       },
       opponentComputer() {
         localStorage.setItem('opponentComputer', this.opponentComputer)
+        if (this.opponentComputer && this.currentPlayer !== this.userColor) {
+          this.compute()
+        }
       },
     },
     async mounted() {
@@ -213,6 +223,17 @@
           ? this.game.state + (this.game.state === 'draw' ? '' : ' win!')
           : 'status: ' + this.game.state
       },
+      movePrev() {
+        const prev = this.game.moveCount - 1
+        return this.history[prev]
+      },
+      moveNext() {
+        const next = this.game.moveCount + 1
+        return this.history[next]
+      },
+      latest() {
+        return this.history[Object.keys(this.history).reduce((a, b) => Math.max(a, b))]
+      },
     },
     methods: {
       async updateBoard() {
@@ -223,6 +244,7 @@
       async update(response) {
         this.game = response.data
         this.currentPlayer = response.data.currentPlayer.toLowerCase()
+        this.history = response.data.history
         if (this.moveByComputer()) {
           if (this.game.state === 'on going') {
             await this.compute()
@@ -252,6 +274,9 @@
         if (this.gameOver) {
           return
         }
+        if (this.suspend) {
+          return
+        }
         const wait = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
         this.waiting = true
         await wait(this.waitTime * 1000)
@@ -259,6 +284,9 @@
       },
       onClickMoveButton(move) {
         if (!this.game.moves[move]) {
+          return
+        }
+        if (this.suspend) {
           return
         }
         this.waiting = true
@@ -333,10 +361,11 @@
       },
       historyBack(history) {
         this.auto = false
-        this.opponentComputer = false
-        axios.post('/historyBack', {
-          hash: history
-        }).then(this.updateBoard)
+        this.suspend = history !== this.latest
+        axios.get(`/historyBack?hash=${history}`).then((response) => {
+          this.game = response.data
+          this.currentPlayer = response.data.currentPlayer.toLowerCase()
+        })
       },
       onChangeStrategy(e) {
         const { player, type }  = e.target.dataset
@@ -590,23 +619,44 @@
   }
 
   .history {
-    height: 200px;
-    overflow: scroll;
     padding: 20px;
+    width: 50%;
   }
   .history h2 {
     margin: 0;
   }
-  .history--list {
+  .history-list {
     list-style: none;
     margin: 0;
-    padding: 0;
-    font-size: 10px;
+    padding: 0 0 0 15px;
+    font-size: 13px;
+    max-height: 350px;
+    overflow: scroll;
   }
+  .history-back {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+  }
+  .history-back a {
+    visibility: hidden;
+  }
+  .history-back a.history-back-link {
+    visibility: visible;
+  }
+  .history-list li.currentHistory {
+    text-decoration: underline;
+    position: relative;
+  }
+  .history-list li.currentHistory:before {
+    position: absolute;
+    content: '>';
+    left: -15px;
+  }
+
 
   .thinking {
     font-weight: bold;
-    font-style: '';
     padding: 0 0 8px;
   }
 
@@ -646,6 +696,12 @@
     }
     .menu {
       border-right: none;
+    }
+    .history {
+      width: 90vw;
+    }
+    .history-list {
+      max-height: 200px;
     }
   }
 </style>

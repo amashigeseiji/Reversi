@@ -160,10 +160,17 @@ class Api
     }
 
     /**
-     * @Post
+     * @Get
      */
     public function historyBack(string $hash)
     {
+        $header = getallheaders();
+        header('Cache-Control: max-age=31536000, must-revalidate');
+        header('ETag: '. $hash .'');
+        if (isset($header['If-None-Match']) && $header['If-None-Match'] === $hash && $this->reversi->hasHistory($hash)) {
+            header('HTTP/1.1 304');
+            return;
+        }
         $this->reversi->historyBack($hash);
         header('Content-Type: application/json');
         echo $this->gameJson();
