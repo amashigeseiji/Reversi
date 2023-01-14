@@ -87,13 +87,11 @@
         </div>
         <div class="history">
             <div class="history-back">
-              <a href="#" @click="historyBack(movePrev)" :data-hash="movePrev" :class="[movePrev ? 'history-back-link' : '']">&lt;&nbsp;一手もどる</a>
               <h2>history</h2>
-              <a href="#" @click="historyBack(moveNext)" :data-hash="moveNext" :class="[moveNext ? 'history-back-link' : '']">一手進む&nbsp;&gt;</a>
-              <a href="#" @click="historyBack(latest)" :class="moveNext? 'history-back-link' : ''">&gt;&gt;</a>
+              <a href="#" @click="resume" class="history-back-link">再開</a>
             </div>
           <ul class="history-list">
-            <li v-for="(hash, key) in history" :key="key" :class="[key === game.moveCount? 'currentHistory' : '']">{{key}}手目: {{ hash }}</li>
+            <li v-for="(hash, key) in historyHash" :key="key" :class="[key === game.moveCount? 'currentHistory' : '']" @mouseover="historyBack(hash)">{{key}}手目: {{ hash }}</li>
           </ul>
         </div>
       </div>
@@ -117,8 +115,15 @@
     </main>
     <div class="moves">
       <div v-show="opponentComputer && !auto" class="thinking">
-        <template v-if="currentPlayer !== userColor">Thinking...</template>
-        <template v-if="currentPlayer === userColor && game.choice">Choiced: {{ game.choice }}</template>
+        <template v-if="suspend">History mode</template>
+        <template v-else>
+          <template v-if="game.choice">Choiced: {{ game.choice }}<br></template>
+          <template v-if="gameOver">Game end</template>
+          <template v-else>
+            <template v-if="currentPlayer === userColor">Your Turn</template>
+            <template v-else>Thinking...</template>
+          </template>
+        </template>
       </div>
       <div v-show="!auto" v-if="game.state == 'on going' && !auto">
         <button @click="onClickPass" v-if="game.moves.pass">パス</button>
@@ -185,7 +190,8 @@
         opponentComputer: localStorage.getItem('opponentComputer') === 'true',
         waiting: false,
         waitTime: 0,
-        history: gameJson.history,
+        historyHash: gameJson.history,
+        historyCache: {},
         suspend: false,
       }
     },
@@ -225,14 +231,14 @@
       },
       movePrev() {
         const prev = this.game.moveCount - 1
-        return this.history[prev]
+        return this.historyHash[prev]
       },
       moveNext() {
         const next = this.game.moveCount + 1
-        return this.history[next]
+        return this.historyHash[next]
       },
       latest() {
-        return this.history[Object.keys(this.history).reduce((a, b) => Math.max(a, b))]
+        return this.historyHash[Object.keys(this.historyHash).reduce((a, b) => Math.max(a, b))]
       },
     },
     methods: {
@@ -244,7 +250,7 @@
       async update(response) {
         this.game = response.data
         this.currentPlayer = response.data.currentPlayer.toLowerCase()
-        this.history = response.data.history
+        this.historyHash = response.data.history
         if (this.moveByComputer()) {
           if (this.game.state === 'on going') {
             await this.compute()
@@ -265,6 +271,9 @@
         return 'empty'
       },
       moveByComputer() {
+        if (this.suspend) {
+          return false
+        }
         if (this.auto) {
           return true
         }
@@ -316,6 +325,7 @@
         this.auto = false
         this.cellScale = defaultCellScale
         this.suspend = false
+        this.historyCache = {}
         localStorage.setItem('cellScale', defaultCellScale)
         axios.post('/reset').then(this.updateBoard)
       },
@@ -349,6 +359,7 @@
       },
       onClickUpdateBoardSize() {
         this.suspend = false
+        this.historyCache = {}
         axios.post('/reset', {
           boardSizeX: this.game.board.xMax,
           boardSizeY: this.game.board.yMax,
@@ -364,10 +375,20 @@
       historyBack(history) {
         this.auto = false
         this.suspend = history !== this.latest
-        axios.get(`/historyBack?hash=${history}`).then((response) => {
-          this.game = response.data
-          this.currentPlayer = response.data.currentPlayer.toLowerCase()
-        })
+        if (this.historyCache[history]) {
+          this.game = this.historyCache[history].data
+          this.currentPlayer = this.historyCache[history].data.currentPlayer.toLowerCase()
+        } else {
+          axios.get(`/historyBack?hash=${history}`).then((response) => {
+            this.game = response.data
+            this.currentPlayer = response.data.currentPlayer.toLowerCase()
+            this.historyCache[history] = response
+          })
+        }
+      },
+      resume() {
+        this.suspend = false
+        axios.get(`/resume`).then(this.update)
       },
       onChangeStrategy(e) {
         const { player, type }  = e.target.dataset
@@ -630,9 +651,9 @@
   .history-list {
     list-style: none;
     margin: 0;
-    padding: 0 0 0 15px;
-    font-size: 13px;
-    max-height: 350px;
+    padding: 10px 15px;
+    font-size: 15px;
+    max-height: 300px;
     overflow: scroll;
   }
   .history-back {

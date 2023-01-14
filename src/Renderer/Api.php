@@ -131,6 +131,11 @@ class Api
     public function compute()
     {
         [$move, $flip] = $this->reversi->compute();
+        if ($move === 'suspend') {
+            http_response_code(403);
+            echo json_encode(['error' => 'suspend']);
+            return;
+        }
         echo $this->gameJson($move, $flip);
     }
 
@@ -146,10 +151,10 @@ class Api
     public function historyBack(string $hash)
     {
         $header = getallheaders();
-        header('Cache-Control: max-age=31536000, must-revalidate');
+        header('Cache-Control: max-age=3600, immutable, private');
         header('ETag: '. $hash .'');
         if (isset($header['If-None-Match']) && $header['If-None-Match'] === $hash && $this->reversi->hasHistory($hash)) {
-            header('HTTP/1.1 304');
+            http_response_code(304);
             return;
         }
         $this->reversi->historyBack($hash);
@@ -162,6 +167,13 @@ class Api
         $strategies = $this->reversi->strategyList();
         $player = strtolower(Player::WHITE->name) === strtolower($player) ? Player::WHITE : Player::BLACK;
         $this->reversi->setStrategy($strategy, $player, $searchLevel);
+        echo $this->gameJson();
+    }
+
+    #[Http(method: "get", contentType: 'application/json')]
+    public function resume()
+    {
+        $this->reversi->resume();
         echo $this->gameJson();
     }
 }

@@ -89,6 +89,11 @@ class Cli
             Player::WHITE->name => 0,
             Player::BLACK->name => 0,
         ];
+        $corner = [
+            Player::WHITE->name => 0,
+            Player::BLACK->name => 0,
+        ];
+        $cornerCell = array_flip($this->game->board()->corner());
         for ($i = 0; $i < $count; $i++) {
             $start = microtime(true);
             while ($this->game->state() === GameState::ONGOING) {
@@ -96,6 +101,8 @@ class Cli
                 $move = $this->game->compute();
                 if ($move === 'pass') {
                     $passCount[$player]++;
+                } elseif (isset($cornerCell[$move])) {
+                    $corner[$player]++;
                 }
             }
             switch($this->game->state()) {
@@ -118,8 +125,8 @@ class Cli
         }
         echo 'WHITE win: ' . $white . PHP_EOL;
         echo 'BLACK win: ' . $black . PHP_EOL;
-        echo 'WHITE passed:' . $passCount[Player::WHITE->name] . PHP_EOL;
-        echo 'BLACK passed:' . $passCount[Player::BLACK->name] . PHP_EOL;
+        echo 'WHITE passed:' . $passCount[Player::WHITE->name] . ', corner: ' . $corner[Player::WHITE->name] . PHP_EOL;
+        echo 'BLACK passed:' . $passCount[Player::BLACK->name] . ', corner: ' . $corner[Player::BLACK->name] . PHP_EOL;
         echo 'average: ' . array_sum($done) / count($done) . PHP_EOL;
     }
 

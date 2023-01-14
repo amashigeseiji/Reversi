@@ -70,7 +70,7 @@ class Reversi
     public function compute() : array
     {
         if ($this->suspend) {
-            return ['suspend'];
+            return ['suspend', []];
         }
         $strategy = $this->getStrategy($this->game->getCurrentPlayer());
         $move = $this->ai->choice($this->game, $strategy['strategy'], $strategy['searchLevel']);
@@ -170,5 +170,17 @@ class Reversi
     public function getCurrentPlayer(): Player
     {
         return $this->game->getCurrentPlayer();
+    }
+
+    public function nodeCount() : int
+    {
+        return $this->ai->nodeCount;
+    }
+
+    public function resume()
+    {
+        $last = $this->history->last();
+        $this->suspend = false;
+        $this->game = Game::fromHistory($last);
     }
 }
