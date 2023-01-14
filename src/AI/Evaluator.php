@@ -10,15 +10,24 @@ class Evaluator
 {
     public static function score(Game $game, Player $player, array $scoreMethod = ['calc'])
     {
-        $nokori = count($game->board()->empties);
         $score = 0;
         foreach ($scoreMethod as $method) {
-            $score = self::$method($score, $game, $player);
+            switch ($method) {
+            case 'calc':
+                $score += self::calc($game, $player);
+                break;
+            case 'cornerPoint':
+                $score += self::cornerPoint($game, $player);
+                break;
+            case 'moveCount':
+                $score += self::moveCount($game, $player);
+                break;
+            }
         }
         return $score;
     }
 
-    public static function calc(int $score, Game $game, Player $player): int
+    public static function calc(Game $game, Player $player): int
     {
         $white = count($game->board()->white);
         $black = count($game->board()->black);
@@ -34,8 +43,9 @@ class Evaluator
         }
     }
 
-    public static function cornerPoint(int $score, Game $game, Player $player) : int
+    public static function cornerPoint(Game $game, Player $player) : int
     {
+        $score = 0;
         $board = $game->board();
         $corner = $board->corner();
         $players = array_intersect($corner, $board->getPlayersCells($player));
@@ -49,15 +59,26 @@ class Evaluator
         return $score;
     }
 
-    public static function moveCount(int $score, Game $game, Player $player): int
+    public static function moveCount(Game $game, Player $player): int
     {
+        $score = 0;
         $moves = $game->moves();
         $isPlayer = $player === $game->getCurrentPlayer();
         $moveCount = count($moves->getAll());
-        if ($moveCount === 0) {
-            $score += $isPlayer ? 100 : -100;
+        switch ($moveCount) {
+        case 0:
+            $score += !$isPlayer ? 100 : -100;
+            break;
+        case 1:
+            $score += !$isPlayer ? 50 : -50;
+            break;
+        case 2:
+            $score += !$isPlayer ? 20 : -20;
+            break;
+        case 3:
+            $score += !$isPlayer ? 5 : -5;
+            break;
         }
-        $score += $isPlayer ? $moveCount * 2 : -($moveCount * 2);
         return $score;
     }
 }

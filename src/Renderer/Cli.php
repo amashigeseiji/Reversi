@@ -85,10 +85,18 @@ class Cli
         $done = [];
         $white = 0;
         $black = 0;
+        $passCount = [
+            Player::WHITE->name => 0,
+            Player::BLACK->name => 0,
+        ];
         for ($i = 0; $i < $count; $i++) {
             $start = microtime(true);
             while ($this->game->state() === GameState::ONGOING) {
-                $this->game->compute();
+                $player = $this->game->currentPlayer();
+                $move = $this->game->compute();
+                if ($move === 'pass') {
+                    $passCount[$player]++;
+                }
             }
             switch($this->game->state()) {
             case GameState::WIN_WHITE:
@@ -110,6 +118,8 @@ class Cli
         }
         echo 'WHITE win: ' . $white . PHP_EOL;
         echo 'BLACK win: ' . $black . PHP_EOL;
+        echo 'WHITE passed:' . $passCount[Player::WHITE->name] . PHP_EOL;
+        echo 'BLACK passed:' . $passCount[Player::BLACK->name] . PHP_EOL;
         echo 'average: ' . array_sum($done) / count($done) . PHP_EOL;
     }
 
