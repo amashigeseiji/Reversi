@@ -72,7 +72,7 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
                     $bestIndex = $index;
                 }
                 // ベータカット
-                if ($value > $beta) {
+                if ($value >= $beta) {
                     break;
                 }
             } else { // 敵のノードの場合
@@ -82,7 +82,7 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
                     $beta = $value;
                     $bestIndex = $index;
                 }
-                if ($value < $alpha) {
+                if ($value <= $alpha) {
                     break;
                 }
             }
