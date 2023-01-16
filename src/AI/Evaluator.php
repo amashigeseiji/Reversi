@@ -27,16 +27,12 @@ class Evaluator
 
     public static function winOrLose(Game $game, Player $player): int
     {
-        switch ($game->state) {
-        case GameState::WIN_WHITE:
-            return $player === Player::WHITE ? 50000 : -50000;
-        case GameState::WIN_BLACK:
-            return $player === Player::WHITE ? -50000 : 50000;
-        case GameState::DRAW:
-            return 0;
-        default:
-            return 0;
+        $white = count($game->board()->white);
+        $black = count($game->board()->black);
+        if ($game->isGameEnd) {
+            return $player === Player::WHITE ?  $white - $black : $black - $white;
         }
+        return 0;
     }
 
     public static function calc(Game $game, Player $player): int

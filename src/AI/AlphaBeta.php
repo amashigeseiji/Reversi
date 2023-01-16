@@ -16,8 +16,9 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
         $this->nodeCount = 0;
         $this->player = $game->getCurrentPlayer();
         $nokori = count($game->board()->empties);
-        if ($nokori < 10) {
+        if ($nokori < 14) {
             $this->searchLevel = $nokori;
+            $this->score = ['winOrLose'];
         }
         $choice = $this->alphaBeta($game, $this->searchLevel, true, PHP_INT_MIN, PHP_INT_MAX);
         return $choice;
