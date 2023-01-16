@@ -12,19 +12,31 @@ class Evaluator
     {
         $score = 0;
         foreach ($scoreMethod as $method) {
-            switch ($method) {
-            case 'calc':
+            if ($method === 'calc') {
                 $score += self::calc($game, $player);
-                break;
-            case 'cornerPoint':
+            } elseif ($method === 'cornerPoint') {
                 $score += self::cornerPoint($game, $player);
-                break;
-            case 'moveCount':
+            } elseif ($method === 'moveCount') {
                 $score += self::moveCount($game, $player);
-                break;
+            } elseif ($method === 'winOrLose') {
+                $score += self::winOrLose($game, $player);
             }
         }
         return $score;
+    }
+
+    public static function winOrLose(Game $game, Player $player): int
+    {
+        switch ($game->state) {
+        case GameState::WIN_WHITE:
+            return $player === Player::WHITE ? 50000 : -50000;
+        case GameState::WIN_BLACK:
+            return $player === Player::WHITE ? -50000 : 50000;
+        case GameState::DRAW:
+            return 0;
+        default:
+            return 0;
+        }
     }
 
     public static function calc(Game $game, Player $player): int
@@ -67,16 +79,13 @@ class Evaluator
         $moveCount = count($moves->getAll());
         switch ($moveCount) {
         case 0:
-            $score += !$isPlayer ? 100 : -100;
-            break;
-        case 1:
             $score += !$isPlayer ? 50 : -50;
             break;
-        case 2:
-            $score += !$isPlayer ? 20 : -20;
+        case 1:
+            $score += !$isPlayer ? 30 : -30;
             break;
-        case 3:
-            $score += !$isPlayer ? 5 : -5;
+        case 2:
+            $score += !$isPlayer ? 10 : -10;
             break;
         }
         return $score;
