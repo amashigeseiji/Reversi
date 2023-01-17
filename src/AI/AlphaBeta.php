@@ -23,6 +23,7 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
         if ($nokori < $this->endgameThreshold) {
             $this->searchLevel = $nokori;
             $this->score = ['winOrLose'];
+            $this->sortMethod = null;
         }
         $choice = $this->alphaBeta($game, $this->searchLevel, true, PHP_INT_MIN, PHP_INT_MAX);
         return $choice;
@@ -42,7 +43,21 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
         $value = $flag ? PHP_INT_MIN : PHP_INT_MAX;
         $bestIndex = null;
 
-        foreach ($this->expandNode($game, [$this, $this->sortMethod]) as $index => $node) {
+        if (!$this->sortMethod) {
+            if (!$flag) {
+                $nodes = iterator_to_array($this->expandNode($game));
+                uasort($nodes, function (Game $a, Game $b) {
+                    $movesA = count($a->moves()->getAll());
+                    $movesB = count($b->moves()->getAll());
+                    return $movesA - $movesB;
+                });
+            } else {
+                $nodes = $this->expandNode($game, [$this, 'simpleSort']);
+            }
+        } else {
+            $nodes = $this->expandNode($game, [$this, $this->sortMethod]);
+        }
+        foreach ($nodes as $index => $node) {
             $childValue = $this->alphaBeta($node, $depth - 1, !$flag, $alpha, $beta);
 
             if ($flag) { // AIのノードの場合
