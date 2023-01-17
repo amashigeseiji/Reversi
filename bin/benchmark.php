@@ -18,36 +18,42 @@ foreach ($argv as $arg) {
     if (is_numeric($arg)) {
         $numberOfTrial = $arg;
     }
+    $endgameThreshold = 0;
+    $searchLevel = 2;
     if (strpos($arg, 'bstrategy=') === 0) {
-        [$strategyName, $searchLevel] = explode(',', str_replace('bstrategy=', '', $arg));
+        [$strategyName, $searchLevel, $endgameThreshold] = explode(',', str_replace('bstrategy=', '', $arg));
         $strategy[] = [
             'strategy' => $strategyName,
             'searchLevel' => $searchLevel ?: 2,
             'player' => 'black',
+            'endgameThreshold' => $endgameThreshold,
         ];
     }
     if (strpos($arg, '--bs=') === 0) {
-        [$strategyName, $searchLevel] = explode(',', str_replace('--bs=', '', $arg));
+        [$strategyName, $searchLevel, $endgameThreshold] = explode(',', str_replace('--bs=', '', $arg));
         $strategy[] = [
             'strategy' => $strategyName,
             'searchLevel' => $searchLevel ?: 2,
             'player' => 'black',
+            'endgameThreshold' => $endgameThreshold,
         ];
     }
     if (strpos($arg, 'wstrategy=') === 0) {
-        [$strategyName, $searchLevel] = explode(',', str_replace('wstrategy=', '', $arg));
+        [$strategyName, $searchLevel, $endgameThreshold] = explode(',', str_replace('wstrategy=', '', $arg));
         $strategy[] = [
             'strategy' => $strategyName,
             'searchLevel' => $searchLevel ?: 2,
             'player' => 'white',
+            'endgameThreshold' => $endgameThreshold,
         ];
     }
     if (strpos($arg, '--ws=') === 0) {
-        [$strategyName, $searchLevel] = explode(',', str_replace('--ws=', '', $arg));
+        [$strategyName, $searchLevel, $endgameThreshold] = explode(',', str_replace('--ws=', '', $arg));
         $strategy[] = [
             'strategy' => $strategyName,
             'searchLevel' => $searchLevel ?: 2,
             'player' => 'white',
+            'endgameThreshold' => $endgameThreshold,
         ];
     }
 }

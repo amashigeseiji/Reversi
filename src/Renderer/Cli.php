@@ -79,7 +79,7 @@ class Cli
     {
         if ($strategies) {
             foreach ($strategies as $setting) {
-                $this->game->strategy($setting['strategy'], $setting['searchLevel'], $setting['player']);
+                $this->game->strategy($setting['strategy'], $setting['searchLevel'], $setting['endgameThreshold'], $setting['player']);
             }
         }
         $done = [];

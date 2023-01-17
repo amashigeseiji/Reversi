@@ -244,7 +244,7 @@ class Command
      * Usage:
      * - strategy [strategy] [searchLevel] [player] コンピュータ選択の戦略を設定します
      */
-    public function strategy(string $strategy = '', ?int $searchLevel = null, ?string $player = 'WHITE') : ?string
+    public function strategy(string $strategy = '', ?int $searchLevel = null, int $endgameThreshold = 0, ?string $player = 'WHITE') : ?string
     {
         // todo なんかおかしい
         $strategies = $this->reversi->getStrategy();
@@ -253,7 +253,7 @@ class Command
         }
         if (isset($strategies[strtoupper($player)])) {
             $player = strtoupper($player) === Player::WHITE->name ? Player::WHITE : Player::BLACK;
-            $this->reversi->setStrategy($strategy, $player, $searchLevel);
+            $this->reversi->setStrategy($strategy, $player, $searchLevel, $endgameThreshold);
         }
         return null;
     }

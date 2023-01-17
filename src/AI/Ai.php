@@ -3,6 +3,7 @@ namespace Tenjuu99\Reversi\AI;
 
 use Tenjuu99\Reversi\Model\Game;
 use Tenjuu99\Reversi\Model\Move;
+use Tenjuu99\Reversi\Model\Player;
 
 class Ai
 {
@@ -11,12 +12,17 @@ class Ai
     private MiniMax $miniMax;
     private AlphaBeta $alphaBeta;
     public int $nodeCount = 0;
+    private Config $configWhite;
+    private Config $configBlack;
 
     public function __construct()
     {
         $this->random = new Random();
         $this->miniMax = new MiniMax();
         $this->alphaBeta = new AlphaBeta();
+        $defaultConfig = new Config('alphabeta', 4, 10, ['calc', 'cornerPoint', 'moveCount']);
+        $this->configWhite = $defaultConfig;
+        $this->configBlack = $defaultConfig;
     }
 
     public function choice(Game $game, string $strategy, int $searchLevel = 2): ?string
@@ -26,13 +32,23 @@ class Ai
         }
         $think = $this->think($strategy);
         if ($think instanceof GameTreeInterface) {
-            $think->searchLevel($searchLevel);
+            $config = $game->getCurrentPlayer() === Player::WHITE ? $this->configWhite : $this->configBlack;
+            $think->configure($config);
         }
         $choice = $think->choice($game);
         if ($think instanceof GameTreeInterface) {
             $this->nodeCount = $think->nodeCount();
         }
         return $choice;
+    }
+
+    public function configure(Config $config, Player $player)
+    {
+        if ($player === Player::WHITE) {
+            $this->configWhite = $config;
+        } else {
+            $this->configBlack = $config;
+        }
     }
 
     private function think(string $strategy) : ThinkInterface

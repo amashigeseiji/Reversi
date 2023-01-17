@@ -2,6 +2,7 @@
 namespace Tenjuu99\Reversi;
 
 use Tenjuu99\Reversi\AI\Ai;
+use Tenjuu99\Reversi\AI\Config;
 use Tenjuu99\Reversi\Error\InvalidMoveException;
 use Tenjuu99\Reversi\Model\Board;
 use Tenjuu99\Reversi\Model\Game;
@@ -16,8 +17,10 @@ class Reversi
     private Histories $history;
     private Game $game;
 
+    /**
+     * @var array<string, Config>
+     */
     private array $strategy;
-    private array $defaultStrategy = ['strategy' => 'alphabeta', 'searchLevel' => 5];
     private bool $suspend = false;
 
     public function __construct(int $boardSizeX = 8, int $boardSizeY = 8, array $strategies = [])
@@ -26,8 +29,8 @@ class Reversi
         $this->game = Game::initialize(Player::BLACK, $boardSizeX, $boardSizeY);
         $this->history = new Histories;
         $this->strategy = $strategies ?: [
-            Player::WHITE->name => $this->defaultStrategy,
-            Player::BLACK->name => $this->defaultStrategy,
+            Player::WHITE->name => new Config('alphabeta', 4, 10, ['calc', 'cornerPoint', 'moveCount']),
+            Player::BLACK->name => new Config('alphabeta', 4, 10, ['calc', 'cornerPoint', 'moveCount']),
         ];
         $this->history->push($this->game->toHistory());
     }
@@ -86,21 +89,26 @@ class Reversi
     public function getStrategy(?Player $player = null) : array
     {
         if ($player) {
-            return $this->strategy[$player->name];
+            return (array) $this->strategy[$player->name];
         }
         return $this->strategy;
     }
 
-    public function setStrategy(string $strategy, Player $player, ?int $searchLevel = null)
+    public function setStrategy(string $strategy, Player $player, ?int $searchLevel = null, ?int $endgameThreshold = null)
     {
         $strategies = $this->ai->strategies();
         if (!in_array($strategy, $strategies)) {
             return;
         }
-        $this->strategy[$player->name]['strategy'] = $strategy;
+        $strategyConfig = $this->strategy[$player->name];
+        $strategyConfig->strategy = $strategy;
         if (!is_null($searchLevel) && $searchLevel > 0) {
-            $this->strategy[$player->name]['searchLevel'] = $searchLevel;
+            $strategyConfig->searchLevel = $searchLevel;
         }
+        if (!is_null($endgameThreshold)) {
+            $strategyConfig->endgameThreshold = $endgameThreshold;
+        }
+        $this->ai->configure($strategyConfig, $player);
     }
 
     public function historyBack(string $hash)

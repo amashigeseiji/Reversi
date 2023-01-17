@@ -7,6 +7,8 @@ class AbstractGameTree implements GameTreeInterface
 {
     protected int $nodeCount = 0;
     protected int $searchLevel = 4;
+    protected int $endgameThreshold = 0;
+    protected array $score = ['calc'];
 
     public function searchLevel(int $searchLevel) : void
     {
@@ -33,5 +35,12 @@ class AbstractGameTree implements GameTreeInterface
                 yield $index => $game->node($index);
             }
         }
+    }
+
+    public function configure(Config $config) : void
+    {
+        $this->searchLevel = $config->searchLevel;
+        $this->endgameThreshold = $config->endgameThreshold;
+        $this->score = $config->scoringMethods;
     }
 }

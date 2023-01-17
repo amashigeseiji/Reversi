@@ -7,7 +7,7 @@ use Tenjuu99\Reversi\Model\Player;
 class MiniMax extends AbstractGameTree implements ThinkInterface
 {
     private Player $player;
-    private $score = ['score', 'cornerPoint', 'moveCount'];
+    protected array $score = ['score', 'cornerPoint', 'moveCount'];
 
     public function choice(Game $game) : string
     {

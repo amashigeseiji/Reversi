@@ -10,13 +10,17 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
 {
     private Player $player;
 
-    private $score = ['calc', 'cornerPoint', 'moveCount'];
+    protected array $score = ['calc', 'cornerPoint', 'moveCount'];
+    private array $corner;
+    private ?string $sortMethod = 'simpleSort';
+
     public function choice(Game $game) : string
     {
         $this->nodeCount = 0;
+        $this->corner = $game->board()->corner();
         $this->player = $game->getCurrentPlayer();
         $nokori = count($game->board()->empties);
-        if ($nokori < 14) {
+        if ($nokori < $this->endgameThreshold) {
             $this->searchLevel = $nokori;
             $this->score = ['winOrLose'];
         }
@@ -38,31 +42,7 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
         $value = $flag ? PHP_INT_MIN : PHP_INT_MAX;
         $bestIndex = null;
 
-        // 枝刈りのための効率化
-        // ノードを評価が高いであろう順にならべなおす
-        $sort = function (Moves $moves) use($game) {
-            $moves = $moves->getAll();
-            $corner = array_flip($game->board()->corner());
-            $cornerMoves = [];
-            $else = [];
-            foreach ($moves as $index => $move) {
-                if (isset($corner[$index])) {
-                    $cornerMoves[$index] = $move;
-                } else {
-                    $else[$index] = $move;
-                }
-            }
-            uasort($else, function (Move $a, Move $b) {
-                $countA = count($a->flipCells);
-                $countB = count($b->flipCells);
-                if ($countA === $countB) {
-                    return 0;
-                }
-                return $countA < $countB ? 1 : -1;
-            });
-            return [...$cornerMoves, ...$else];
-        };
-        foreach ($this->expandNode($game, $sort) as $index => $node) {
+        foreach ($this->expandNode($game, [$this, $this->sortMethod]) as $index => $node) {
             $childValue = $this->alphaBeta($node, $depth - 1, !$flag, $alpha, $beta);
 
             if ($flag) { // AIのノードの場合
@@ -93,5 +73,31 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
             return $bestIndex;
         }
         return $flag ? $alpha : $beta;
+    }
+
+    // 枝刈りのための効率化
+    // ノードを評価が高いであろう順にならべなおす
+    public function simpleSort(Moves $moves)
+    {
+        $moves = $moves->getAll();
+        $corner = array_flip($this->corner);
+        $cornerMoves = [];
+        $else = [];
+        foreach ($moves as $index => $move) {
+            if (isset($corner[$index])) {
+                $cornerMoves[$index] = $move;
+            } else {
+                $else[$index] = $move;
+            }
+        }
+        uasort($else, function (Move $a, Move $b) {
+            $countA = count($a->flipCells);
+            $countB = count($b->flipCells);
+            if ($countA === $countB) {
+                return 0;
+            }
+            return $countA < $countB ? 1 : -1;
+        });
+        return [...$cornerMoves, ...$else];
     }
 }

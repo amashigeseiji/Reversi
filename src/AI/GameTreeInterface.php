@@ -11,4 +11,6 @@ interface GameTreeInterface
      * @return int ノードを展開した数
      */
     public function nodeCount(): int;
+
+    public function configure(Config $config): void;
 }
