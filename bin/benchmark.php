@@ -18,43 +18,25 @@ foreach ($argv as $arg) {
     if (is_numeric($arg)) {
         $numberOfTrial = $arg;
     }
-    $endgameThreshold = 0;
-    $searchLevel = 2;
-    if (strpos($arg, 'bstrategy=') === 0) {
-        [$strategyName, $searchLevel, $endgameThreshold] = explode(',', str_replace('bstrategy=', '', $arg));
-        $strategy[] = [
-            'strategy' => $strategyName,
-            'searchLevel' => $searchLevel ?: 2,
-            'player' => 'black',
-            'endgameThreshold' => $endgameThreshold,
-        ];
-    }
-    if (strpos($arg, '--bs=') === 0) {
-        [$strategyName, $searchLevel, $endgameThreshold] = explode(',', str_replace('--bs=', '', $arg));
-        $strategy[] = [
-            'strategy' => $strategyName,
-            'searchLevel' => $searchLevel ?: 2,
-            'player' => 'black',
-            'endgameThreshold' => $endgameThreshold,
-        ];
-    }
-    if (strpos($arg, 'wstrategy=') === 0) {
-        [$strategyName, $searchLevel, $endgameThreshold] = explode(',', str_replace('wstrategy=', '', $arg));
-        $strategy[] = [
-            'strategy' => $strategyName,
-            'searchLevel' => $searchLevel ?: 2,
-            'player' => 'white',
-            'endgameThreshold' => $endgameThreshold,
-        ];
-    }
-    if (strpos($arg, '--ws=') === 0) {
-        [$strategyName, $searchLevel, $endgameThreshold] = explode(',', str_replace('--ws=', '', $arg));
-        $strategy[] = [
-            'strategy' => $strategyName,
-            'searchLevel' => $searchLevel ?: 2,
-            'player' => 'white',
-            'endgameThreshold' => $endgameThreshold,
-        ];
+    $getStrategyArg = function ($arg) {
+        if (preg_match('/((?P<color1>b|w)strategy|--(?P<color2>b|w)s)=(?P<arg>.*)/', $arg, $match)) {
+            $color = $match['color1'] ?: $match['color2'];
+            if (!$match['arg']) {
+                echo 'strategy の引数が足りません';
+                exit;
+            }
+            $strategy = explode(',', $match['arg']);
+            return [
+                'strategy' => $strategy[0],
+                'searchLevel' => $strategy[1] ?? 2,
+                'player' => $color === 'b' ? 'black' : 'white',
+                'endgameThreshold' => $strategy[2] ?? 0,
+            ];
+        }
+        return null;
+    };
+    if ($tmp = $getStrategyArg($arg)) {
+        $strategy[] = $tmp;
     }
 }
 
