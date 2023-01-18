@@ -139,7 +139,7 @@ class Reversi
             'strategy' => $this->getStrategy(),
             'nodeCount' => $this->ai->nodeCount,
         ];
-        if (DEBUG) {
+        if (constant('DEBUG')) {
             $data['memoryUsage'] = number_format((memory_get_usage() / 1000)) . 'KB';
         }
         return $data;

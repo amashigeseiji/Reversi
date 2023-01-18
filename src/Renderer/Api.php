@@ -1,5 +1,8 @@
 <?php
 namespace Tenjuu99\Reversi\Renderer;
+if (!defined('DEBUG')) {
+    define('DEBUG', false);
+}
 
 use ReflectionClass;
 use ReflectionMethod;
@@ -13,8 +16,6 @@ class Api
     private array $handler;
 
     private Reversi $reversi;
-
-    private $retry = 0;
 
     public function __construct()
     {
@@ -66,11 +67,15 @@ class Api
                 echo 'Not found';
             }
         } catch (\Throwable $e) {
-            $this->retry++;
-            $this->reset();
-            if ($this->retry <= 3) {
-                $this->handle($request);
+            http_response_code(500);
+            $message = [
+                'code' => 500,
+                'message' => $e->getMessage(),
+            ];
+            if (constant('DEBUG')) {
+                $message['trace'] = $e->getTraceAsString();
             }
+            echo json_encode($message);
         }
     }
 
