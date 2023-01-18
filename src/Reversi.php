@@ -29,8 +29,8 @@ class Reversi
         $this->game = Game::initialize(Player::BLACK, $boardSizeX, $boardSizeY);
         $this->history = new Histories;
         $this->strategy = $strategies ?: [
-            Player::WHITE->name => new Config('alphabeta', 4, 10, ['calc', 'cornerPoint', 'moveCount']),
-            Player::BLACK->name => new Config('alphabeta', 4, 10, ['calc', 'cornerPoint', 'moveCount']),
+            Player::WHITE->name => new Config('alphabeta', 4, 13, ['calc', 'cornerPoint', 'moveCount']),
+            Player::BLACK->name => new Config('alphabeta', 4, 13, ['calc', 'cornerPoint', 'moveCount']),
         ];
         $this->history->push($this->game->toHistory());
     }

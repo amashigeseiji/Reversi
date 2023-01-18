@@ -12,7 +12,7 @@ class AbstractGameTree implements GameTreeInterface
 
     public function searchLevel(int $searchLevel) : void
     {
-        if ($searchLevel > 0) {
+        if ($searchLevel > 0 && $searchLevel < 9) {
             $this->searchLevel = $searchLevel;
         }
     }
