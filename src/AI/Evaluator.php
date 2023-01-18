@@ -29,10 +29,18 @@ class Evaluator
     {
         $white = count($game->board()->white);
         $black = count($game->board()->black);
-        if ($game->isGameEnd) {
-            return $player === Player::WHITE ?  $white - $black : $black - $white;
+        // 石差まで考慮にいれると遅くなる
+        //return $player === Player::WHITE ? $white - $black : $black - $white;
+        switch ($game->state) {
+        case GameState::WIN_WHITE:
+            return $player === Player::WHITE ? 500 : -500;
+        case GameState::WIN_BLACK:
+            return $player === Player::WHITE ? -500 : 500;
+        case GameState::DRAW:
+            return 0;
+        default:
+            return 0;
         }
-        return 0;
     }
 
     public static function calc(Game $game, Player $player): int
@@ -59,10 +67,10 @@ class Evaluator
         $players = array_intersect($corner, $board->getPlayersCells($player));
         $enemies = array_intersect($corner, $board->getPlayersCells($player->enemy()));
         if (count($players) > 0) {
-            $score = $score + count($players) * 200;
+            $score = $score + count($players) * 400;
         }
         if (count($enemies) > 0) {
-            $score = $score - count($enemies) * 200;
+            $score = $score - count($enemies) * 400;
         }
         return $score;
     }

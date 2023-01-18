@@ -29,7 +29,7 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
         $this->corner = $game->board()->corner();
         $this->player = $game->getCurrentPlayer();
         $nokori = count($game->board()->empties);
-        if ($nokori < $this->endgameThreshold) {
+        if ($nokori <= $this->endgameThreshold) {
             $this->searchLevel = $nokori;
             $this->score = ['winOrLose'];
         }
