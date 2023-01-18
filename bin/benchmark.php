@@ -2,6 +2,9 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Tenjuu99\Reversi\Renderer\Cli;
+if (!defined('DEBUG')) {
+    define('DEBUG', true);
+}
 
 $numberOfTrial = 100;
 $boardSizeX = 8;

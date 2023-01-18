@@ -25,12 +25,23 @@ class Evaluator
         return $score;
     }
 
+    /**
+     * 石差評価を含む
+     */
+    public static function winOrLoseDifference(Game $game, Player $player): int
+    {
+        $white = count($game->board()->white);
+        $black = count($game->board()->black);
+        return $player === Player::WHITE ? $white - $black : $black - $white;
+    }
+
+    /**
+     * 石差評価を含まない
+     */
     public static function winOrLose(Game $game, Player $player): int
     {
         $white = count($game->board()->white);
         $black = count($game->board()->black);
-        // 石差まで考慮にいれると遅くなる
-        //return $player === Player::WHITE ? $white - $black : $black - $white;
         switch ($game->state) {
         case GameState::WIN_WHITE:
             return $player === Player::WHITE ? 500 : -500;
@@ -55,7 +66,7 @@ class Evaluator
         case GameState::DRAW:
             return 0;
         default:
-            return $player === Player::WHITE ? $white - $black : $black - $white;
+            return ($player === Player::WHITE ? $white - $black : $black - $white) + rand(-5, 5);
         }
     }
 
@@ -67,10 +78,10 @@ class Evaluator
         $players = array_intersect($corner, $board->getPlayersCells($player));
         $enemies = array_intersect($corner, $board->getPlayersCells($player->enemy()));
         if (count($players) > 0) {
-            $score = $score + count($players) * 400;
+            $score = $score + count($players) * 200;
         }
         if (count($enemies) > 0) {
-            $score = $score - count($enemies) * 400;
+            $score = $score - count($enemies) * 200;
         }
         return $score;
     }
@@ -83,7 +94,7 @@ class Evaluator
         $moveCount = count($moves->getAll());
         switch ($moveCount) {
         case 0:
-            $score += !$isPlayer ? 50 : -50;
+            $score += !$isPlayer ? 100 : -100;
             break;
         case 1:
             $score += !$isPlayer ? 30 : -30;

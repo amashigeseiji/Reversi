@@ -12,9 +12,10 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
     protected int $nodeCount = 0;
     private Player $player;
 
-    private Game $rootNode;
     protected array $score = ['calc', 'cornerPoint', 'moveCount'];
+    private array $endgameScoringMethod = ['winOrLose'];
     private array $corner;
+    private int $nokori;
 
     /**
      * choice
@@ -25,13 +26,12 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
     public function choice(Game $game) : string
     {
         $this->nodeCount = 0;
-        $this->rootNode = $game;
         $this->corner = $game->board()->corner();
         $this->player = $game->getCurrentPlayer();
-        $nokori = count($game->board()->empties);
-        if ($nokori <= $this->endgameThreshold) {
-            $this->searchLevel = $nokori;
-            $this->score = ['winOrLose'];
+        $this->nokori = count($game->board()->empties);
+        if ($this->nokori <= $this->endgameThreshold) {
+            $this->searchLevel = $this->nokori;
+            $this->score = $this->endgameScoringMethod;
         }
         $choice = $this->alphaBeta($game, $this->searchLevel, true, PHP_INT_MIN, PHP_INT_MAX);
         return $choice;
@@ -101,8 +101,7 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
         if (!$moves->hasMoves()) {
             yield 'pass' => $game->node('pass');
         } else {
-            $nokori = count($this->rootNode->board()->empties);
-            $isEndgame = ($nokori - $this->endgameThreshold) < 0;
+            $isEndgame = ($this->nokori - $this->endgameThreshold) < 0;
             // 終盤の相手プレイヤーの手は手が少いほうから調査する
             if ($isEndgame && $game->getCurrentPlayer() !== $this->player) {
                 $nodes = [];
