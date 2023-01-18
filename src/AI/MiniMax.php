@@ -6,6 +6,7 @@ use Tenjuu99\Reversi\Model\Player;
 
 class MiniMax extends AbstractGameTree implements ThinkInterface
 {
+    protected int $nodeCount = 0;
     private Player $player;
     protected array $score = ['score', 'cornerPoint', 'moveCount'];
 
@@ -24,6 +25,7 @@ class MiniMax extends AbstractGameTree implements ThinkInterface
      */
     public function miniMax(Game $game, int $depth, bool $flag)
     {
+        $this->nodeCount++;
         if ($depth === 0 || $game->isGameEnd) {
             // score を返す
             return Evaluator::score($game, $this->player, $this->score);
@@ -31,8 +33,12 @@ class MiniMax extends AbstractGameTree implements ThinkInterface
         $value = $flag ? PHP_INT_MIN : PHP_INT_MAX;
         $bestIndex = null;
 
-        foreach ($this->expandNode($game) as $index => $node) {
-            $childValue = $this->miniMax($node, $depth - 1, !$flag);
+        $moves = $game->moves()->getAll();
+        if (count($moves) === 0) {
+            $moves['pass'] = 'pass';
+        }
+        foreach ($moves as $index => $move) {
+            $childValue = $this->miniMax($game->node($index), $depth - 1, !$flag);
             if ($flag) {
                 if ($value <= $childValue) {
                     $value = $childValue;

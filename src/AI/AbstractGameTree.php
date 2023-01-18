@@ -22,21 +22,6 @@ class AbstractGameTree implements GameTreeInterface
         return $this->nodeCount;
     }
 
-    protected function expandNode(Game $game, ?callable $sort = null): Traversable
-    {
-        $moves = $game->moves();
-        if (!$moves->hasMoves()) {
-            $this->nodeCount++;
-            yield 'pass' => $game->node('pass');
-        } else {
-            $moves = $sort ? $sort($moves) : $moves->getAll();
-            foreach ($moves as $index => $move) {
-                $this->nodeCount++;
-                yield $index => $game->node($index);
-            }
-        }
-    }
-
     public function configure(Config $config) : void
     {
         $this->searchLevel = $config->searchLevel;

@@ -5,37 +5,50 @@ use Tenjuu99\Reversi\Model\Game;
 use Tenjuu99\Reversi\Model\Move;
 use Tenjuu99\Reversi\Model\Moves;
 use Tenjuu99\Reversi\Model\Player;
+use Traversable;
 
 class AlphaBeta extends AbstractGameTree implements ThinkInterface
 {
+    protected int $nodeCount = 0;
     private Player $player;
 
+    private Game $rootNode;
     protected array $score = ['calc', 'cornerPoint', 'moveCount'];
     private array $corner;
-    private ?string $sortMethod = 'simpleSort';
 
+    /**
+     * choice
+     *
+     * @param Game $game
+     * @return string
+     */
     public function choice(Game $game) : string
     {
         $this->nodeCount = 0;
+        $this->rootNode = $game;
         $this->corner = $game->board()->corner();
         $this->player = $game->getCurrentPlayer();
         $nokori = count($game->board()->empties);
         if ($nokori < $this->endgameThreshold) {
             $this->searchLevel = $nokori;
             $this->score = ['winOrLose'];
-            $this->sortMethod = null;
         }
         $choice = $this->alphaBeta($game, $this->searchLevel, true, PHP_INT_MIN, PHP_INT_MAX);
         return $choice;
     }
 
     /**
+     * alphaBeta
+     *
      * @param Game $game
-     * @param int $depth 探索する深さ
-     * @param bool $flag 評価側を true, 敵側を false
+     * @param int $depth
+     * @param bool $flag
+     * @param int $alpha
+     * @param int $beta
      */
     public function alphaBeta(Game $game, int $depth, bool $flag, int $alpha, int $beta)
     {
+        $this->nodeCount++;
         if ($depth === 0 || $game->isGameEnd) {
             // score を返す
             return Evaluator::score($game, $this->player, $this->score);
@@ -43,21 +56,7 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
         $value = $flag ? PHP_INT_MIN : PHP_INT_MAX;
         $bestIndex = null;
 
-        if (!$this->sortMethod) {
-            if (!$flag) {
-                $nodes = iterator_to_array($this->expandNode($game));
-                uasort($nodes, function (Game $a, Game $b) {
-                    $movesA = count($a->moves()->getAll());
-                    $movesB = count($b->moves()->getAll());
-                    return $movesA - $movesB;
-                });
-            } else {
-                $nodes = $this->expandNode($game, [$this, 'simpleSort']);
-            }
-        } else {
-            $nodes = $this->expandNode($game, [$this, $this->sortMethod]);
-        }
-        foreach ($nodes as $index => $node) {
+        foreach ($this->expandNode($game) as $index => $node) {
             $childValue = $this->alphaBeta($node, $depth - 1, !$flag, $alpha, $beta);
 
             if ($flag) { // AIのノードの場合
@@ -90,9 +89,50 @@ class AlphaBeta extends AbstractGameTree implements ThinkInterface
         return $flag ? $alpha : $beta;
     }
 
-    // 枝刈りのための効率化
-    // ノードを評価が高いであろう順にならべなおす
-    public function simpleSort(Moves $moves)
+    /**
+     * expandNode
+     *
+     * @param Game $game
+     * @return Traversable<string, Game>
+     */
+    private function expandNode(Game $game): Traversable
+    {
+        $moves = $game->moves();
+        if (!$moves->hasMoves()) {
+            yield 'pass' => $game->node('pass');
+        } else {
+            $nokori = count($this->rootNode->board()->empties);
+            $isEndgame = ($nokori - $this->endgameThreshold) < 0;
+            // 終盤の相手プレイヤーの手は手が少いほうから調査する
+            if ($isEndgame && $game->getCurrentPlayer() !== $this->player) {
+                $nodes = [];
+                foreach ($moves->getAll() as $index => $move) {
+                    $nodes[$index] = $game->node($index);
+                }
+                uasort($nodes, function (Game $a, Game $b) {
+                    $movesA = count($a->moves()->getAll());
+                    $movesB = count($b->moves()->getAll());
+                    return $movesA - $movesB;
+                });
+                foreach ($nodes as $index => $node) {
+                    yield $index => $node;
+                }
+            } else {
+                $moves = $this->simpleSort($moves);
+                foreach ($moves as $index => $move) {
+                    yield $index => $game->node($index);
+                }
+            }
+        }
+    }
+
+    /**
+     * 枝刈りのための効率化
+     * ノードを評価が高いであろう順にならべなおす
+     *
+     * @return array<string, Move>
+     */
+    private function simpleSort(Moves $moves): array
     {
         $moves = $moves->getAll();
         $corner = array_flip($this->corner);
