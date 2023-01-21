@@ -1,20 +1,20 @@
 <?php
 namespace Tenjuu99\Reversi\Renderer\Cli;
 
-use Tenjuu99\Reversi\Command\Game;
-
 class Renderer
 {
     public bool $simple = false;
     private $filename;
 
     private Board $cliBoard;
+    private Command $command;
     private int $marginLeft = 3;
 
-    public function __construct(Board $cliBoard)
+    public function __construct(Board $cliBoard, Command $command)
     {
         $this->cliBoard = $cliBoard;
         $this->filename = sys_get_temp_dir() . '/reversi_buffer';
+        $this->command = $command;
     }
 
     public function clear()
@@ -43,6 +43,7 @@ class Renderer
     public function command(string $inputMessage = '') : string
     {
         ob_start();
+        readline_completion_function([$this->command, 'commandCompletion']);
         $input = readline($this->message($inputMessage, true));
         readline_add_history($input);
         $content = ob_get_clean();

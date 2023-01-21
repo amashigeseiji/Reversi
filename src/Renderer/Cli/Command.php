@@ -253,7 +253,7 @@ class Command
     {
         $strategies = $this->reversi->getAllStrategy();
         if (!$strategy) {
-            return 'white: ' . $strategies[Player::WHITE->name]['strategy']. ', black: ' . $strategies[Player::BLACK->name]['strategy'];
+            return 'white: ' . $strategies[Player::WHITE->name]->strategy. ', black: ' . $strategies[Player::BLACK->name]->strategy;
         }
         if (isset($strategies[strtoupper($player)])) {
             $config = $strategies[strtoupper($player)];
@@ -277,5 +277,23 @@ class Command
     public function wait(float|int $sleep = 0.2)
     {
         $this->sleep = $sleep;
+    }
+
+    public function commandCompletion(string $input, $index) : array
+    {
+        $patterns = [
+            '/^\d+/' => $this->reversi->getMoves()->indices(),
+            '/^strategy\s.*/' => $this->reversi->strategyList(),
+            '/^computer\s.*/' => ['on', 'off'],
+            '/^\w+/' => array_keys($this->commands)
+        ];
+        $info = readline_info();
+        $fullInput = substr($info['line_buffer'], 0, $info['end']);
+        foreach ($patterns as $pattern => $values) {
+            if (preg_match($pattern, $fullInput)) {
+                return $values;
+            }
+        }
+        return $this->reversi->getMoves()->indices();
     }
 }
