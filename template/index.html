@@ -586,7 +586,9 @@
   .sidemenu > div.sidemenuInner {
     width: 100%;
     display: flex;
-    height: 250px;
+    height: 325px;
+    max-height: 325px;
+    overflow: scroll;
   }
   .sidemenu.close {
     bottom: -1000px;
@@ -671,15 +673,17 @@
   }
 
   .history {
-    padding: 0 10px;
-    width: 50%;
+    flex-basis: 50%;
+    background: rgba(255,255,255,.6);
+  }
+  .history > a {
+    margin: 0 15px;
   }
   .history-list {
     list-style: none;
-    margin: 0;
+    margin: 0 15px;
     padding: 10px 15px;
     font-size: 15px;
-    max-height: 150px;
     overflow: scroll;
   }
   .history-back {
@@ -748,12 +752,6 @@
     }
     .menu {
       border-right: none;
-    }
-    .history {
-      width: 90vw;
-    }
-    .history-list {
-      max-height: 200px;
     }
   }
 </style>
