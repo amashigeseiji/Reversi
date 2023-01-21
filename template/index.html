@@ -25,7 +25,7 @@
             <div class="column">y: <input type="number" v-model="game.board.yMax"></div>
           </div>
           <div class="row">
-            <div class="column">セルのサイズ</div>
+            <div class="column">セルの大きさ調整</div>
             <div class="column"><input type="number" v-model="cellScale"></div>
           </div>
           <div class="row">
@@ -54,8 +54,8 @@
           <?php endif ?>
           <div class="row">
             <div class="column col2">
-              <button @click="onClickUpdateBoardSize">Restart</button>
-              <button @click="onClickReset" class="reset">reset</button>
+              <button @click="onClickUpdateBoardSize">盤面サイズを変更する</button>
+              <button @click="onClickReset" class="reset">リセット</button>
             </div>
           </div>
         </div>
@@ -69,14 +69,17 @@
             </div>
           </div>
           <div class="row">
-            <div class="column">思考アルゴリズム(白):
+            <div class="column col2">思考アルゴリズム(白):
               <select :value="game.strategy.WHITE.strategy" @change="onChangeStrategy" data-player="WHITE" data-type="strategy" :disabled="!opponentComputer">
                 <option value="alphabeta">AlphaBeta</option>
                 <option value="minimax">MiniMax</option>
                 <option value="random">ランダム</option>
               </select>
             </div>
-            <div class="column">探索深さ(白): <input type="number" :value="game.strategy.WHITE.searchLevel" @change="onChangeStrategy" data-player="WHITE" data-type="searchLevel" :disabled="!opponentComputer" min="1" max="8"> node展開:{{ currentPlayer === 'black' ? game.nodeCount: 0 }}</div>
+          </div>
+          <div class="row">
+            <div class="column">探索深さ(白): <input type="number" :value="game.strategy.WHITE.searchLevel" @change="onChangeStrategy" data-player="WHITE" data-type="searchLevel" :disabled="!opponentComputer" min="1" max="8"></div>
+            <div class="column">終盤判定の残り手数: <input type="number" :value="game.strategy.WHITE.endgameThreshold" @change="onChangeStrategy" data-player="WHITE" data-type="endgameThreshold" :disabled="!opponentComputer" min="1" max="14"></div>
           </div>
           <div class="row">
             <div class="column">思考アルゴリズム(黒):
@@ -86,7 +89,13 @@
                 <option value="random">ランダム</option>
               </select>
             </div>
-            <div class="column">探索深さ(黒): <input type="number" :value="game.strategy.BLACK.searchLevel" @change="onChangeStrategy" data-player="BLACK" data-type="searchLevel" :disabled="!opponentComputer" min="1" max="8"> node展開:{{ currentPlayer === 'white' ? game.nodeCount: 0 }}</div>
+          </div>
+          <div class="row">
+            <div class="column">探索深さ(黒): <input type="number" :value="game.strategy.BLACK.searchLevel" @change="onChangeStrategy" data-player="BLACK" data-type="searchLevel" :disabled="!opponentComputer" min="1" max="8"></div>
+            <div class="column">終盤判定の残り手数: <input type="number" :value="game.strategy.BLACK.endgameThreshold" @change="onChangeStrategy" data-player="BLACK" data-type="endgameThreshold" :disabled="!opponentComputer" min="1" max="14"></div>
+          </div>
+          <div class="row">
+            <div>node展開:{{ game.nodeCount }}</div>
           </div>
           <div class="row">
             <div class="column col2">待ち時間(コンピュータが処理するのが早すぎる場合)<input type="number" v-model="waitTime" :disabled="!opponentComputer"></div>
@@ -146,7 +155,6 @@
         <div>white: {{ game.board.white.length }}, black: {{ game.board.black.length }}</div>
         <div>
           <button @click="onClickUpdateBoardSize">Restart</button>
-          <button @click="onClickReset" class="reset">reset</button>
         </div>
       </div>
     </div>
@@ -397,6 +405,9 @@
           : this.game.strategy[player].strategy
         if (type === 'searchLevel' && value > 0 && value < 9) {
           params.searchLevel = value
+        }
+        if (type === 'endgameThreshold' && value > 0 && value < 14) {
+          params.endgameThreshold = value
         }
         axios.post('/strategy', params).then(this.update)
       },

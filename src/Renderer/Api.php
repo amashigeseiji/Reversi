@@ -167,7 +167,7 @@ class Api
     }
 
     #[Http(method: "post", contentType: 'application/json')]
-    public function strategy(string $strategy, string $player, ?int $searchLevel = null)
+    public function strategy(string $strategy, string $player, ?int $searchLevel = null, ?int $endgameThreshold = null)
     {
         $strategies = $this->reversi->strategyList();
         $player = strtolower(Player::WHITE->name) === strtolower($player) ? Player::WHITE : Player::BLACK;
@@ -175,6 +175,9 @@ class Api
         $config->strategy = $strategy;
         if (!is_null($searchLevel)) {
             $config->searchLevel = $searchLevel;
+        }
+        if (!is_null($endgameThreshold)) {
+            $config->endgameThreshold = $endgameThreshold;
         }
         $this->reversi->setStrategy($config, $player);
         echo $this->gameJson();
