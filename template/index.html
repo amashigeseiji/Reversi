@@ -68,32 +68,20 @@
               コンピュータ対戦: <input type="checkbox" v-model="opponentComputer" :disabled="auto">
             </div>
           </div>
+          <template v-for="(label, color) in {WHITE: '白', BLACK: '黒'}" :key="color">
           <div class="row">
-            <div class="column col2">思考アルゴリズム(白):
-              <select :value="game.strategy.WHITE.strategy" @change="onChangeStrategy" data-player="WHITE" data-type="strategy" :disabled="!opponentComputer">
+            <div>[{{label}}]&nbsp;</div>
+            <div class="column">アルゴリズム:
+              <select :value="game.strategy[color].strategy" @change="onChangeStrategy" :data-player="color" data-type="strategy" :disabled="!opponentComputer">
                 <option value="alphabeta">AlphaBeta</option>
                 <option value="minimax">MiniMax</option>
                 <option value="random">ランダム</option>
               </select>
             </div>
+            <div class="column">探索深さ: <input type="number" :value="game.strategy[color].searchLevel" @change="onChangeStrategy" :data-player="color" data-type="searchLevel" :disabled="!opponentComputer" min="1" max="8"></div>
+            <div class="column">終盤判定の残り手数: <input type="number" :value="game.strategy[color].endgameThreshold" @change="onChangeStrategy" :data-player="color" data-type="endgameThreshold" :disabled="!opponentComputer" min="0" max="14"></div>
           </div>
-          <div class="row">
-            <div class="column">探索深さ(白): <input type="number" :value="game.strategy.WHITE.searchLevel" @change="onChangeStrategy" data-player="WHITE" data-type="searchLevel" :disabled="!opponentComputer" min="1" max="8"></div>
-            <div class="column">終盤判定の残り手数: <input type="number" :value="game.strategy.WHITE.endgameThreshold" @change="onChangeStrategy" data-player="WHITE" data-type="endgameThreshold" :disabled="!opponentComputer" min="1" max="14"></div>
-          </div>
-          <div class="row">
-            <div class="column">思考アルゴリズム(黒):
-              <select :value="game.strategy.BLACK.strategy" @change="onChangeStrategy" data-player="BLACK" data-type="strategy" :disabled="!opponentComputer">
-                <option value="alphabeta">AlphaBeta</option>
-                <option value="minimax">MiniMax</option>
-                <option value="random">ランダム</option>
-              </select>
-            </div>
-          </div>
-          <div class="row">
-            <div class="column">探索深さ(黒): <input type="number" :value="game.strategy.BLACK.searchLevel" @change="onChangeStrategy" data-player="BLACK" data-type="searchLevel" :disabled="!opponentComputer" min="1" max="8"></div>
-            <div class="column">終盤判定の残り手数: <input type="number" :value="game.strategy.BLACK.endgameThreshold" @change="onChangeStrategy" data-player="BLACK" data-type="endgameThreshold" :disabled="!opponentComputer" min="1" max="14"></div>
-          </div>
+          </template>
           <div class="row">
             <div>node展開:{{ game.nodeCount }}</div>
           </div>
@@ -406,7 +394,7 @@
         if (type === 'searchLevel' && value > 0 && value < 9) {
           params.searchLevel = value
         }
-        if (type === 'endgameThreshold' && value > 0 && value < 14) {
+        if (type === 'endgameThreshold' && value >= 0 && value <= 14) {
           params.endgameThreshold = value
         }
         axios.post('/strategy', params).then(this.update)
@@ -567,7 +555,7 @@
 
   .sidemenu {
     position: fixed;
-    background: rgba(143,205,176,.8);
+    background: rgba(143,205,176,1);
     color: #666;
     display: flex;
 
@@ -634,31 +622,31 @@
     top: 50%;
     margin: 0 auto;
   }
-  .menu, .aiConfig {
+  .tab {
     background: rgba(255,255,255,.6);
     display: flex;
     flex-direction: column;
-    flex-basis: 50%;
+    flex-basis: 100%;
     border-right: 0.1px solid #999;
   }
-  .menu input, .aiConfig input {
+  .tab input {
     width: 50px;
   }
-  .menu .row , .aiConfig .row {
+  .tab .row {
     display: flex;
     border-top: 0.1px solid #aaa;
     padding: 3px 30px;
   }
-  .menu .row:first-child, .aiConfig .row:first-child {
+  .tab .row:first-child {
     border-top: none;
   }
-  .menu .row:last-child, .aiConfig .row:last-child {
+  .tab .row:last-child {
     border-bottom: 0.1px solid #aaa;
   }
-  .menu .column, .aiConfig .column {
+  .tab .column {
     flex-basis: 50%;
   }
-  .menu .column.col2, .aiConfig .column.col2 {
+  .tab .column.col2 {
     flex-basis: 100%;
   }
   .menu button {
@@ -673,7 +661,6 @@
   }
 
   .history {
-    flex-basis: 50%;
     background: rgba(255,255,255,.6);
   }
   .history > a {
@@ -752,6 +739,13 @@
     }
     .menu {
       border-right: none;
+    }
+    .tab .row {
+      flex-direction: column;
+    }
+    .tab .column {
+      display: flex;
+      justify-content: space-between;
     }
   }
 </style>
