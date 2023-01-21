@@ -29,8 +29,8 @@ class Reversi
         $this->game = Game::initialize(Player::BLACK, $boardSizeX, $boardSizeY);
         $this->history = new Histories;
         $this->strategy = $strategies ?: [
-            Player::WHITE->name => new Config('alphabeta', 4, 13, ['calc', 'cornerPoint', 'moveCount']),
-            Player::BLACK->name => new Config('alphabeta', 4, 13, ['calc', 'cornerPoint', 'moveCount']),
+            Player::WHITE->name => new Config(),
+            Player::BLACK->name => new Config(),
         ];
         $this->history->push($this->game->toHistory());
     }
@@ -76,7 +76,7 @@ class Reversi
             return ['suspend', []];
         }
         $strategy = $this->getStrategy($this->game->getCurrentPlayer());
-        $move = $this->ai->choice($this->game, $strategy['strategy'], $strategy['searchLevel']);
+        $move = $this->ai->choice($this->game, $strategy->strategy, $strategy->searchLevel);
         $flip = [];
         if ($move === 'pass') {
             $this->pass();
@@ -86,29 +86,22 @@ class Reversi
         return [$move, $flip];
     }
 
-    public function getStrategy(?Player $player = null) : array
+    public function getStrategy(Player $player): Config
     {
-        if ($player) {
-            return (array) $this->strategy[$player->name];
-        }
+        return $this->strategy[$player->name];
+    }
+
+    /**
+     * @return array<string, Config>
+     */
+    public function getAllStrategy(): array
+    {
         return $this->strategy;
     }
 
-    public function setStrategy(string $strategy, Player $player, ?int $searchLevel = null, ?int $endgameThreshold = null)
+    public function setStrategy(Config $config, Player $player)
     {
-        $strategies = $this->ai->strategies();
-        if (!in_array($strategy, $strategies)) {
-            return;
-        }
-        $strategyConfig = $this->strategy[$player->name];
-        $strategyConfig->strategy = $strategy;
-        if (!is_null($searchLevel) && $searchLevel > 0) {
-            $strategyConfig->searchLevel = $searchLevel;
-        }
-        if (!is_null($endgameThreshold)) {
-            $strategyConfig->endgameThreshold = $endgameThreshold;
-        }
-        $this->ai->configure($strategyConfig, $player);
+        $this->ai->configure($config, $player);
     }
 
     public function historyBack(string $hash)
@@ -136,7 +129,7 @@ class Reversi
             'currentPlayer' => $this->game->getCurrentPlayer()->name,
             'history' => $histories,
             'moveCount' => $this->game->moveCount(),
-            'strategy' => $this->getStrategy(),
+            'strategy' => $this->strategy,
             'nodeCount' => $this->ai->nodeCount,
         ];
         if (constant('DEBUG')) {

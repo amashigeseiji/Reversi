@@ -3,6 +3,7 @@ namespace Tenjuu99\Reversi\Renderer\Cli;
 
 use ReflectionClass;
 use ReflectionMethod;
+use Tenjuu99\Reversi\AI\Config;
 use Tenjuu99\Reversi\Error\InvalidMoveException;
 use Tenjuu99\Reversi\Model\Board;
 use Tenjuu99\Reversi\Model\GameState;
@@ -28,9 +29,13 @@ class Command
 
     public function __construct(Cli $cli, Player $player, int $boardSizeX = 8, int $boardSizeY = 8)
     {
-        $this->reversi = new Reversi($boardSizeX, $boardSizeY);
-        $this->reversi->setStrategy('random', Player::WHITE);
-        $this->reversi->setStrategy('random', Player::BLACK);
+        $this->reversi = new Reversi(
+            $boardSizeX,
+            $boardSizeY,
+            [
+                Player::WHITE->name => new Config('random'),
+                Player::BLACK->name => new Config('random')
+            ]);
         $this->cli = $cli;
         $this->userPlayer = $player;
         $reflection = new ReflectionClass($this);
@@ -244,16 +249,23 @@ class Command
      * Usage:
      * - strategy [strategy] [searchLevel] [player] コンピュータ選択の戦略を設定します
      */
-    public function strategy(string $strategy = '', ?int $searchLevel = null, int $endgameThreshold = 0, ?string $player = 'WHITE') : ?string
+    public function strategy(string $strategy = '', ?int $searchLevel = null, ?int $endgameThreshold = null, ?string $player = 'WHITE') : ?string
     {
-        // todo なんかおかしい
-        $strategies = $this->reversi->getStrategy();
+        $strategies = $this->reversi->getAllStrategy();
         if (!$strategy) {
             return 'white: ' . $strategies[Player::WHITE->name]['strategy']. ', black: ' . $strategies[Player::BLACK->name]['strategy'];
         }
         if (isset($strategies[strtoupper($player)])) {
+            $config = $strategies[strtoupper($player)];
+            $config->strategy = $strategy;
+            if (!is_null($searchLevel)) {
+                $config->searchLevel = $searchLevel;
+            }
+            if (!is_null($endgameThreshold)) {
+                $config->endgameThreshold = $endgameThreshold;
+            }
             $player = strtoupper($player) === Player::WHITE->name ? Player::WHITE : Player::BLACK;
-            $this->reversi->setStrategy($strategy, $player, $searchLevel, $endgameThreshold);
+            $this->reversi->setStrategy($config, $player);
         }
         return null;
     }

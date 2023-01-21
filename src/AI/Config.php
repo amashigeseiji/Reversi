@@ -11,8 +11,8 @@ class Config
     public function __construct(
         string $strategy = 'alphabeta',
         int $searchLevel = 4,
-        int $endgameThreshold = 0,
-        array $scoringMethods = []
+        int $endgameThreshold = 13,
+        array $scoringMethods = ['calc', 'cornerPoint', 'moveCount']
     ) {
         $this->strategy = $strategy;
         $this->searchLevel = $searchLevel;

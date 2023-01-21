@@ -115,7 +115,7 @@ class Api
     #[Http(method: "post")]
     public function reset(int $boardSizeX = 8, int $boardSizeY = 8)
     {
-        $this->reversi = new Reversi($boardSizeX, $boardSizeY, $this->reversi->getStrategy());
+        $this->reversi = new Reversi($boardSizeX, $boardSizeY, $this->reversi->getAllStrategy());
         $_SESSION['reversi'] = $this->reversi;
     }
 
@@ -171,7 +171,12 @@ class Api
     {
         $strategies = $this->reversi->strategyList();
         $player = strtolower(Player::WHITE->name) === strtolower($player) ? Player::WHITE : Player::BLACK;
-        $this->reversi->setStrategy($strategy, $player, $searchLevel);
+        $config = $this->reversi->getStrategy($player);
+        $config->strategy = $strategy;
+        if (!is_null($searchLevel)) {
+            $config->searchLevel = $searchLevel;
+        }
+        $this->reversi->setStrategy($config, $player);
         echo $this->gameJson();
     }
 
