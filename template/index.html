@@ -10,11 +10,16 @@
 <body>
   <h1 class="title">REVERSI</h1>
   <div id="app">
-    <div @click="onClickMenu" v-show="menu === 'close'" class="menu-open">&nbsp;</div>
+    <div @click="menu = 'open'" v-show="menu === 'close'" class="menu-open">&nbsp;</div>
     <aside class="sidemenu" :class="menu">
-      <div @click="onClickMenu" class="menu-close">&nbsp;</div>
+      <div @click="menu = 'close'" class="menu-close">&nbsp;</div>
+      <div class="tabs">
+        <div @click="tab = 'information'" :class="tab === 'information' ? 'open' : 'close'">盤面の情報</div>
+        <div @click="tab = 'aiConfig'" :class="tab === 'aiConfig' ? 'open' : 'close'">AIの設定</div>
+        <div @click="tab = 'history'" :class="tab === 'history' ? 'open' : 'close'">ヒストリー</div>
+      </div>
       <div class="sidemenuInner">
-        <div class="menu">
+        <div class="tab menu" v-show="tab === 'information'">
           <div class="row">
             <div class="column">x: <input type="number" v-model="game.board.xMax"></div>
             <div class="column">y: <input type="number" v-model="game.board.yMax"></div>
@@ -42,6 +47,19 @@
             </div>
             <div class="column">current: {{ gameOver ? '' : currentPlayer }}</div>
           </div>
+          <?php if (DEBUG): ?>
+          <div class="row">
+            <div class="column col2">PHP Memory Usage: {{ game.memoryUsage }}</div>
+          </div>
+          <?php endif ?>
+          <div class="row">
+            <div class="column col2">
+              <button @click="onClickUpdateBoardSize">Restart</button>
+              <button @click="onClickReset" class="reset">reset</button>
+            </div>
+          </div>
+        </div>
+        <div class="tab aiConfig" v-show="tab === 'aiConfig'">
           <div class="row">
             <div class="column">
               <span>自動対戦: <input type="checkbox" v-model="auto"></span>
@@ -73,23 +91,9 @@
           <div class="row">
             <div class="column col2">待ち時間(コンピュータが処理するのが早すぎる場合)<input type="number" v-model="waitTime" :disabled="!opponentComputer"></div>
           </div>
-          <div class="row">
-            <div class="column col2">
-              <button @click="onClickUpdateBoardSize">Restart</button>
-              <button @click="onClickReset" class="reset">reset</button>
-            </div>
-          </div>
-          <?php if (DEBUG): ?>
-          <div class="row">
-            <div class="column col2">PHP Memory Usage: {{ game.memoryUsage }}</div>
-          </div>
-          <?php endif ?>
         </div>
-        <div class="history">
-            <div class="history-back">
-              <h2>history</h2>
-              <a href="#" @click="resume" class="history-back-link">再開</a>
-            </div>
+        <div class="tab history" v-show="tab === 'history'">
+          <a href="#" @click="resume" class="history-back-link">再開</a>
           <ul class="history-list">
             <li v-for="(hash, key) in historyHash" :key="key" :class="[key === game.moveCount? 'currentHistory' : '']" @mouseover="historyBack(hash)">{{key}}手目: {{ hash }}</li>
           </ul>
@@ -193,6 +197,7 @@
         historyHash: gameJson.history,
         historyCache: {},
         suspend: false,
+        tab: 'aiConfig',
       }
     },
     watch: {
@@ -365,13 +370,6 @@
           boardSizeY: this.game.board.yMax,
         }).then(this.updateBoard)
       },
-      onClickMenu() {
-        if (this.menu === 'open') {
-          this.menu = 'close'
-        } else {
-          this.menu = 'open'
-        }
-      },
       historyBack(history) {
         this.auto = false
         this.suspend = history !== this.latest
@@ -540,6 +538,22 @@
     color: #5679ff;
   }
 
+  .tabs {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+  }
+  .tabs>div {
+    padding: 0 15px;
+    border: 0.3px solid #eee;
+    border-radius: 10px 10px 0 0;
+    background: #fff;
+    cursor: pointer;
+  }
+  .tabs>div.close {
+    opacity: 50%;
+  }
+
   .sidemenu {
     position: fixed;
     background: rgba(143,205,176,.8);
@@ -561,6 +575,7 @@
   .sidemenu > div.sidemenuInner {
     width: 100%;
     display: flex;
+    height: 250px;
   }
   .sidemenu.close {
     bottom: -1000px;
@@ -606,28 +621,31 @@
     top: 50%;
     margin: 0 auto;
   }
-  .menu {
+  .menu, .aiConfig {
     background: rgba(255,255,255,.6);
     display: flex;
     flex-direction: column;
     flex-basis: 50%;
     border-right: 0.1px solid #999;
   }
-  .menu input {
+  .menu input, .aiConfig input {
     width: 50px;
   }
-  .menu .row {
+  .menu .row , .aiConfig .row {
     display: flex;
     border-top: 0.1px solid #aaa;
     padding: 3px 30px;
   }
-  .menu .row:first-child {
+  .menu .row:first-child, .aiConfig .row:first-child {
     border-top: none;
   }
-  .menu .column {
+  .menu .row:last-child, .aiConfig .row:last-child {
+    border-bottom: 0.1px solid #aaa;
+  }
+  .menu .column, .aiConfig .column {
     flex-basis: 50%;
   }
-  .menu .column.col2 {
+  .menu .column.col2, .aiConfig .column.col2 {
     flex-basis: 100%;
   }
   .menu button {
@@ -642,19 +660,16 @@
   }
 
   .history {
-    padding: 20px;
+    padding: 0 10px;
     width: 50%;
-  }
-  .history h2 {
-    margin: 0;
   }
   .history-list {
     list-style: none;
     margin: 0;
     padding: 10px 15px;
     font-size: 15px;
-    max-height: 300px;
-    /* overflow: scroll;*/
+    max-height: 150px;
+    overflow: scroll;
   }
   .history-back {
     display: flex;
@@ -666,6 +681,9 @@
   }
   .history-back a.history-back-link {
     visibility: visible;
+  }
+  .history-list li {
+    width: fit-content;
   }
   .history-list li.currentHistory {
     text-decoration: underline;
