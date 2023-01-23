@@ -27,6 +27,8 @@ class Command
     private Cli $cli;
     private Reversi $reversi;
 
+    public array $messages = [];
+
     public function __construct(Cli $cli, Player $player, int $boardSizeX = 8, int $boardSizeY = 8)
     {
         $this->reversi = new Reversi(
@@ -60,8 +62,9 @@ class Command
         try {
             $this->reversi->move($index);
         } catch (InvalidMoveException $e) {
-            return $e->getMessage();
+            $this->messages[] = $e->getMessage();
         }
+        $this->messages[] = 'Your move: ' . $index;
     }
 
     /**
@@ -156,9 +159,9 @@ class Command
                 try {
                     return $method->invokeArgs($this, $commandInput);
                 } catch (\ArgumentCountError $e) {
-                    return '引数の数が足りません. ' . $this->help($command);
+                    $this->messages[] = '引数の数が足りません. ' . $this->help($command);
                 } catch (\TypeError $e) {
-                    return '引数の型がちがいます. ' . $this->help($command);
+                    $this->messages[] = '引数の型がちがいます. ' . $this->help($command);
                 }
             }
         }
@@ -168,6 +171,7 @@ class Command
     public function compute() : string
     {
         [$move, $flip] = $this->reversi->compute();
+        $this->messages[] = "Computer move: {$move}";
         return $move;
     }
 
@@ -247,7 +251,7 @@ class Command
 
     /**
      * Usage:
-     * - strategy [strategy] [searchLevel] [player] コンピュータ選択の戦略を設定します
+     * - strategy [strategy] [searchLevel] [endgameThreshold] [player] コンピュータ選択の戦略を設定します
      */
     public function strategy(string $strategy = '', ?int $searchLevel = null, ?int $endgameThreshold = null, ?string $player = 'WHITE') : ?string
     {
@@ -295,5 +299,20 @@ class Command
             }
         }
         return $this->reversi->getMoves()->indices();
+    }
+
+    public function getMessages() : array
+    {
+        return $this->messages;
+    }
+
+    public function clearMessages() : void
+    {
+        $this->messages = [];
+    }
+
+    public function pushMessage(string $message) : void
+    {
+        $this->messages[] = $message;
     }
 }

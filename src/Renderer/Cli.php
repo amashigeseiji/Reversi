@@ -21,53 +21,37 @@ class Cli
     public function play()
     {
         $this->renderer->clear();
-        $this->renderer->board();
         while (true) {
             if ($this->exit) {
                 break;
             }
+            $this->renderer->render();
             if ($this->game->isMyTurn() || !$this->game->opponentComputer) {
-                $this->renderer->message('moves: ' . $this->game->moves() . PHP_EOL);
-                $return = $this->command($this->game->currentPlayer() . ": ");
-                if ($return) {
-                    $this->renderer->message($return . PHP_EOL);
-                    unset($return);
-                } else {
-                    $this->renderer->board();
-                }
+                $this->renderer->command(">> ");
             } else {
-                $message = $this->game->currentPlayer() . ": thinking... ";
-                $this->renderer->message($message);
-                $this->sleep($this->game->sleep);
-                $command = $this->game->compute();
-                $this->renderer->board();
-                $this->renderer->message($message . $command . PHP_EOL);
+                if ($this->game->state() === GameState::ONGOING) {
+                    $this->sleep($this->game->sleep);
+                    $this->game->compute();
+                } else {
+                    $this->renderer->command(">> ");
+                }
             }
-            switch($this->game->state()) {
-            case GameState::WIN_WHITE:
-                $this->renderer->message('White win!' . PHP_EOL);
-                $return = $this->command('Input: ');
-                $this->renderer->board();
-                if (isset($return)) {
-                    $this->renderer->message($return);
+            if ($this->game->state() !== GameState::ONGOING) {
+                $this->game->clearMessages();
+                switch($this->game->state()) {
+                case GameState::WIN_WHITE:
+                    $this->game->pushMessage('White win!' . PHP_EOL);
+                    // $this->renderer->command('Command: ');
+                    break;
+                case GameState::WIN_BLACK:
+                    $this->game->pushMessage('Black win!' . PHP_EOL);
+                    //$this->renderer->command('Command: ');
+                    break;
+                case GameState::DRAW:
+                    $this->game->pushMessage('Draw!' . PHP_EOL);
+                    // $this->renderer->command('Command: ');
+                    break;
                 }
-                break;
-            case GameState::WIN_BLACK:
-                $this->renderer->message('Black win!' . PHP_EOL);
-                $return = $this->command('Input: ');
-                $this->renderer->board();
-                if (isset($return)) {
-                    $this->renderer->message($return);
-                }
-                break;
-            case GameState::DRAW:
-                $this->renderer->message('Draw!' . PHP_EOL);
-                $return = $this->command('Input: ');
-                $this->renderer->board();
-                if (isset($return)) {
-                    $this->renderer->message($return);
-                }
-                break;
             }
         }
         if ($this->exit) {
@@ -133,12 +117,6 @@ class Cli
     public function simple()
     {
         $this->renderer->simple();
-    }
-
-    private function command(string $inputMessage = '')
-    {
-        $input = $this->renderer->command($inputMessage);
-        return $this->game->invoke($input);
     }
 
     private function sleep(int|float $sleep)

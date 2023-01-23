@@ -117,6 +117,6 @@ class Board
 
     private function color($message, Color $color = Color::DEFAULT, Color $bgColor = Color::BG_DEFAULT)
     {
-        return sprintf("\033[%d;%dm%s\033[m", $color->value, $bgColor->value, $message);
+        return sprintf("\033[%d;%dm%s\033[0m", $color->value, $bgColor->value, $message);
     }
 }
