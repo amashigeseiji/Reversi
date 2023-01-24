@@ -141,7 +141,9 @@ class Command
             if (!$doc) {
                 return '';
             }
-            return trim(str_replace(['/', '*'], '', $doc));
+            $help = trim(str_replace(['/', '*'], '', $doc));
+            $this->messages[] = $help;
+            return $help;
         }
         return '';
     }
@@ -314,5 +316,15 @@ class Command
     public function pushMessage(string $message) : void
     {
         $this->messages[] = $message;
+    }
+
+    public function messageCount(): int
+    {
+        return count($this->messages);
+    }
+
+    public function shiftMessage()
+    {
+        array_shift($this->messages);
     }
 }

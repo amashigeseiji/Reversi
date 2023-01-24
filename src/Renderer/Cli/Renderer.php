@@ -21,34 +21,22 @@ class Renderer
         echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
     }
 
-    public function message(string $message)
-    {
-        $lines = $this->boardHeight() + 3;
-        system("tput cup {$lines} 0");
-        system("tput el");
-        echo $message;
-    }
-
     public function command(string $inputMessage = '') : void
     {
+        $lines = $this->boardHeight() + 3;
+        // $lines += count($this->command->getMessages());
+        $this->clearFrom($lines);
         readline_completion_function([$this->command, 'commandCompletion']);
-        $lines = $this->boardHeight() + 2;
-        $messageCount = count($this->command->getMessages());
-        $lines += $messageCount;
+        system("tput cup {$lines} {$this->cliBoard->marginLeft}");
         $input = readline($inputMessage);
         readline_add_history($input);
         $this->command->invoke($input);
-        if ($input === 'reset' || $input === 'simple') {
+        if ($input === 'reset' || $input === 'simple' || $input === 'resize') {
             $this->clearFrom(0);
             $this->command->clearMessages();
+            $this->oldMessage = [];
         }
         $this->render();
-        $messages = $this->command->getMessages();
-        foreach ($messages as $message) {
-            system('tput el');
-            echo $message . PHP_EOL;
-        }
-        $this->command->clearMessages();
     }
 
     public function simple()
@@ -69,18 +57,25 @@ class Renderer
         echo $this->cliBoard;
 
         $lines = $this->boardHeight();
-        $this->clearFrom($lines);
         $black = 'BLACK: ' . count($this->command->board()->black);
         $white = 'WHITE: ' . count($this->command->board()->white);
+        system("tput cup {$lines} {$this->cliBoard->marginLeft}");
         echo $black . PHP_EOL;
-        system('tput el');
+        $lines++;
+        system("tput cup {$lines} {$this->cliBoard->marginLeft}");
         echo $white . PHP_EOL;
-        if (!$this->command->auto) {
-            $messages = $this->command->getMessages();
-            foreach ($messages as $message) {
-                system('tput el');
-                echo $message . PHP_EOL;
-            }
+
+        system('tput cup 1 50');
+        echo 'MESSAGE:' . PHP_EOL;
+        $i = 2;
+        if ($this->command->messageCount() > ($this->boardHeight() - 4)) {
+            $this->command->shiftMessage();
+        }
+        $messages = $this->command->getMessages();
+        foreach ($messages as $k => $message) {
+            $line = $i + $k;
+            system("tput cup {$line} 50 && tput el");
+            echo $message . PHP_EOL;
         }
         system("tput cnorm");
     }
@@ -92,6 +87,6 @@ class Renderer
 
     private function clearFrom(int $from = 0)
     {
-        system("tput cup {$from} 0 && tput ed || tput cd");
+        system("tput sc && tput cup {$from} 0 && tput cd && tput rc");
     }
 }

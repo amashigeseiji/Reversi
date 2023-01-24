@@ -41,15 +41,12 @@ class Cli
                 switch($this->game->state()) {
                 case GameState::WIN_WHITE:
                     $this->game->pushMessage('White win!' . PHP_EOL);
-                    // $this->renderer->command('Command: ');
                     break;
                 case GameState::WIN_BLACK:
                     $this->game->pushMessage('Black win!' . PHP_EOL);
-                    //$this->renderer->command('Command: ');
                     break;
                 case GameState::DRAW:
                     $this->game->pushMessage('Draw!' . PHP_EOL);
-                    // $this->renderer->command('Command: ');
                     break;
                 }
             }
